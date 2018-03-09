@@ -1,4 +1,4 @@
-package cz.it4i.parallel.paradigm;
+package cz.it4i.parallel;
 
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;

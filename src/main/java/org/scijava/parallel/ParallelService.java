@@ -24,5 +24,9 @@ public interface ParallelService extends SingletonService<ParallelizationParadig
 	default List<ParallelizationParadigm> getParadigms() {
 		return getInstances().stream().collect(Collectors.toList());
 	}
-
+	
+	@Override
+	default Class<ParallelizationParadigm> getPluginType() {
+		return ParallelizationParadigm.class;
+	}
 }
