@@ -19,7 +19,11 @@ public class TestSuite implements Command {
 	@Override
 	public void run() {
 		
-		List<ParallelizationParadigm> instances = parallelService.getInstances();
+		List<ParallelizationParadigm> paradigms = parallelService.getParadigms();
+				
+		for (ParallelizationParadigm paradigm : paradigms) {
+			paradigm.submit();
+		}
 
 	}
 	
