@@ -7,8 +7,8 @@ import org.scijava.plugin.SingletonPlugin;
 // TODO: Add description
 
 public interface ParallelizationParadigm extends SingletonPlugin {
-		
-	boolean init();
+	
+	void init();
 	
 	void submit();
 	

@@ -8,10 +8,11 @@ import org.scijava.plugin.Plugin;
 public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	@Override
-	public boolean init() {
-		return false;
-		// TODO Auto-generated method stub, consider moving to
-		// AbstractParallelizationParadigm
+	public void init() {		
+		
+		// Consider moving to AbstractParallelizationParadigm
+		
+		int abc = 123;
 
 	}
 

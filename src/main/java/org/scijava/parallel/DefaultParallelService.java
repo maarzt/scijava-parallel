@@ -11,4 +11,13 @@ import org.scijava.service.Service;
 @Plugin(type = Service.class)
 public class DefaultParallelService extends AbstractSingletonService<ParallelizationParadigm>
 		implements ParallelService {
+	
+	@Override
+	public void initialize() {
+		
+		// Perform parallelization paradigms initialization (retrieve persistent values etc.)
+		getInstances().forEach(ParallelizationParadigm::init);
+		
+		super.initialize();		
+	}	
 }
