@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.IRotateImageXY;
 
-@Plugin(type = Command.class, headless = false, menuPath = "Plugins>ParallelServiceTestSuite")
+@Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
 public class TestSuite2 implements Command {
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.TestSuite2.class);
