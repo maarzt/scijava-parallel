@@ -6,8 +6,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -28,6 +30,8 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
+	private static Collection<String> hosts = new LinkedList<>();
+
 	private WorkerPool workerPool;
 
 	@Override
@@ -41,8 +45,8 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 			updateConnectionConfig(configEntries);
 		}
 		workerPool = new WorkerPool();
-		workerPool.addWorker(
-				new ImageJServerWorker(connectionConfig.get(ADDRESS), Integer.parseInt(connectionConfig.get(PORT))));
+		hosts.forEach(host -> workerPool
+				.addWorker(	new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
 	}
 
 	@Override
@@ -166,6 +170,12 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 		}
 
+	}
+
+	public static void addHosts(Collection<String> hosts) {
+		
+		SimpleOstravaParadigm.hosts .addAll(hosts);
+		
 	}
 
 }

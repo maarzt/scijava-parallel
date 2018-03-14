@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -67,6 +68,11 @@ public class TestSuite2 implements Command {
 
 	public static void main(final String... args) {
 
+		List<String> hosts = new LinkedList<>();
+		for(String arg: args) {
+			hosts.add(arg);
+		}
+		SimpleOstravaParadigm.addHosts(hosts);
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
