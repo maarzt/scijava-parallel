@@ -1,7 +1,6 @@
 package cz.it4i.parallel;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,16 +41,17 @@ public class TestSuite2 implements Command {
 			}
 		}
 		Collection<P_Input> inputs = new LinkedList<>();
-		try (DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("/tmp/input/"))) {
-			int angle = 10;
-			for (Path file : ds) {
+		Path file;
+		try {
+			file = Files.newDirectoryStream(Paths.get("/tmp/input/"), p->p.toString().endsWith(".png")).iterator().next();
+			for(int angle = 10; angle < 360; angle++) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
-				angle += 10;
 			}
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			log.error(e.getMessage(), e);
 		}
-		
+			
 		
 		paradigm.parallelLoop(inputs, (input, task)->{
 			

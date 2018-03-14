@@ -41,8 +41,8 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 			updateConnectionConfig(configEntries);
 		}
 		workerPool = new WorkerPool();
-		workerPool.addWorker(new ImageJServerWorker(connectionConfig.get(ADDRESS),
-				Integer.parseInt(connectionConfig.get(PORT))));
+		workerPool.addWorker(
+				new ImageJServerWorker(connectionConfig.get(ADDRESS), Integer.parseInt(connectionConfig.get(PORT))));
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
 		arguments.forEach(val -> {
 			try (P_ParallelTask task = new P_ParallelTask()) {
-				consumer.accept(val, null);
+				consumer.accept(val, task);
 			}
 		});
 
@@ -105,7 +105,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 			// TODO make better connection to real type - e.g. based on annotations
 			private String getTypeName(Class<?> type) {
-				return type.getPackage().getName() + type.getSimpleName().substring(1);
+				return type.getPackage().getName() + "." + type.getSimpleName().substring(1);
 			}
 
 			@Override
@@ -153,7 +153,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 			// TODO: support another types
 			private String getFileType(Path path) {
-				if (!path.endsWith(".png")) {
+				if (!path.toString().endsWith(".png")) {
 					throw new UnsupportedOperationException("Only png files supported");
 				}
 				return "image/png";
