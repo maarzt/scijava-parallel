@@ -41,7 +41,7 @@ public class TestSuite2 implements Command {
 	public void run() {
 
 		ParallelizationParadigm paradigm = parallelService.getParadigms().get(0);
-		SimpleOstravaParadigm sop = (SimpleOstravaParadigm) paradigm;
+		ImageJServerParadigm sop = (ImageJServerParadigm) paradigm;
 		Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {

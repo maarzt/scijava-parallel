@@ -6,10 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
@@ -18,45 +15,27 @@ import java.util.stream.StreamSupport;
 import org.json.JSONObject;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.ParallelTask;
-import org.scijava.parallel.ParallelizationParadigm;
-import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Plugin(type = ParallelizationParadigm.class)
+
 public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
-	private static final String PORT = "port";
-
-	private static final String ADDRESS = "address";
-
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
+	
+	protected Integer poolSize;
 
-	private Collection<String> hosts = new LinkedList<>();
-
-	private Integer poolSize;
-
-	private WorkerPool workerPool;
+	protected WorkerPool workerPool;
 
 	private ForkJoinPool pool;
 
 	@Override
 	public void init() {
-
-		retrieveConnectionConfig();
-		if (connectionConfig.size() == 0) {
-			Map<String, String> configEntries = new LinkedHashMap<>();
-			configEntries.put(ADDRESS, "localhost");
-			configEntries.put(PORT, "8080");
-			updateConnectionConfig(configEntries);
-		}
 		workerPool = new WorkerPool();
-		hosts.forEach(host -> workerPool
-				.addWorker(new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
 		if (pool != null) {
 			pool.shutdown();
 		}
-		pool = new ForkJoinPool(poolSize != null ? poolSize : Math.max(hosts.size(), 1));
+		pool = new ForkJoinPool(poolSize );
 
 	}
 
@@ -182,13 +161,6 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	}
 
-	public  void setHosts(Collection<String> hosts) {
-		this.hosts.clear();
-		this.hosts.addAll(hosts);
-
-	}
-
-	
 	public void setPoolSize(Integer val) {
 		poolSize = val;
 	}
