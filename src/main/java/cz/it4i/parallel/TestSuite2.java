@@ -31,7 +31,7 @@ public class TestSuite2 implements Command {
 	public void run() {
 
 		ParallelizationParadigm paradigm = parallelService.getParadigms().get(0);
-
+		long time = System.currentTimeMillis();
 		class P_Input {
 			Path dataset;
 			String angle;
@@ -45,7 +45,7 @@ public class TestSuite2 implements Command {
 		Path file;
 		try {
 			file = Files.newDirectoryStream(Paths.get("/tmp/input/"), p->p.toString().endsWith(".png")).iterator().next();
-			for(int angle = 10; angle < 360; angle++) {
+			for(int angle = 1; angle < 360; angle++) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
 			}
 		} catch (IOException e) {
@@ -64,6 +64,9 @@ public class TestSuite2 implements Command {
 			log.info("result is " + result);
 			
 		});
+		long time2 = System.currentTimeMillis();
+		double sec = (time2 - time)/1000.;
+		log.info("Duration: " + sec + " s");
 	}
 
 	public static void main(final String... args) {
