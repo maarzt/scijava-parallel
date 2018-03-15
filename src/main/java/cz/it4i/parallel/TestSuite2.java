@@ -72,7 +72,7 @@ public class TestSuite2 implements Command {
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
 			paradigm.parallelLoop(inputs, (input, task) -> {
-				log.info("processing angle=" + input.angle);
+				//log.info("processing angle=" + input.angle);
 				IRotateImageXY command = task.getRemoteModule(IRotateImageXY.class);
 				command.setAngle(input.angle);
 				command.setDataset(input.dataset);
