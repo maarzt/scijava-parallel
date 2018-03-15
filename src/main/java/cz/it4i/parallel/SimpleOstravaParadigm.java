@@ -32,7 +32,9 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
-	private static Collection<String> hosts = new LinkedList<>();
+	private Collection<String> hosts = new LinkedList<>();
+
+	private Integer poolSize;
 
 	private WorkerPool workerPool;
 
@@ -50,8 +52,12 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 		}
 		workerPool = new WorkerPool();
 		hosts.forEach(host -> workerPool
-				.addWorker(	new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
-		pool = new ForkJoinPool(hosts.size());
+				.addWorker(new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
+		if (pool != null) {
+			pool.shutdown();
+		}
+		pool = new ForkJoinPool(poolSize != null ? poolSize : Math.max(hosts.size(), 1));
+
 	}
 
 	@Override
@@ -176,10 +182,15 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	}
 
-	public static void addHosts(Collection<String> hosts) {
-		
-		SimpleOstravaParadigm.hosts .addAll(hosts);
-		
+	public  void setHosts(Collection<String> hosts) {
+		this.hosts.clear();
+		this.hosts.addAll(hosts);
+
+	}
+
+	
+	public void setPoolSize(Integer val) {
+		poolSize = val;
 	}
 
 }
