@@ -54,7 +54,7 @@ public class TestSuite2 implements Command {
 			// TODO Auto-generated catch block
 			log.error(e.getMessage(), e);
 		}
-		for (int numberOfHosts = minHosts; numberOfHosts <= hosts.size(); numberOfHosts++) {
+		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
 			List<String> usedHosts = hosts.subList(0, numberOfHosts);
 			sop.setHosts(usedHosts);
 			for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
