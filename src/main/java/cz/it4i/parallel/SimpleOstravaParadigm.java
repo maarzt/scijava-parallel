@@ -7,9 +7,7 @@ import java.lang.reflect.Proxy;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.stream.StreamSupport;
@@ -96,8 +94,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 			private Map<String, Object> args = new HashMap<>();
 			private String typeName;
-			private Set<String> uploadedValues = new HashSet<>();
-
+			
 			public P_InvocationHandler(Class<?> type) {
 				this.typeName = getTypeName(type);
 			}
@@ -114,19 +111,12 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				} else if (method.getName().equals("run")) {
 					// execute worker
 					executeResult = worker.executeModule("command:" + typeName, this.args);
-					cleanUploadedFiles();
 				} else if (method.getName().startsWith("get")) {
 					return getValue(getPropertyName(method.getName()), method.getReturnType());
 				}
 				return null;
 			}
-
-			private void cleanUploadedFiles() {
-				uploadedValues.forEach(id -> worker.deleteResource(id));
-				uploadedValues.clear();
-
-			}
-
+			
 			private Object getValue(String propertyName, Class<?> returnType) {
 
 				String resultValue = (new JSONObject(executeResult)).getString(propertyName);
@@ -151,7 +141,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 							path.getFileName().toString());
 					// obtain uploaded file id
 					object = new org.json.JSONObject(ret).getString("id");
-					uploadedValues.add((String) object);
 				}
 				args.put(propertyName, object);
 			}
