@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
+import java.util.stream.StreamSupport;
 
 import org.json.JSONObject;
 import org.scijava.parallel.AbstractParallelizationParadigm;
@@ -34,6 +36,8 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	private WorkerPool workerPool;
 
+	private ForkJoinPool pool;
+
 	@Override
 	public void init() {
 
@@ -47,6 +51,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 		workerPool = new WorkerPool();
 		hosts.forEach(host -> workerPool
 				.addWorker(	new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
+		pool = new ForkJoinPool(hosts.size());
 	}
 
 	@Override
@@ -58,12 +63,11 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		arguments.forEach(val -> {
+		pool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(val -> {
 			try (P_ParallelTask task = new P_ParallelTask()) {
 				consumer.accept(val, task);
 			}
-		});
-
+		}));
 	}
 
 	private class P_ParallelTask implements ParallelTask, Closeable {
