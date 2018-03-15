@@ -77,6 +77,7 @@ public class TestSuite2 implements Command {
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
 		ij.command().run(TestSuite2.class, true);
+		System.exit(0);
 	}
 
 }
