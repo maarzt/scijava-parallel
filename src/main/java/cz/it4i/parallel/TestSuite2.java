@@ -1,9 +1,11 @@
 package cz.it4i.parallel;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.DoubleSummaryStatistics;
@@ -86,8 +88,18 @@ public class TestSuite2 implements Command {
 			resultTimes.add(sec);
 		}
 		DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
-		log.info("Number of workers =  " + nummberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
-				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax());
+		String resultStr = "Number of workers =  " + nummberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
+				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax();
+		log.info(resultStr);
+		writeResult(resultStr);
+	}
+
+	private void writeResult(String resultStr) {
+		try(BufferedWriter bw = Files.newBufferedWriter(Paths.get("result-TestSuite2.txt"), StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+			bw.write(resultStr + "\n");
+		} catch (IOException e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 	public static void main(final String... args) {
