@@ -67,7 +67,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 			try (P_ParallelTask task = new P_ParallelTask()) {
 				consumer.accept(val, task);
 			}
-		}));
+		})).join();
 	}
 
 	private class P_ParallelTask implements ParallelTask, Closeable {
