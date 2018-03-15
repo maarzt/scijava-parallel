@@ -17,7 +17,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 
 	private static final String ADDRESS = "address";
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
+	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.ImageJServerParadigm.class);
 
 	private Collection<String> hosts = new LinkedList<>();
 
@@ -33,9 +33,6 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 			configEntries.put(PORT, "8080");
 			updateConnectionConfig(configEntries);
 		}
-		hosts.forEach(host -> workerPool
-				.addWorker(new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
-		
 		super.init();
 	}
 	
@@ -43,5 +40,12 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 		this.hosts.clear();
 		this.hosts.addAll(hosts);
 
+	}
+	
+	@Override
+	protected void initWorkerPool() {
+		hosts.forEach(host -> workerPool
+				.addWorker(new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
+		
 	}
 }

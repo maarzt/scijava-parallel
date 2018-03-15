@@ -7,7 +7,9 @@ import java.lang.reflect.Proxy;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.stream.StreamSupport;
@@ -18,11 +20,10 @@ import org.scijava.parallel.ParallelTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
+public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
-	
+
 	protected Integer poolSize;
 
 	protected WorkerPool workerPool;
@@ -32,12 +33,15 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 	@Override
 	public void init() {
 		workerPool = new WorkerPool();
+		initWorkerPool();
 		if (pool != null) {
 			pool.shutdown();
 		}
-		pool = new ForkJoinPool(poolSize );
-
+		pool = new ForkJoinPool(poolSize);
+		
 	}
+
+	abstract protected void initWorkerPool();
 
 	@Override
 	public void submit() {
@@ -48,11 +52,12 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		pool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(val -> {
+		pool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(
+				val -> {
 			try (P_ParallelTask task = new P_ParallelTask()) {
 				consumer.accept(val, task);
-			}
-		})).join();
+			}}
+		)).join();
 	}
 
 	private class P_ParallelTask implements ParallelTask, Closeable {
@@ -91,6 +96,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 			private Map<String, Object> args = new HashMap<>();
 			private String typeName;
+			private Set<String> uploadedValues = new HashSet<>();
 
 			public P_InvocationHandler(Class<?> type) {
 				this.typeName = getTypeName(type);
@@ -108,11 +114,17 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 				} else if (method.getName().equals("run")) {
 					// execute worker
 					executeResult = worker.executeModule("command:" + typeName, this.args);
-
+					cleanUploadedFiles();
 				} else if (method.getName().startsWith("get")) {
 					return getValue(getPropertyName(method.getName()), method.getReturnType());
 				}
 				return null;
+			}
+
+			private void cleanUploadedFiles() {
+				uploadedValues.forEach(id -> worker.deleteResource(id));
+				uploadedValues.clear();
+
 			}
 
 			private Object getValue(String propertyName, Class<?> returnType) {
@@ -139,7 +151,7 @@ public class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 							path.getFileName().toString());
 					// obtain uploaded file id
 					object = new org.json.JSONObject(ret).getString("id");
-
+					uploadedValues.add((String) object);
 				}
 				args.put(propertyName, object);
 			}

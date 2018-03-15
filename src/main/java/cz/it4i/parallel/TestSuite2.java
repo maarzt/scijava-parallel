@@ -26,7 +26,7 @@ import net.imagej.plugins.commands.imglib.IRotateImageXY;
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
 public class TestSuite2 implements Command {
 
-	private static int count = 100;
+	private static int count = 10;
 	private static int minThreads = 1;
 	private static int maxThreads = 48;
 	private static int minHosts = 1;
@@ -113,6 +113,13 @@ public class TestSuite2 implements Command {
 			this.dataset = dataset;
 			this.angle = angle;
 		}
+
+		@Override
+		public String toString() {
+			return "P_Input [dataset=" + dataset + ", angle=" + angle + "]";
+		}
+		
+		
 	}
 
 }
