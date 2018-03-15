@@ -29,7 +29,7 @@ public class TestSuite2 implements Command {
 	private static int count = 10;
 	private static int minThreads = 1;
 	private static int maxThreads = 48;
-	private static int minHosts = 1;
+	private static final int minHosts = 1;
 
 	private static List<String> hosts;
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.TestSuite2.class);
@@ -93,7 +93,7 @@ public class TestSuite2 implements Command {
 
 		TestSuite2.hosts = new LinkedList<>();
 		Iterator<String> argIter = Arrays.asList(args).iterator();
-		minHosts = Integer.parseInt(argIter.next());
+		count = Integer.parseInt(argIter.next());
 		minThreads = Integer.parseInt(argIter.next());
 		maxThreads = Integer.parseInt(argIter.next());
 		while(argIter.hasNext()) {
