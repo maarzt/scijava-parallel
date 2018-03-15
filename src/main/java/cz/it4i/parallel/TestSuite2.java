@@ -67,12 +67,12 @@ public class TestSuite2 implements Command {
 
 	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int nummberOfWorkers,
 			int numberOfThreads) {
-		log.info("test for workers=" + nummberOfWorkers + ", numberOfThreads" + numberOfThreads);
+		log.info("test for workers=" + nummberOfWorkers + ", numberOfThreads=" + numberOfThreads);
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
 			paradigm.parallelLoop(inputs, (input, task) -> {
-				log.info("processing angle:");
+				log.info("processing angle=" + input.angle);
 				IRotateImageXY command = task.getRemoteModule(IRotateImageXY.class);
 				command.setAngle(input.angle);
 				command.setDataset(input.dataset);
