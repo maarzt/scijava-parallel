@@ -22,6 +22,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.scijava.command.Command;
 
 public class ImageJServerWorker implements ParallelWorker {
 
@@ -112,10 +113,11 @@ public class ImageJServerWorker implements ParallelWorker {
 	}
 
 	@SuppressWarnings("unchecked")
-	public String executeModule(String moduleId, Map<String, ?> map) {
+	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map) {
+		
 		String json = null;
 
-		String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + moduleId;
+		String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:" + getTypeName(commandType);
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(postUrl);
 
@@ -249,4 +251,7 @@ public class ImageJServerWorker implements ParallelWorker {
 		return getArgumentsMap("command:" + getCommandByName(commandName));
 	}
 	
+	private String getTypeName(Class<?> type) {
+		return type.getPackage().getName() + "." + type.getSimpleName().substring(1);
+	}	
 }
