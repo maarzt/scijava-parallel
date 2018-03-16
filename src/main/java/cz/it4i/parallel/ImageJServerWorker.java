@@ -26,28 +26,17 @@ import org.scijava.command.Command;
 
 public class ImageJServerWorker implements ParallelWorker {
 
-	private String hostName;
-	private int port;
+	private final String hostName;
+	private final int port;
 	String result;
-	
-
 
 	ImageJServerWorker(String hostName, int port) {
 		this.hostName = hostName;
 		this.port = port;
 	}
-
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
-
 	
 	public String getHostName() {
 		return hostName;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
 	}
 
 	public int getPort() {
