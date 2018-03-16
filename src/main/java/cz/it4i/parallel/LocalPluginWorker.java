@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.scijava.Context;
+import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 
@@ -47,8 +48,8 @@ public class LocalPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public String executeModule(String moduleId, Map<String, ?> map) {
-		
+	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map) {
+		// commandService.getCommand(moduleId);
 		return null;
 	}
 

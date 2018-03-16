@@ -13,6 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.StreamSupport;
 
 import org.json.JSONObject;
+import org.scijava.command.Command;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.ParallelTask;
 import org.slf4j.Logger;
@@ -84,33 +85,33 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			workerPool.addWorker(worker);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public <T> void run(Class<T> type, Map<String, Object> inputMap) {
-			executeResult = worker.executeModule("command:" + type, inputMap);
-
+			if (Command.class.isAssignableFrom(type)) {
+				executeResult = worker.executeCommand((Class<Command>) type, inputMap);
+			}
 		}
 
 		private class P_InvocationHandler implements InvocationHandler {
 
-			private Map<String, Object> args = new HashMap<>();
-			private String typeName;
+			private final Map<String, Object> args = new HashMap<>();
+			private final Class<?> type;
 			
 			public P_InvocationHandler(Class<?> type) {
-				this.typeName = getTypeName(type);
+				this.type = type;
 			}
 
-			// TODO make better connection to real type - e.g. based on annotations
-			private String getTypeName(Class<?> type) {
-				return type.getPackage().getName() + "." + type.getSimpleName().substring(1);
-			}
-
+			@SuppressWarnings("unchecked")
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				if (method.getName().startsWith("set")) {
 					setValue(getPropertyName(method.getName()), args[0]);
 				} else if (method.getName().equals("run")) {
 					// execute worker
-					executeResult = worker.executeModule("command:" + typeName, this.args);
+					if (Command.class.isAssignableFrom(type)) {
+						executeResult = worker.executeCommand((Class<Command>) this.type, this.args);
+					}					
 				} else if (method.getName().startsWith("get")) {
 					return getValue(getPropertyName(method.getName()), method.getReturnType());
 				}
