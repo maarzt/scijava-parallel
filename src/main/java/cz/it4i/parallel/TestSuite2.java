@@ -43,6 +43,21 @@ public class TestSuite2 implements Command {
 	public void run() {
 
 		ImageJServerParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
+		
+		Collection<P_Input> inputs = prepareInputs();
+		
+		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
+			List<String> usedHosts = hosts.subList(0, numberOfHosts);
+			paradigm.setHosts(usedHosts);
+			for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
+				paradigm.setPoolSize(numberOfThreads);
+				paradigm.init();
+				doTest(paradigm, inputs, usedHosts.size(), numberOfThreads);
+			}
+		}
+	}
+	
+	private Collection<P_Input> prepareInputs() {
 		Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
@@ -55,15 +70,7 @@ public class TestSuite2 implements Command {
 			// TODO Auto-generated catch block
 			log.error(e.getMessage(), e);
 		}
-		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
-			List<String> usedHosts = hosts.subList(0, numberOfHosts);
-			paradigm.setHosts(usedHosts);
-			for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
-				paradigm.setPoolSize(numberOfThreads);
-				paradigm.init();
-				doTest(paradigm, inputs, usedHosts.size(), numberOfThreads);
-			}
-		}
+		return inputs;
 	}
 
 	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int nummberOfWorkers,
