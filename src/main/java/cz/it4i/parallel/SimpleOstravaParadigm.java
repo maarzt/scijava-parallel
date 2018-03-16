@@ -100,8 +100,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				this.type = type;
 			}
 
-			
-
 			@SuppressWarnings("unchecked")
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -126,8 +124,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			private void setValue(String propertyName, Object object) {
 				SimpleOstravaParadigm.this.setValue(worker, args, executeResult, propertyName, object);
 			}
-
-			
 
 			private String getPropertyName(String name) {
 				String text = name.substring(3);

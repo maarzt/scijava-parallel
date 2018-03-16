@@ -42,8 +42,7 @@ public class TestSuite2 implements Command {
 	@Override
 	public void run() {
 
-		ParallelizationParadigm paradigm = parallelService.getParadigms().get(0);
-		ImageJServerParadigm sop = (ImageJServerParadigm) paradigm;
+		ImageJServerParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
 		Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
@@ -58,10 +57,10 @@ public class TestSuite2 implements Command {
 		}
 		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
 			List<String> usedHosts = hosts.subList(0, numberOfHosts);
-			sop.setHosts(usedHosts);
+			paradigm.setHosts(usedHosts);
 			for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
-				sop.setPoolSize(numberOfThreads);
-				sop.init();
+				paradigm.setPoolSize(numberOfThreads);
+				paradigm.init();
 				doTest(paradigm, inputs, usedHosts.size(), numberOfThreads);
 			}
 		}
