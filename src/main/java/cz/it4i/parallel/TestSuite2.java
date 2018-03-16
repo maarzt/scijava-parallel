@@ -1,9 +1,11 @@
 package cz.it4i.parallel;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.DoubleSummaryStatistics;
@@ -29,7 +31,7 @@ public class TestSuite2 implements Command {
 	private static int count = 10;
 	private static int minThreads = 1;
 	private static int maxThreads = 48;
-	private static int minHosts = 1;
+	private static final int minHosts = 1;
 
 	private static List<String> hosts;
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.TestSuite2.class);
@@ -67,11 +69,12 @@ public class TestSuite2 implements Command {
 
 	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int nummberOfWorkers,
 			int numberOfThreads) {
+		log.info("test for workers=" + nummberOfWorkers + ", numberOfThreads=" + numberOfThreads);
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
 			paradigm.parallelLoop(inputs, (input, task) -> {
-
+				//log.info("processing angle=" + input.angle);
 				IRotateImageXY command = task.getRemoteModule(IRotateImageXY.class);
 				command.setAngle(input.angle);
 				command.setDataset(input.dataset);
@@ -85,15 +88,25 @@ public class TestSuite2 implements Command {
 			resultTimes.add(sec);
 		}
 		DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
-		log.info("Number of workers =  " + nummberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
-				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax());
+		String resultStr = "Number of workers =  " + nummberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
+				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax();
+		log.info(resultStr);
+		writeResult(resultStr);
+	}
+
+	private void writeResult(String resultStr) {
+		try(BufferedWriter bw = Files.newBufferedWriter(Paths.get("result-TestSuite2.txt"), StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+			bw.write(resultStr + "\n");
+		} catch (IOException e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 	public static void main(final String... args) {
 
 		TestSuite2.hosts = new LinkedList<>();
 		Iterator<String> argIter = Arrays.asList(args).iterator();
-		minHosts = Integer.parseInt(argIter.next());
+		count = Integer.parseInt(argIter.next());
 		minThreads = Integer.parseInt(argIter.next());
 		maxThreads = Integer.parseInt(argIter.next());
 		while(argIter.hasNext()) {
@@ -101,7 +114,6 @@ public class TestSuite2 implements Command {
 		}
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
-		ij.launch();
 		ij.command().run(TestSuite2.class, true);
 	}
 

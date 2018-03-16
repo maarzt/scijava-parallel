@@ -4,15 +4,12 @@ import java.io.Closeable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.stream.StreamSupport;
 
-import org.json.JSONObject;
 import org.scijava.command.Command;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.ParallelTask;
@@ -21,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
+	
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected Integer poolSize;
@@ -102,6 +100,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				this.type = type;
 			}
 
+			
+
 			@SuppressWarnings("unchecked")
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -119,40 +119,15 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			}
 			
 			private Object getValue(String propertyName, Class<?> returnType) {
-
-				String resultValue = (new JSONObject(executeResult)).getString(propertyName);
-				// download png image given by id of result
-				Object result;
-				if (returnType.equals(Path.class)) {
-					Path p = Paths.get("/tmp/output/" + resultValue.split(":")[1] + ".png");
-					worker.downloadFile(resultValue, p.toString(), "png");
-					worker.deleteResource(resultValue);
-					result = p;
-				} else {
-					result = resultValue;
-				}
-				return result;
+				return SimpleOstravaParadigm.this.getValue(worker, args, executeResult, propertyName, returnType);
 			}
 
 			// TODO: make conversion more flexible
 			private void setValue(String propertyName, Object object) {
-				if (object instanceof Path) {
-					Path path = (Path) object;
-					String ret = worker.uploadFile(path.toAbsolutePath().toString(), getFileType(path),
-							path.getFileName().toString());
-					// obtain uploaded file id
-					object = new org.json.JSONObject(ret).getString("id");
-				}
-				args.put(propertyName, object);
+				SimpleOstravaParadigm.this.setValue(worker, args, executeResult, propertyName, object);
 			}
 
-			// TODO: support another types
-			private String getFileType(Path path) {
-				if (!path.toString().endsWith(".png")) {
-					throw new UnsupportedOperationException("Only png files supported");
-				}
-				return "image/png";
-			}
+			
 
 			private String getPropertyName(String name) {
 				String text = name.substring(3);
@@ -166,5 +141,12 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	public void setPoolSize(Integer val) {
 		poolSize = val;
 	}
+
+	
+	abstract protected void setValue(ParallelWorker worker, Map<String, Object> args, String executeResult, String propertyName,
+			Object object);
+
+	abstract protected Object getValue(ParallelWorker worker, Map<String, Object> args, String executeResult,
+			String propertyName, Class<?> returnType); 
 
 }
