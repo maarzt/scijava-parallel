@@ -16,18 +16,6 @@ public class LocalPluginWorker implements ParallelWorker {
 	public LocalPluginWorker() {
 		new Context().inject(this);
 	}
-	
-	@Override
-	public String getHostName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getPort() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 	@Override
 	public String uploadFile(String filePath, String contentType, String name) {

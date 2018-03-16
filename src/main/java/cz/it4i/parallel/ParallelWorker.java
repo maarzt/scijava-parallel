@@ -5,9 +5,6 @@ import java.util.Map;
 import org.scijava.command.Command;
 
 public interface ParallelWorker {
-
-	public String getHostName();
-	public int getPort();
 	
 	public String uploadFile(String filePath, String contentType, String name);
 	public void downloadFile(String id, String filePath, String contentType);
