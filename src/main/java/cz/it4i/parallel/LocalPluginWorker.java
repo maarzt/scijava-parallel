@@ -1,26 +1,40 @@
 package cz.it4i.parallel;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import org.scijava.Context;
 import org.scijava.command.Command;
+import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
+import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Parameter;
+
+import io.scif.services.DatasetIOService;
+import net.imagej.Dataset;
 
 public class LocalPluginWorker implements ParallelWorker {
 
 	@Parameter
-	private CommandService service;
+	private CommandService commandService;
+	
+	@Parameter
+	private DatasetIOService datasetIOService;
+	
+	private final Map<String, String> cachedFilePaths = new HashMap<>();
 	
 	public LocalPluginWorker() {
-		new Context().inject(this);
+		// new Context().inject(this);
 	}
 
 	@Override
 	public String uploadFile(String filePath, String contentType, String name) {
-		// TODO Auto-generated method stub
-		return null;
+		String filePathIdentifier = UUID.randomUUID().toString();
+		cachedFilePaths.put(filePathIdentifier, filePath);
+		return filePathIdentifier;
 	}
 
 	@Override
@@ -37,7 +51,37 @@ public class LocalPluginWorker implements ParallelWorker {
 
 	@Override
 	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map) {
-		// commandService.getCommand(moduleId);
+		
+		// Create a new Object-typed input map
+		Map<String, Object> inputMap = new HashMap<>();
+		inputMap.putAll(map);
+		
+		// Retrieve command and replace GUIDs in inputs where applicable
+		CommandInfo commandInfo = commandService.getCommand(commandType);
+		if (commandInfo != null) {			
+			for (final ModuleItem<?> input : commandInfo.inputs()) {
+				if (Dataset.class.isAssignableFrom(input.getType())) {
+					final Object datasetIdentifier = inputMap.get(input.getName());
+					if (datasetIdentifier instanceof String) {
+						final String filepath = cachedFilePaths.get(datasetIdentifier);
+						try {
+							inputMap.replace(input.getName(), datasetIOService.open(filepath));
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
+			}
+			
+			Map<String, Object> outputs = null;
+			try {
+				outputs = commandService.run(commandInfo, true, map).get().getOutputs();	
+			} catch (InterruptedException | ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		return null;
 	}
 
