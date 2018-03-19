@@ -24,11 +24,14 @@ public class LocalPluginWorker implements ParallelWorker {
 	@Parameter
 	private DatasetIOService datasetIOService;
 	
-	private final Map<String, String> cachedFilePaths = new HashMap<>();
+	@Parameter
+	private Context context;
 	
 	public LocalPluginWorker() {
-		// new Context().inject(this);
-	}
+		new Context().inject(this);
+	}	
+	
+	private final Map<String, String> cachedFilePaths = new HashMap<>();
 
 	@Override
 	public String uploadFile(String filePath, String contentType, String name) {

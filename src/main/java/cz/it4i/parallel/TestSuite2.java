@@ -55,6 +55,11 @@ public class TestSuite2 implements Command {
 				doTest(paradigm, inputs, usedHosts.size(), numberOfThreads);
 			}
 		}
+		
+		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
+		localParadigm.setPoolSize(1);
+		localParadigm.init();
+		doTest(localParadigm, inputs, 0, 1);
 	}
 	
 	private Collection<P_Input> prepareInputs() {
