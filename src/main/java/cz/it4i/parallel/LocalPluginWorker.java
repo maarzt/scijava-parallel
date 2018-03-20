@@ -15,6 +15,7 @@ import org.scijava.plugin.Parameter;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 public class LocalPluginWorker implements ParallelWorker {
 
@@ -59,8 +60,9 @@ public class LocalPluginWorker implements ParallelWorker {
 		Map<String, Object> inputMap = new HashMap<>();
 		inputMap.putAll(map);
 		
+		// TODO: Remove this hack		
 		// Retrieve command and replace GUIDs in inputs where applicable
-		CommandInfo commandInfo = commandService.getCommand(commandType);
+		CommandInfo commandInfo = commandService.getCommand(RotateImageXY.class);
 		if (commandInfo != null) {			
 			for (final ModuleItem<?> input : commandInfo.inputs()) {
 				if (Dataset.class.isAssignableFrom(input.getType())) {

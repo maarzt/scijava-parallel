@@ -34,8 +34,7 @@ public class LocalParadigm extends SimpleOstravaParadigm {
 			Path path = (Path) object;
 			String ret = worker.uploadFile(path.toAbsolutePath().toString(), getFileType(path),
 					path.getFileName().toString());
-			// obtain uploaded file id
-			object = new org.json.JSONObject(ret.replace("[", "").replace("]", "")).getString("id");
+			object = ret;
 		}
 		args.put(propertyName, object);
 	}
