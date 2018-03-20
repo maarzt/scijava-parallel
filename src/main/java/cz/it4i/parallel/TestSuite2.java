@@ -78,9 +78,9 @@ public class TestSuite2 implements Command {
 		return inputs;
 	}
 
-	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int nummberOfWorkers,
+	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers,
 			int numberOfThreads) {
-		log.info("test for workers=" + nummberOfWorkers + ", numberOfThreads=" + numberOfThreads);
+		log.info("test for workers=" + numberOfWorkers + ", numberOfThreads=" + numberOfThreads);
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
@@ -99,7 +99,7 @@ public class TestSuite2 implements Command {
 			resultTimes.add(sec);
 		}
 		DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
-		String resultStr = "Number of workers =  " + nummberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
+		String resultStr = "Number of workers =  " + numberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
 				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax();
 		log.info(resultStr);
 		writeResult(resultStr);
