@@ -42,26 +42,27 @@ public class TestSuite2 implements Command {
 	@Override
 	public void run() {
 
-		ImageJServerParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
-		
 		Collection<P_Input> inputs = prepareInputs();
 		
+		ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class);	
 		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
 			List<String> usedHosts = hosts.subList(0, numberOfHosts);
-			paradigm.setHosts(usedHosts);
+			remoteParadigm.setHosts(usedHosts);			
 			for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
-				paradigm.setPoolSize(numberOfThreads);
-				paradigm.init();
-				doTest(paradigm, inputs, usedHosts.size(), numberOfThreads);
+				remoteParadigm.setPoolSize(numberOfThreads);
+				remoteParadigm.init();
+				doTest(remoteParadigm, inputs, usedHosts.size(), numberOfThreads);
 			}
 		}
 		
 		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
-		localParadigm.setPoolSize(1);
-		localParadigm.init();
-		doTest(localParadigm, inputs, 0, 1);
+		for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
+			localParadigm.setPoolSize(numberOfThreads);
+			localParadigm.init();
+			doTest(localParadigm, inputs, 1, numberOfThreads);
+		}
 	}
-	
+
 	private Collection<P_Input> prepareInputs() {
 		Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
@@ -80,33 +81,35 @@ public class TestSuite2 implements Command {
 
 	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers,
 			int numberOfThreads) {
-		log.info("test for workers=" + numberOfWorkers + ", numberOfThreads=" + numberOfThreads);
+		log.info("*** Testing paradigm: " + paradigm.getClass().getName() + " ***");
+		log.info("Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads);
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
 			paradigm.parallelLoop(inputs, (input, task) -> {
-				//log.info("processing angle=" + input.angle);
+				// log.info("processing angle=" + input.angle);
 				IRotateImageXY command = task.getRemoteModule(IRotateImageXY.class);
 				command.setAngle(input.angle);
 				command.setDataset(input.dataset);
 				command.run();
 				command.getDataset();
 				// log.info("result is " + result);
-
 			});
 			long time2 = System.currentTimeMillis();
 			double sec = (time2 - time) / 1000.;
 			resultTimes.add(sec);
 		}
 		DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
-		String resultStr = "Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads + ", count: "
-				+ dss.getCount() + ", avg: " + dss.getAverage() + ", min: " + dss.getMin() + ", max: " + dss.getMax();
+		String resultStr = "Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads
+				+ ", count: " + dss.getCount() + ", avg: " + dss.getAverage() + ", min: " + dss.getMin() + ", max: "
+				+ dss.getMax();
 		log.info(resultStr);
 		writeResult(resultStr);
 	}
 
 	private void writeResult(String resultStr) {
-		try(BufferedWriter bw = Files.newBufferedWriter(Paths.get("result-TestSuite2.txt"), StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get("result-TestSuite2.txt"), StandardOpenOption.APPEND,
+				StandardOpenOption.CREATE)) {
 			bw.write(resultStr + "\n");
 		} catch (IOException e) {
 			log.error(e.getMessage(), e);
@@ -120,7 +123,7 @@ public class TestSuite2 implements Command {
 		count = Integer.parseInt(argIter.next());
 		minThreads = Integer.parseInt(argIter.next());
 		maxThreads = Integer.parseInt(argIter.next());
-		while(argIter.hasNext()) {
+		while (argIter.hasNext()) {
 			TestSuite2.hosts.add(argIter.next());
 		}
 		// Launch ImageJ as usual
@@ -141,7 +144,7 @@ public class TestSuite2 implements Command {
 		public String toString() {
 			return "P_Input [dataset=" + dataset + ", angle=" + angle + "]";
 		}
-		
+
 	}
 
 }
