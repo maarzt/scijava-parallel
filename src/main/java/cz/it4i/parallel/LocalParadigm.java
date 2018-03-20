@@ -4,9 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.scijava.parallel.ParallelizationParadigm;
-
 import org.json.JSONObject;
+import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

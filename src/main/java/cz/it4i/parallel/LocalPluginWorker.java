@@ -78,7 +78,7 @@ public class LocalPluginWorker implements ParallelWorker {
 			
 			Map<String, Object> outputs = null;
 			try {
-				outputs = commandService.run(commandInfo, true, map).get().getOutputs();	
+				outputs = commandService.run(commandInfo, true, inputMap).get().getOutputs();	
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -90,12 +90,6 @@ public class LocalPluginWorker implements ParallelWorker {
 
 	@Override
 	public String getResult() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getCommandByName(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
