@@ -99,8 +99,8 @@ public class TestSuite2 implements Command {
 			resultTimes.add(sec);
 		}
 		DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
-		String resultStr = "Number of workers =  " + numberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
-				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax();
+		String resultStr = "Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads + ", count: "
+				+ dss.getCount() + ", avg: " + dss.getAverage() + ", min: " + dss.getMin() + ", max: " + dss.getMax();
 		log.info(resultStr);
 		writeResult(resultStr);
 	}
@@ -141,7 +141,6 @@ public class TestSuite2 implements Command {
 		public String toString() {
 			return "P_Input [dataset=" + dataset + ", angle=" + angle + "]";
 		}
-		
 		
 	}
 
