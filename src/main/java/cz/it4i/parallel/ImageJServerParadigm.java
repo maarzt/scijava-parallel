@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class ImageJServerParadigm extends SimpleOstravaParadigm {
 
 	// private static final String ADDRESS = "address";
-	private static final String PORT = "port";
+	private static final Integer PORT = 8080;
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.ImageJServerParadigm.class);
 
@@ -48,10 +48,9 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	@Override
 	protected void initWorkerPool() {
 		hosts.forEach(host -> workerPool
-				.addWorker(new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
+				.addWorker(new ImageJServerWorker(host, PORT)));
 
 	}
-
 	
 	@Override
 	protected void setValue(ParallelWorker worker,Map<String, Object> args, String executeResult, String propertyName, Object object) {
