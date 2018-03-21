@@ -69,9 +69,8 @@ public class LocalPluginWorker implements ParallelWorker {
 		Map<String, Object> inputMap = new HashMap<>();
 		inputMap.putAll(map);
 
-		// TODO: Remove this hack
 		// Retrieve command and replace GUIDs in inputs where applicable
-		CommandInfo commandInfo = commandService.getCommand(RotateImageXY.class);
+		CommandInfo commandInfo = commandService.getCommand(commandType);
 		if (commandInfo != null) {
 			for (final ModuleItem<?> input : commandInfo.inputs()) {
 				if (Dataset.class.isAssignableFrom(input.getType())) {
@@ -87,6 +86,7 @@ public class LocalPluginWorker implements ParallelWorker {
 				}
 			}
 
+			// Execute command and cache outputs
 			Map<String, Object> outputs = null;
 			try {
 				outputs = commandService.run(commandInfo, true, inputMap).get().getOutputs();
@@ -94,6 +94,8 @@ public class LocalPluginWorker implements ParallelWorker {
 				for (final Entry<String, Object> entry : outputs.entrySet()) {
 					String outputIdentifier = UUID.randomUUID().toString();
 					cachedOutputs.put(outputIdentifier, entry.getValue());
+					
+					// As this method is designed for single-output commands, return
 					return outputIdentifier;
 				}
 

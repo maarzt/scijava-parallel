@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
-	
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected Integer poolSize;
@@ -97,7 +96,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			private final Class<?> type;
 			
 			public P_InvocationHandler(Class<?> type) {
-				this.type = type;
+				this.type = resolveType(type);
 			}
 
 			@SuppressWarnings("unchecked")
@@ -129,7 +128,15 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				String text = name.substring(3);
 				return text.substring(0, 1).toLowerCase() + text.substring(1);
 			}
-
+			
+			private Class<?> resolveType(Class<?> inputType) {				
+				try {
+					return Class.forName(inputType.getPackage().getName() + "." + inputType.getSimpleName().substring(1));
+				} catch (ClassNotFoundException e) {
+					log.error(e.getMessage(), e);
+					return null;
+				}
+			}	
 		}
 
 	}

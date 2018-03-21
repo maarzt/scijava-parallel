@@ -106,7 +106,8 @@ public class ImageJServerWorker implements ParallelWorker {
 		
 		String json = null;
 
-		String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:" + getTypeName(commandType);
+		String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:" +
+				commandType.getCanonicalName();
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(postUrl);
 
@@ -239,8 +240,4 @@ public class ImageJServerWorker implements ParallelWorker {
 	public HashMap<String, String> getCommandArgumentsMap(String commandName) {
 		return getArgumentsMap("command:" + getCommandByName(commandName));
 	}
-	
-	private String getTypeName(Class<?> type) {
-		return type.getPackage().getName() + "." + type.getSimpleName().substring(1);
-	}	
 }
