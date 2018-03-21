@@ -8,11 +8,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.DoubleSummaryStatistics;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -32,7 +30,8 @@ public class TestSuite2 implements Command {
 	private static int minThreads = 1;
 	private static int maxThreads = 48;
 	private static final int minHosts = 1;
-
+	private static int step = 10;
+	
 	private static List<String> hosts;
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.TestSuite2.class);
 
@@ -68,7 +67,7 @@ public class TestSuite2 implements Command {
 		try {
 			file = Files.newDirectoryStream(Paths.get("/tmp/input/"), p -> p.toString().endsWith(".png")).iterator()
 					.next();
-			for (int angle = 1; angle < 360; angle++) {
+			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
 			}
 		} catch (IOException e) {
