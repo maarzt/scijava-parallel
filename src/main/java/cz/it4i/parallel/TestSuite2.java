@@ -93,6 +93,7 @@ public class TestSuite2 implements Command {
 			double sec = (time2 - time) / 1000.;
 			String resultStr = "Number of workers: " + numberOfWorkers + ", time: " + sec;
 			writeResult(resultStr);	
+			log.info("done iteration: " + resultStr);
 		}
 	}
 
