@@ -24,7 +24,9 @@ public class LocalParadigm extends SimpleOstravaParadigm {
 
 	@Override
 	protected void initWorkerPool() {
-		workerPool.addWorker(new LocalPluginWorker());
+		for (int i = 0; i < poolSize; i++) {
+			workerPool.addWorker(new LocalPluginWorker());
+		}
 	}
 
 	@Override

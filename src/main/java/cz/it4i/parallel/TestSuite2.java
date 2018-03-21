@@ -27,10 +27,10 @@ import net.imagej.plugins.commands.imglib.IRotateImageXY;
 public class TestSuite2 implements Command {
 
 	private static int count = 10;
-	private static final int minHosts = 1;
 	private static int step = 10;
 	
 	private static List<String> hosts;
+	private static int maxNumberOfLocalWorkers;
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.TestSuite2.class);
 
 	@Parameter
@@ -40,23 +40,24 @@ public class TestSuite2 implements Command {
 	public void run() {
 
 		Collection<P_Input> inputs = prepareInputs();
-		
-		ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class);	
-		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
-			List<String> usedHosts = hosts.subList(0, numberOfHosts);
-			remoteParadigm.setHosts(usedHosts);			
-			remoteParadigm.setPoolSize(usedHosts.size());
-			remoteParadigm.init();
-			doTest(remoteParadigm, inputs, usedHosts.size());
-		
+	
+		if(hosts.size() > 0) { 
+			ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class);	
+			for (int numberOfHosts = hosts.size(); 0 <numberOfHosts; numberOfHosts--) {
+				List<String> usedHosts = hosts.subList(0, numberOfHosts);
+				remoteParadigm.setHosts(usedHosts);			
+				remoteParadigm.setPoolSize(usedHosts.size());
+				remoteParadigm.init();
+				doTest(remoteParadigm, inputs, usedHosts.size());
+			}
+		} else {
+		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
+		for (int numberOfWorkers = maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--) {
+			localParadigm.setPoolSize(numberOfWorkers);
+			localParadigm.init();
+			doTest(localParadigm, inputs, numberOfWorkers);
 		}
-		
-//		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
-//		for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
-//			localParadigm.setPoolSize(numberOfThreads);
-//			localParadigm.init();
-//			doTest(localParadigm, inputs, 1, numberOfThreads);
-//		}
+		}
 	}
 
 	private Collection<P_Input> prepareInputs() {
@@ -118,12 +119,20 @@ public class TestSuite2 implements Command {
 	public static void main(final String... args) {
 
 		TestSuite2.hosts = new LinkedList<>();
-		Iterator<String> argIter = Arrays.asList(args).iterator();
-		count = Integer.parseInt(argIter.next());
-		step = Integer.parseInt(argIter.next());
-		
-		while(argIter.hasNext()) {
-			TestSuite2.hosts.add(argIter.next());
+		if (!args[0].equals("-l")) {
+			Iterator<String> argIter = Arrays.asList(args).iterator();
+			
+			count = Integer.parseInt(argIter.next());
+			step = Integer.parseInt(argIter.next());
+			while(argIter.hasNext()) {
+				TestSuite2.hosts.add(argIter.next());
+			}
+		} else {
+			Iterator<String> argIter = Arrays.asList(args).iterator();
+			argIter.next();
+			count = Integer.parseInt(argIter.next());
+			step = Integer.parseInt(argIter.next());
+			maxNumberOfLocalWorkers = Integer.parseInt(argIter.next());
 		}
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();

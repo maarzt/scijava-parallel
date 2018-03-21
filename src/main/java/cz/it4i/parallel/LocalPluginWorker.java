@@ -16,7 +16,6 @@ import org.scijava.plugin.Parameter;
 
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 public class LocalPluginWorker implements ParallelWorker {
 
