@@ -65,7 +65,7 @@ public class TestSuite2 implements Command {
 		Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
-			file = Files.newDirectoryStream(Paths.get("/tmp/input/"), p -> p.toString().endsWith(".png")).iterator()
+			file = Files.newDirectoryStream(Paths.get("/tmp/input/"), p -> p.toString().endsWith(".png") || p.toString().endsWith(".jpg")).iterator()
 					.next();
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
@@ -125,6 +125,8 @@ public class TestSuite2 implements Command {
 		count = Integer.parseInt(argIter.next());
 		minThreads = Integer.parseInt(argIter.next());
 		maxThreads = Integer.parseInt(argIter.next());
+		step = Integer.parseInt(argIter.next());
+		
 		while(argIter.hasNext()) {
 			TestSuite2.hosts.add(argIter.next());
 		}
