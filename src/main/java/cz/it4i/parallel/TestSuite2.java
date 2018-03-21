@@ -56,10 +56,10 @@ public class TestSuite2 implements Command {
 			}
 		}
 		
-		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
-		localParadigm.setPoolSize(1);
-		localParadigm.init();
-		doTest(localParadigm, inputs, 0, 1);
+//		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
+//		localParadigm.setPoolSize(1);
+//		localParadigm.init();
+//		doTest(localParadigm, inputs, 0, 1);
 	}
 	
 	private Collection<P_Input> prepareInputs() {
@@ -78,9 +78,9 @@ public class TestSuite2 implements Command {
 		return inputs;
 	}
 
-	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int nummberOfWorkers,
+	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers,
 			int numberOfThreads) {
-		log.info("test for workers=" + nummberOfWorkers + ", numberOfThreads=" + numberOfThreads);
+		log.info("test for workers=" + numberOfWorkers + ", numberOfThreads=" + numberOfThreads);
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
@@ -98,11 +98,17 @@ public class TestSuite2 implements Command {
 			double sec = (time2 - time) / 1000.;
 			resultTimes.add(sec);
 		}
-		DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
-		String resultStr = "Number of workers =  " + nummberOfWorkers + ", numberOfThreads " + numberOfThreads + ", count: "
-				+ dss.getCount() + ", avg:" + dss.getAverage() + ", min:" + dss.getMin() + ", max:" + dss.getMax();
-		log.info(resultStr);
-		writeResult(resultStr);
+		/*DoubleSummaryStatistics dss = resultTimes.stream().collect(Collectors.summarizingDouble(val -> val));
+		String resultStr = "Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads
+				+ ", count: " + dss.getCount() + ", avg: " + dss.getAverage() + ", min: " + dss.getMin() + ", max: "
+				+ dss.getMax();
+		log.info(resultStr);*/
+		resultTimes.stream().forEach(val-> {
+			String resultStr = "Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads
+					+ "time: " + val;
+			writeResult(resultStr);	
+		});
+		
 	}
 
 	private void writeResult(String resultStr) {
