@@ -27,8 +27,6 @@ import net.imagej.plugins.commands.imglib.IRotateImageXY;
 public class TestSuite2 implements Command {
 
 	private static int count = 10;
-	private static int minThreads = 1;
-	private static int maxThreads = 48;
 	private static final int minHosts = 1;
 	private static int step = 10;
 	
@@ -47,11 +45,10 @@ public class TestSuite2 implements Command {
 		for (int numberOfHosts = hosts.size(); minHosts <=numberOfHosts; numberOfHosts--) {
 			List<String> usedHosts = hosts.subList(0, numberOfHosts);
 			remoteParadigm.setHosts(usedHosts);			
-			for (int numberOfThreads = minThreads; numberOfThreads <= maxThreads; numberOfThreads++) {
-				remoteParadigm.setPoolSize(numberOfThreads);
-				remoteParadigm.init();
-				doTest(remoteParadigm, inputs, usedHosts.size(), numberOfThreads);
-			}
+			remoteParadigm.setPoolSize(usedHosts.size());
+			remoteParadigm.init();
+			doTest(remoteParadigm, inputs, usedHosts.size());
+		
 		}
 		
 //		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
@@ -78,9 +75,8 @@ public class TestSuite2 implements Command {
 		return inputs;
 	}
 
-	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers,
-			int numberOfThreads) {
-		log.info("Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads);
+	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers) {
+		log.info("Number of workers: " + numberOfWorkers );
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
 			long time = System.currentTimeMillis();
@@ -103,8 +99,7 @@ public class TestSuite2 implements Command {
 				+ dss.getMax();
 		log.info(resultStr);*/
 		resultTimes.stream().forEach(val-> {
-			String resultStr = "Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads
-					+ "time: " + val;
+			String resultStr = "Number of workers: " + numberOfWorkers + ", time: " + val;
 			writeResult(resultStr);	
 		});
 		
@@ -125,8 +120,6 @@ public class TestSuite2 implements Command {
 		TestSuite2.hosts = new LinkedList<>();
 		Iterator<String> argIter = Arrays.asList(args).iterator();
 		count = Integer.parseInt(argIter.next());
-		minThreads = Integer.parseInt(argIter.next());
-		maxThreads = Integer.parseInt(argIter.next());
 		step = Integer.parseInt(argIter.next());
 		
 		while(argIter.hasNext()) {
