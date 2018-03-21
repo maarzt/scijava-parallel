@@ -28,6 +28,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 
 	private static final String PORT = "port";
 
+
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.ImageJServerParadigm.class);
 
 	private final Collection<String> hosts = new LinkedList<>();
@@ -61,7 +62,6 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				.addWorker(new ImageJServerWorker(host, Integer.parseInt(connectionConfig.get(PORT)))));
 
 	}
-
 	
 	@Override
 	protected void setValue(ParallelWorker worker,Map<String, Object> args, String executeResult, String propertyName, Object object) {
@@ -81,7 +81,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	}
 	
 	@Override
-	protected Object getValue(ParallelWorker worker,Map<String, Object> args, String executeResult, String propertyName,Class<?> returnType) {
+	protected Object getValue(ParallelWorker worker, String executeResult, String propertyName, Class<?> returnType) {
 		String resultValue = (new JSONObject(executeResult)).getString(propertyName);
 		// download png image given by id of result
 		Object result;

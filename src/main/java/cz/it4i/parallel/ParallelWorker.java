@@ -14,7 +14,6 @@ public interface ParallelWorker {
 	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map);
 	public String getResult();
 	
-	public String getCommandByName(String name);
 	public HashMap<String, String> getCommandArgumentsMap(String commandName);
 	
 }
