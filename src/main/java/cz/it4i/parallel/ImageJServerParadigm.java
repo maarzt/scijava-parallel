@@ -66,7 +66,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	}
 	
 	@Override
-	protected Object getValue(ParallelWorker worker,Map<String, Object> args, String executeResult, String propertyName,Class<?> returnType) {
+	protected Object getValue(ParallelWorker worker, String executeResult, String propertyName, Class<?> returnType) {
 		String resultValue = (new JSONObject(executeResult)).getString(propertyName);
 		// download png image given by id of result
 		Object result;

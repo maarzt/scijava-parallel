@@ -117,7 +117,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			}
 			
 			private Object getValue(String propertyName, Class<?> returnType) {
-				return SimpleOstravaParadigm.this.getValue(worker, args, executeResult, propertyName, returnType);
+				return SimpleOstravaParadigm.this.getValue(worker, executeResult, propertyName, returnType);
 			}
 
 			// TODO: make conversion more flexible
@@ -142,7 +142,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	abstract protected void setValue(ParallelWorker worker, Map<String, Object> args, String executeResult, String propertyName,
 			Object object);
 
-	abstract protected Object getValue(ParallelWorker worker, Map<String, Object> args, String executeResult,
-			String propertyName, Class<?> returnType); 
+	abstract protected Object getValue(ParallelWorker worker, String executeResult,	String propertyName, Class<?> returnType); 
 
 }

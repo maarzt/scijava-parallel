@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ public class LocalParadigm extends SimpleOstravaParadigm {
 	protected void initWorkerPool() {
 		workerPool.addWorker(new LocalPluginWorker());
 	}
-	
+
 	@Override
 	protected void setValue(ParallelWorker worker,Map<String, Object> args, String executeResult, String propertyName, Object object) {
 		if (object instanceof Path) {
@@ -38,14 +37,14 @@ public class LocalParadigm extends SimpleOstravaParadigm {
 		}
 		args.put(propertyName, object);
 	}
-	
+
 	@Override
-	protected Object getValue(ParallelWorker worker,Map<String, Object> args, String executeResult, String propertyName,Class<?> returnType) {
-		String resultValue = (new JSONObject(executeResult)).getString(propertyName);
+	protected Object getValue(ParallelWorker worker, String executeResult, String propertyName, Class<?> returnType) {
+		String resultValue = executeResult.toString();
 		// download png image given by id of result
 		Object result;
 		if (returnType.equals(Path.class)) {
-			Path p = Paths.get("/tmp/output/" + resultValue.split(":")[1] + ".png");
+			Path p = Paths.get("/tmp/output/" + resultValue + ".png");
 			worker.downloadFile(resultValue, p.toString(), "png");
 			worker.deleteResource(resultValue);
 			result = p;
@@ -54,7 +53,7 @@ public class LocalParadigm extends SimpleOstravaParadigm {
 		}
 		return result;
 	}
-	
+
 	// TODO: support another types
 	private String getFileType(Path path) {
 		if (!path.toString().endsWith(".png")) {

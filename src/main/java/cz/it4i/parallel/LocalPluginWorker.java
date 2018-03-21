@@ -3,6 +3,7 @@ package cz.it4i.parallel;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -21,18 +22,19 @@ public class LocalPluginWorker implements ParallelWorker {
 
 	@Parameter
 	private CommandService commandService;
-	
+
 	@Parameter
 	private DatasetIOService datasetIOService;
-	
+
 	@Parameter
 	private Context context;
-	
+
 	public LocalPluginWorker() {
 		new Context().inject(this);
-	}	
-	
+	}
+
 	private final Map<String, String> cachedFilePaths = new HashMap<>();
+	private final Map<String, Object> cachedOutputs = new HashMap<>();
 
 	@Override
 	public String uploadFile(String filePath, String contentType, String name) {
@@ -43,27 +45,34 @@ public class LocalPluginWorker implements ParallelWorker {
 
 	@Override
 	public void downloadFile(String id, String filePath, String contentType) {
-		// TODO Auto-generated method stub
-
+		Object retrievedOutput = cachedOutputs.get(id);
+		if (Dataset.class.isAssignableFrom(retrievedOutput.getClass())) {
+			try {
+				datasetIOService.save((Dataset) retrievedOutput, filePath);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
 	public String deleteResource(String id) {
-		// TODO Auto-generated method stub
+		cachedOutputs.remove(id).toString();
 		return null;
 	}
 
 	@Override
 	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map) {
-		
+
 		// Create a new Object-typed input map
 		Map<String, Object> inputMap = new HashMap<>();
 		inputMap.putAll(map);
-		
-		// TODO: Remove this hack		
+
+		// TODO: Remove this hack
 		// Retrieve command and replace GUIDs in inputs where applicable
 		CommandInfo commandInfo = commandService.getCommand(RotateImageXY.class);
-		if (commandInfo != null) {			
+		if (commandInfo != null) {
 			for (final ModuleItem<?> input : commandInfo.inputs()) {
 				if (Dataset.class.isAssignableFrom(input.getType())) {
 					final Object datasetIdentifier = inputMap.get(input.getName());
@@ -77,16 +86,23 @@ public class LocalPluginWorker implements ParallelWorker {
 					}
 				}
 			}
-			
+
 			Map<String, Object> outputs = null;
 			try {
-				outputs = commandService.run(commandInfo, true, inputMap).get().getOutputs();	
+				outputs = commandService.run(commandInfo, true, inputMap).get().getOutputs();
+
+				for (final Entry<String, Object> entry : outputs.entrySet()) {
+					String outputIdentifier = UUID.randomUUID().toString();
+					cachedOutputs.put(outputIdentifier, entry.getValue());
+					return outputIdentifier;
+				}
+
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
+
 		return null;
 	}
 

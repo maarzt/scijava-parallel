@@ -81,7 +81,6 @@ public class TestSuite2 implements Command {
 
 	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers,
 			int numberOfThreads) {
-		log.info("*** Testing paradigm: " + paradigm.getClass().getName() + " ***");
 		log.info("Number of workers: " + numberOfWorkers + ", number of threads: " + numberOfThreads);
 		List<Double> resultTimes = new LinkedList<>();
 		for (int i = 0; i < count; i++) {
