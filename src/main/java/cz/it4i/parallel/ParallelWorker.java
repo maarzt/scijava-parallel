@@ -1,5 +1,4 @@
 package cz.it4i.parallel;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.scijava.command.Command;
@@ -14,6 +13,6 @@ public interface ParallelWorker {
 	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map);
 	public String getResult();
 	
-	public HashMap<String, String> getCommandArgumentsMap(String commandName);
+	public Map<String, String> getCommandArgumentsMap(String commandName);
 	
 }

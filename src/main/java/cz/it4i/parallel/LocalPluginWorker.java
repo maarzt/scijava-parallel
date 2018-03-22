@@ -120,7 +120,7 @@ public class LocalPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public HashMap<String, String> getCommandArgumentsMap(String commandName) {
+	public Map<String, String> getCommandArgumentsMap(String commandName) {
 		// TODO Auto-generated method stub
 		return null;
 	}

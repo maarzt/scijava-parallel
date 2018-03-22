@@ -237,7 +237,7 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	}
 	
-	public HashMap<String, String> getCommandArgumentsMap(String commandName) {
+	public Map<String, String> getCommandArgumentsMap(String commandName) {
 		return getArgumentsMap("command:" + getCommandByName(commandName));
 	}
 }
