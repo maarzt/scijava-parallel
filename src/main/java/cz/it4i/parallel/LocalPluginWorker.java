@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.scijava.Context;
@@ -32,7 +33,7 @@ public class LocalPluginWorker implements ParallelWorker {
 		new Context().inject(this);
 	}
 
-	private final Map<String, String> cachedFilePaths = new HashMap<>();
+	private final Map<String, String> cachedFilePaths = new WeakHashMap<>();
 	private final Map<String, Object> cachedOutputs = new HashMap<>();
 
 	@Override
@@ -57,7 +58,12 @@ public class LocalPluginWorker implements ParallelWorker {
 
 	@Override
 	public String deleteResource(String id) {
-		cachedOutputs.remove(id).toString();
+		Object output;
+		output = cachedOutputs.remove(id);
+		if (output instanceof Dataset) {
+			Dataset ds = (Dataset) output;
+			ds.decrementReferences();
+		}
 		return null;
 	}
 
