@@ -5,8 +5,12 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,13 +32,15 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	private final String hostName;
 	private final int port;
-	String result;
+	// private static final String ADDRESS = "address";
+	private final static Set<String> supportedImageTypes = Collections
+			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
 	ImageJServerWorker(String hostName, int port) {
 		this.hostName = hostName;
 		this.port = port;
 	}
-	
+
 	public String getHostName() {
 		return hostName;
 	}
@@ -43,16 +49,13 @@ public class ImageJServerWorker implements ParallelWorker {
 		return port;
 	}
 
-	public String getResult() {
-		return result;
-	}
-
-	public String uploadFile(String filePath, String contentType, String name) {
+	
+	public String uploadFile(String filePath, String name) {
 
 		String json = null;
 
 		HttpEntity entity = MultipartEntityBuilder.create()
-				.addBinaryBody("file", new File(filePath), ContentType.create(contentType), name).build();
+				.addBinaryBody("file", new File(filePath), ContentType.create(getContentType(filePath)), name).build();
 
 		HttpClient httpClient = HttpClientBuilder.create().build();
 
@@ -69,12 +72,11 @@ public class ImageJServerWorker implements ParallelWorker {
 			e.printStackTrace();
 		}
 
-		return json;
+		return new org.json.JSONObject(json).getString("id");
 	}
 
-	public void downloadFile(String id, String filePath, String contentType) {
-
-		String getUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + id + "/" + contentType;
+	public void downloadFile(String id, String filePath) {
+		String getUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + id + "/" + getImageType(filePath);
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		HttpGet get = new HttpGet(getUrl);
 
@@ -102,12 +104,12 @@ public class ImageJServerWorker implements ParallelWorker {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map) {
-		
+	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> map) {
+
 		String json = null;
 
-		String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:" +
-				commandType.getCanonicalName();
+		String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:"
+				+ commandType.getCanonicalName();
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(postUrl);
 
@@ -115,7 +117,7 @@ public class ImageJServerWorker implements ParallelWorker {
 
 			JSONObject reqJson = new JSONObject();
 
-			for(Map.Entry<String,?> pair: map.entrySet()) {
+			for (Map.Entry<String, ?> pair : map.entrySet()) {
 				reqJson.put(pair.getKey(), pair.getValue());
 			}
 
@@ -130,8 +132,12 @@ public class ImageJServerWorker implements ParallelWorker {
 			e.printStackTrace();
 		}
 
-		result = json;
-		return json;
+		Map<String,Object> result = new HashMap<>();
+		org.json.JSONObject jsonObj = new org.json.JSONObject(json);
+		for(String key: jsonObj.keySet()) {
+			result.put(key, jsonObj.get(key));
+		}
+		return result;
 	}
 
 	public String deleteResource(String id) {
@@ -236,8 +242,23 @@ public class ImageJServerWorker implements ParallelWorker {
 		return argumentMap;
 
 	}
-	
+
 	public Map<String, String> getCommandArgumentsMap(String commandName) {
 		return getArgumentsMap("command:" + getCommandByName(commandName));
+	}
+
+	// TODO: support another types
+	private String getContentType(String path) {
+		return "image/" + getImageType(path);
+	}
+	
+	private String getImageType(String path) {
+		for (String type : supportedImageTypes) {
+			if (path.endsWith("." + type)) {
+				return type;
+			}
+		}
+
+		throw new UnsupportedOperationException("Only " + supportedImageTypes + " image files supported");
 	}
 }

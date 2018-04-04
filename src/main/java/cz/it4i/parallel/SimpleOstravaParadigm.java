@@ -1,23 +1,29 @@
 package cz.it4i.parallel;
 
 import java.io.Closeable;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.stream.StreamSupport;
 
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.scijava.command.Command;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.ParallelTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.imagej.Dataset;
+
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
+	
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected Integer poolSize;
@@ -60,8 +66,13 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		private ParallelWorker worker;
 
-		private String executeResult;
-
+		private Map<Dataset,String> mockedData2id = new HashMap<>();
+		
+		private Map<String, Dataset> id2mockedData = new HashMap<>();
+		
+		private Map<String,String> id2Suffix = new HashMap<>();
+		
+		
 		public P_ParallelTask() {
 			try {
 				worker = workerPool.takeFreeWorker();
@@ -70,11 +81,10 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public <T> T getRemoteModule(Class<T> type) {
-			return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] { type },
-					new P_InvocationHandler(type));
+			return (T) Mockito.mock(type,
+					new P_InvocationHandler<T>(type));
 		}
 
 		@Override
@@ -82,18 +92,33 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			workerPool.addWorker(worker);
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
-		public <T> void run(Class<T> type, Map<String, Object> inputMap) {
-			if (Command.class.isAssignableFrom(type)) {
-				executeResult = worker.executeCommand((Class<Command>) type, inputMap);
-			}
+		public Dataset importData(Path path) {
+			String obj = worker.uploadFile(path.toAbsolutePath().toString(),
+					path.getFileName().toString());
+			Dataset result = Mockito.mock(Dataset.class, p->{throw new UnsupportedOperationException();});
+			mockedData2id.put(result, obj);
+			id2mockedData.put(obj, result);
+			id2Suffix.put(obj, path.toString().substring(path.toString().lastIndexOf('.')));
+			return result;
 		}
 
-		private class P_InvocationHandler implements InvocationHandler {
+		@Override
+		public Path exportData(Dataset ds) {
+			String id = mockedData2id.get(ds);
+			Path p = Paths.get("/tmp/output/" + id + id2Suffix.get(id));
+			worker.downloadFile(id, p.toString());
+			worker.deleteResource(id);
+			mockedData2id.remove(ds);
+			id2Suffix.remove(id);
+			return p;
+		}
+
+		private class P_InvocationHandler<T> implements Answer<T>{
 
 			private final Map<String, Object> args = new HashMap<>();
 			private final Class<?> type;
+			private Map<String,Object> executeResult;
 			
 			public P_InvocationHandler(Class<?> type) {
 				this.type = resolveType(type);
@@ -101,7 +126,10 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 			@SuppressWarnings("unchecked")
 			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			public T answer(InvocationOnMock invocation) throws Throwable {
+				
+				Method method = invocation.getMethod();
+				Object [] args = invocation.getArguments();
 				if (method.getName().startsWith("set")) {
 					setValue(getPropertyName(method.getName()), args[0]);
 				} else if (method.getName().equals("run")) {
@@ -110,18 +138,27 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 						executeResult = worker.executeCommand((Class<Command>) this.type, this.args);
 					}					
 				} else if (method.getName().startsWith("get")) {
-					return getValue(getPropertyName(method.getName()), method.getReturnType());
+					return (T) getValue(getPropertyName(method.getName()), method.getReturnType());
 				}
 				return null;
 			}
 			
 			private Object getValue(String propertyName, Class<?> returnType) {
-				return SimpleOstravaParadigm.this.getValue(worker, executeResult, propertyName, returnType);
+				Object result = executeResult.get(propertyName);
+				if (returnType.equals(Dataset.class)) {
+					String id = (String) result;
+					result = id2mockedData.get(id);
+				}
+				return result;
 			}
 
 			// TODO: make conversion more flexible
 			private void setValue(String propertyName, Object object) {
-				SimpleOstravaParadigm.this.setValue(worker, args, executeResult, propertyName, object);
+				if (object instanceof Dataset) {
+					Dataset ds = (Dataset) object;
+					object = mockedData2id.get(ds);
+				}
+				args.put(propertyName, object);
 			}
 
 			private String getPropertyName(String name) {
@@ -130,13 +167,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			}
 			
 			private Class<?> resolveType(Class<?> inputType) {				
-				try {
-					return Class.forName(inputType.getPackage().getName() + "." + inputType.getSimpleName().substring(1));
-				} catch (ClassNotFoundException e) {
-					log.error(e.getMessage(), e);
-					return null;
-				}
-			}	
+				return inputType;
+			}
 		}
 
 	}
@@ -144,11 +176,5 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	public void setPoolSize(Integer val) {
 		poolSize = val;
 	}
-
 	
-	abstract protected void setValue(ParallelWorker worker, Map<String, Object> args, String executeResult, String propertyName,
-			Object object);
-
-	abstract protected Object getValue(ParallelWorker worker, String executeResult,	String propertyName, Class<?> returnType); 
-
 }

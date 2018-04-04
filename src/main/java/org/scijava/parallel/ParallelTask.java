@@ -1,12 +1,15 @@
 package org.scijava.parallel;
 
-import java.util.Map;
+import java.nio.file.Path;
+
+import net.imagej.Dataset;
 
 public interface ParallelTask {
 
-	
 	<T> T getRemoteModule(Class<T> type);
 	
-	<T>void run(Class<T> type, Map<String, Object> inputMap);
+	Dataset importData(Path dataset);
+	
+	Path exportData(Dataset ds);
 
 }

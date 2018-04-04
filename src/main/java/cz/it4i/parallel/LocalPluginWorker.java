@@ -37,14 +37,14 @@ public class LocalPluginWorker implements ParallelWorker {
 	private final Map<String, Object> cachedOutputs = new HashMap<>();
 
 	@Override
-	public String uploadFile(String filePath, String contentType, String name) {
+	public String uploadFile(String filePath, String name) {
 		String filePathIdentifier = UUID.randomUUID().toString();
 		cachedFilePaths.put(filePathIdentifier, filePath);
 		return filePathIdentifier;
 	}
 
 	@Override
-	public void downloadFile(String id, String filePath, String contentType) {
+	public void downloadFile(String id, String filePath) {
 		Object retrievedOutput = cachedOutputs.get(id);
 		if (Dataset.class.isAssignableFrom(retrievedOutput.getClass())) {
 			try {
@@ -68,7 +68,7 @@ public class LocalPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public <T extends Command> String executeCommand(Class<T> commandType, Map<String, ?> map) {
+	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> map) {
 
 		// Create a new Object-typed input map
 		Map<String, Object> inputMap = new HashMap<>();
@@ -101,9 +101,9 @@ public class LocalPluginWorker implements ParallelWorker {
 					cachedOutputs.put(outputIdentifier, entry.getValue());
 					
 					// As this method is designed for single-output commands, return
-					return outputIdentifier;
+					
 				}
-
+				return outputs;
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -113,12 +113,7 @@ public class LocalPluginWorker implements ParallelWorker {
 		return null;
 	}
 
-	@Override
-	public String getResult() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	@Override
 	public Map<String, String> getCommandArgumentsMap(String commandName) {
 		// TODO Auto-generated method stub

@@ -20,8 +20,9 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imagej.plugins.commands.imglib.IRotateImageXY;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
 public class TestSuite2 implements Command {
@@ -82,12 +83,14 @@ public class TestSuite2 implements Command {
 			long time = System.currentTimeMillis();
 			paradigm.parallelLoop(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
-				IRotateImageXY command = task.getRemoteModule(IRotateImageXY.class);
-				command.setAngle(input.angle);
-				command.setDataset(input.dataset);
+				Dataset ds = task.importData(input.dataset);
+				RotateImageXY<?> command = task.getRemoteModule(RotateImageXY.class);
+				command.setAngle(Double.parseDouble(input.angle));
+				command.setDataset(ds);
 				command.run();
-				command.getDataset();
-				// log.info("result is " + result);
+				ds = command.getDataset();
+				Path result = task.exportData(ds);
+				log.info("result is " + result);
 			});
 			long time2 = System.currentTimeMillis();
 			double sec = (time2 - time) / 1000.;
