@@ -18,7 +18,7 @@ import org.scijava.plugin.Parameter;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 
-public class LocalPluginWorker implements ParallelWorker {
+public class LocalMultithreadedPluginWorker implements ParallelWorker {
 
 	@Parameter
 	private CommandService commandService;
@@ -29,7 +29,7 @@ public class LocalPluginWorker implements ParallelWorker {
 	@Parameter
 	private Context context;
 
-	public LocalPluginWorker() {
+	public LocalMultithreadedPluginWorker() {
 		new Context().inject(this);
 	}
 

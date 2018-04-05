@@ -51,7 +51,7 @@ public class TestSuite2 implements Command {
 				doTest(remoteParadigm, inputs, usedHosts.size());
 			}
 		} else {
-		LocalParadigm localParadigm = parallelService.getParadigm(LocalParadigm.class);
+		LocalMultithreadedParadigm localParadigm = parallelService.getParadigm(LocalMultithreadedParadigm.class);
 		for (int numberOfWorkers = maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--) {
 			localParadigm.setPoolSize(numberOfWorkers);
 			localParadigm.init();
