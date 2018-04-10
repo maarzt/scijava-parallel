@@ -25,11 +25,9 @@ import net.imagej.plugins.commands.imglib.RotateImageXY;
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
 public class Paper implements Command {
 
-	private static int count = 10;
 	private static int step = 10;
 	
 	private static List<String> hosts;
-	private static int maxNumberOfLocalWorkers;
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.Paper.class);
 
 	@Parameter
@@ -44,7 +42,7 @@ public class Paper implements Command {
 		paradigm.parallelLoop(inputs, (input, task) -> {
 			Dataset ds = task.importData(input.dataset);
 			RotateImageXY<?> command = task.getRemoteModule(RotateImageXY.class);
-			command.setAngle(Double.parseDouble(input.angle));
+			command.setAngle(input.angle);
 			command.setDataset(ds);
 			command.run();
 			ds = command.getDataset();
@@ -60,7 +58,7 @@ public class Paper implements Command {
 			file = Files.newDirectoryStream(Paths.get("/tmp/input/"), p -> p.toString().endsWith(".png") || p.toString().endsWith(".jpg")).iterator()
 					.next();
 			for (int angle = step; angle < 360; angle += step) {
-				inputs.add(new P_Input(file, String.valueOf(angle)));
+				inputs.add(new P_Input(file, angle));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -76,7 +74,7 @@ public class Paper implements Command {
 		if (!args[0].equals("-l")) {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
 			
-			count = Integer.parseInt(argIter.next());
+			
 			step = Integer.parseInt(argIter.next());
 			while(argIter.hasNext()) {
 				Paper.hosts.add(argIter.next());
@@ -84,9 +82,9 @@ public class Paper implements Command {
 		} else {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
 			argIter.next();
-			count = Integer.parseInt(argIter.next());
+			
 			step = Integer.parseInt(argIter.next());
-			maxNumberOfLocalWorkers = Integer.parseInt(argIter.next());
+			
 		}
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
@@ -95,9 +93,9 @@ public class Paper implements Command {
 
 	private static class P_Input {
 		Path dataset;
-		String angle;
+		double angle;
 
-		public P_Input(Path dataset, String angle) {
+		public P_Input(Path dataset, double angle) {
 			this.dataset = dataset;
 			this.angle = angle;
 		}
