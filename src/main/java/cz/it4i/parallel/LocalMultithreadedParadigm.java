@@ -6,9 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Plugin(type = ParallelizationParadigm.class)
-public class LocalParadigm extends SimpleOstravaParadigm {
+public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.LocalParadigm.class);
+	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.LocalMultithreadedParadigm.class);
 
 	@Override
 	public void init() {
@@ -21,7 +21,7 @@ public class LocalParadigm extends SimpleOstravaParadigm {
 	@Override
 	protected void initWorkerPool() {
 		for (int i = 0; i < poolSize; i++) {
-			workerPool.addWorker(new LocalPluginWorker());
+			workerPool.addWorker(new LocalMultithreadedPluginWorker());
 		}
 	}
 }
