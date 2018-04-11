@@ -89,8 +89,7 @@ public class TestSuite2 implements Command {
 				command.setDataset(ds);
 				command.run();
 				ds = command.getDataset();
-				Path result = task.exportData(ds);
-				log.info("result is " + result);
+				task.exportData(ds,constructOutputPath(input));
 			});
 			long time2 = System.currentTimeMillis();
 			double sec = (time2 - time) / 1000.;
@@ -98,6 +97,14 @@ public class TestSuite2 implements Command {
 			writeResult(resultStr);	
 			log.info("done iteration: " + resultStr);
 		}
+	}
+
+	private Path constructOutputPath(P_Input input) {
+		return Paths.get("/tmp/output/result_" + input.angle + suffix(input.dataset));
+	}
+
+	private String suffix(Path path) {
+		return path.toString().substring(path.toString().lastIndexOf('.'));
 	}
 
 	private void writeResult(String resultStr) {

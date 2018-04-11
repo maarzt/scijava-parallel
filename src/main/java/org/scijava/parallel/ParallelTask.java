@@ -10,6 +10,6 @@ public interface ParallelTask {
 	
 	Dataset importData(Path dataset);
 	
-	Path exportData(Dataset ds);
+	void exportData(Dataset ds, Path p);
 
 }

@@ -3,7 +3,6 @@ package cz.it4i.parallel;
 import java.io.Closeable;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
@@ -31,7 +30,9 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	protected WorkerPool workerPool;
 
 	private ForkJoinPool pool;
-
+	
+	//private Map<Dataset,String> id2Suffix = new HashMap<>();
+	
 	@Override
 	public void init() {
 		workerPool = new WorkerPool();
@@ -66,11 +67,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		private ParallelWorker worker;
 
-		private Map<Dataset,String> mockedData2id = new HashMap<>();
-		
-		private Map<String, Dataset> id2mockedData = new HashMap<>();
-		
-		private Map<String,String> id2Suffix = new HashMap<>();
 		
 		
 		public P_ParallelTask() {
@@ -94,24 +90,16 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public Dataset importData(Path path) {
-			String obj = worker.uploadFile(path.toAbsolutePath().toString(),
-					path.getFileName().toString());
-			Dataset result = Mockito.mock(Dataset.class, p->{throw new UnsupportedOperationException();});
-			mockedData2id.put(result, obj);
-			id2mockedData.put(obj, result);
-			id2Suffix.put(obj, path.toString().substring(path.toString().lastIndexOf('.')));
+			
+			Dataset result = worker.importData(path);
 			return result;
+
 		}
 
 		@Override
-		public Path exportData(Dataset ds) {
-			String id = mockedData2id.get(ds);
-			Path p = Paths.get("/tmp/output/" + id + id2Suffix.get(id));
-			worker.downloadFile(id, p.toString());
-			worker.deleteResource(id);
-			mockedData2id.remove(ds);
-			id2Suffix.remove(id);
-			return p;
+		public void exportData(Dataset ds, Path p) {
+			worker.exportData(ds, p);
+			worker.deleteData(ds);
 		}
 
 		private class P_InvocationHandler<T> implements Answer<T>{
@@ -144,20 +132,11 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			}
 			
 			private Object getValue(String propertyName, Class<?> returnType) {
-				Object result = executeResult.get(propertyName);
-				if (returnType.equals(Dataset.class)) {
-					String id = (String) result;
-					result = id2mockedData.get(id);
-				}
-				return result;
+				return executeResult.get(propertyName);
 			}
 
 			// TODO: make conversion more flexible
 			private void setValue(String propertyName, Object object) {
-				if (object instanceof Dataset) {
-					Dataset ds = (Dataset) object;
-					object = mockedData2id.get(ds);
-				}
 				args.put(propertyName, object);
 			}
 

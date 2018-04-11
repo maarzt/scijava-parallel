@@ -6,9 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -36,7 +38,7 @@ public class Paper implements Command {
 	@Override
 	public void run() {
 		Collection<P_Input> inputs = prepareInputs();
-		Collection<Path> outputs = new LinkedList<>();
+		Map<P_Input,Path> outputs = new HashMap<>();
 		ParallelizationParadigm paradigm = parallelService
 				.getParadigms().get(0);	
 		paradigm.parallelLoop(inputs, (input, task) -> {
@@ -46,11 +48,20 @@ public class Paper implements Command {
 			command.setDataset(ds);
 			command.run();
 			ds = command.getDataset();
-			Path result = task.exportData(ds);
-			outputs.add(result);
+			Path outputPath =  constructOutputPath(input);
+			task.exportData(ds, outputPath);
+			outputs.put(input,outputPath);
 		});
 	}
 
+	private Path constructOutputPath(P_Input input) {
+		return Paths.get("/tmp/output/result_" + input.angle + suffix(input.dataset));
+	}
+	
+	private String suffix(Path path) {
+		return path.toString().substring(path.toString().lastIndexOf('.'));
+	}
+	
 	private Collection<P_Input> prepareInputs() {
 		Collection<P_Input> inputs = new LinkedList<>();
 		Path file;

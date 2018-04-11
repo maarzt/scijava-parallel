@@ -1,17 +1,22 @@
 package cz.it4i.parallel;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.scijava.command.Command;
 
+import net.imagej.Dataset;
+
 public interface ParallelWorker {
 	
-	public String uploadFile(String filePath, String name);
-	public void downloadFile(String id, String filePath);
+	public Dataset importData(Path filePath);
 
-	public String deleteResource(String id);
+	public void exportData(Dataset dataset, Path filePath);
+
 	
 	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> map);
 	
 	public Map<String, String> getCommandArgumentsMap(String commandName);
+
+	public void deleteData(Dataset ds);
 	
 }
