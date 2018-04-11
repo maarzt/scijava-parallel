@@ -1,4 +1,4 @@
-package cz.it4i.parallel;
+package test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,12 +25,12 @@ import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
-public class Paper implements Command {
+public class Cisim2018PaperSnippet implements Command {
 
 	private static int step = 10;
 	
 	private static List<String> hosts;
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.Paper.class);
+	public static final Logger log = LoggerFactory.getLogger(test.Cisim2018PaperSnippet.class);
 
 	@Parameter
 	ParallelService parallelService;
@@ -81,14 +81,14 @@ public class Paper implements Command {
 	
 	public static void main(final String... args) {
 
-		Paper.hosts = new LinkedList<>();
+		Cisim2018PaperSnippet.hosts = new LinkedList<>();
 		if (!args[0].equals("-l")) {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
 			
 			
 			step = Integer.parseInt(argIter.next());
 			while(argIter.hasNext()) {
-				Paper.hosts.add(argIter.next());
+				Cisim2018PaperSnippet.hosts.add(argIter.next());
 			}
 		} else {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
@@ -99,7 +99,7 @@ public class Paper implements Command {
 		}
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
-		ij.command().run(Paper.class, true);
+		ij.command().run(Cisim2018PaperSnippet.class, true);
 	}
 
 	private static class P_Input {

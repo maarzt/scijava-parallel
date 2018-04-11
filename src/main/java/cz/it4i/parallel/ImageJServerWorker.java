@@ -210,9 +210,9 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	}
 
-	public HashMap<String, String> getArgumentsMap(String commandName) {
+	public Map<String, String> getArgumentsMap(String commandName) {
 
-		HashMap<String, String> argumentMap = new HashMap<String, String>();
+		Map<String, String> argumentMap = new HashMap<String, String>();
 
 		String getUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + commandName;
 		HttpClient httpClient = HttpClientBuilder.create().build();

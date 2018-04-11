@@ -1,4 +1,4 @@
-package cz.it4i.parallel;
+package test;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,19 +20,21 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.parallel.ImageJServerParadigm;
+import cz.it4i.parallel.LocalMultithreadedParadigm;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
-public class TestSuite2 implements Command {
+public class DemonstrateParadigm implements Command {
 
 	private static int count = 10;
 	private static int step = 10;
 	
 	private static List<String> hosts;
 	private static int maxNumberOfLocalWorkers;
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.TestSuite2.class);
+	public static final Logger log = LoggerFactory.getLogger(DemonstrateParadigm.class);
 
 	@Parameter
 	ParallelService parallelService;
@@ -118,14 +120,14 @@ public class TestSuite2 implements Command {
 
 	public static void main(final String... args) {
 
-		TestSuite2.hosts = new LinkedList<>();
+		DemonstrateParadigm.hosts = new LinkedList<>();
 		if (!args[0].equals("-l")) {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
 			
 			count = Integer.parseInt(argIter.next());
 			step = Integer.parseInt(argIter.next());
 			while(argIter.hasNext()) {
-				TestSuite2.hosts.add(argIter.next());
+				DemonstrateParadigm.hosts.add(argIter.next());
 			}
 		} else {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
@@ -136,7 +138,7 @@ public class TestSuite2 implements Command {
 		}
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
-		ij.command().run(TestSuite2.class, true);
+		ij.command().run(DemonstrateParadigm.class, true);
 	}
 
 	private static class P_Input {
