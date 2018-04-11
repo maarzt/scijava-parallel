@@ -43,7 +43,6 @@ public class ImageJServerWorker implements ParallelWorker {
 	private Map<String, Dataset> id2mockedData = new HashMap<>();
 	
 	
-	// private static final String ADDRESS = "address";
 	private final static Set<String> supportedImageTypes = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
@@ -320,7 +319,7 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 		return value;
 	}
-	//entry->new P_Entry(entry,wrapValue(value))
+	
 	private static class P_Entry implements Map.Entry<String, Object> {
 
 		private final String key;
@@ -343,8 +342,7 @@ public class ImageJServerWorker implements ParallelWorker {
 
 		@Override
 		public Object setValue(Object value) {
-			// TODO Auto-generated method stub
-			return null;
+			throw new UnsupportedOperationException();
 		}
 		
 	}

@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import net.imagej.Dataset;
 
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
-
 	
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
@@ -30,8 +29,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	protected WorkerPool workerPool;
 
 	private ForkJoinPool pool;
-	
-	//private Map<Dataset,String> id2Suffix = new HashMap<>();
 	
 	@Override
 	public void init() {
@@ -44,15 +41,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		
 	}
 
-	abstract protected void initWorkerPool();
-
-	@Override
-	public void submit() {
-		// TODO Auto-generated method stub, consider moving to
-		// AbstractParallelizationParadigm
-
-	}
-
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
 		pool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(
@@ -63,11 +51,15 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		)).join();
 	}
 
+	public void setPoolSize(Integer val) {
+		poolSize = val;
+	}
+
+	abstract protected void initWorkerPool();
+
 	private class P_ParallelTask implements ParallelTask, Closeable {
 
 		private ParallelWorker worker;
-
-		
 		
 		public P_ParallelTask() {
 			try {
@@ -90,10 +82,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public Dataset importData(Path path) {
-			
 			Dataset result = worker.importData(path);
 			return result;
-
 		}
 
 		@Override
@@ -135,7 +125,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				return executeResult.get(propertyName);
 			}
 
-			// TODO: make conversion more flexible
 			private void setValue(String propertyName, Object object) {
 				args.put(propertyName, object);
 			}
@@ -149,11 +138,5 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				return inputType;
 			}
 		}
-
 	}
-
-	public void setPoolSize(Integer val) {
-		poolSize = val;
-	}
-	
 }
