@@ -13,10 +13,8 @@ import org.slf4j.LoggerFactory;
 
 @Plugin(type = ParallelizationParadigm.class)
 public class ImageJServerParadigm extends SimpleOstravaParadigm {
-
 	
 	private static final String PORT = "port";
-
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.ImageJServerParadigm.class);
 
