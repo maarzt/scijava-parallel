@@ -61,7 +61,6 @@
 	<!-- Add usual stuff as per SciJava projects -->
 
 	<properties>
-		<main-class>cz.it4i.parallel.TestSuite2</main-class>
 		<package-name>org.scijava.parallel</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>SciJava developers.</license.copyrightOwners>

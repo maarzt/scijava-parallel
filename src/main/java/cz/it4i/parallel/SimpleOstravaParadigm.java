@@ -21,34 +21,33 @@ import org.slf4j.LoggerFactory;
 import net.imagej.Dataset;
 
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
-	
+
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected Integer poolSize;
 
 	protected WorkerPool workerPool;
 
-	private ForkJoinPool pool;
-	
+	private ForkJoinPool forkJoinPool;
+
 	@Override
 	public void init() {
 		workerPool = new WorkerPool();
 		initWorkerPool();
-		if (pool != null) {
-			pool.shutdown();
+		if (forkJoinPool != null) {
+			forkJoinPool.shutdown();
 		}
-		pool = new ForkJoinPool(poolSize);
-		
+		forkJoinPool = new ForkJoinPool(poolSize);
+
 	}
 
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		pool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(
-				val -> {
+		forkJoinPool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(val -> {
 			try (P_ParallelTask task = new P_ParallelTask()) {
 				consumer.accept(val, task);
-			}}
-		)).join();
+			}
+		})).join();
 	}
 
 	public void setPoolSize(Integer val) {
@@ -60,7 +59,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	private class P_ParallelTask implements ParallelTask, Closeable {
 
 		private ParallelWorker worker;
-		
+
 		public P_ParallelTask() {
 			try {
 				worker = workerPool.takeFreeWorker();
@@ -71,8 +70,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public <T> T getRemoteModule(Class<T> type) {
-			return (T) Mockito.mock(type,
-					new P_InvocationHandler<T>(type));
+			return (T) Mockito.mock(type, new P_InvocationHandler<T>(type));
 		}
 
 		@Override
@@ -92,12 +90,12 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			worker.deleteData(ds);
 		}
 
-		private class P_InvocationHandler<T> implements Answer<T>{
+		private class P_InvocationHandler<T> implements Answer<T> {
 
 			private final Map<String, Object> args = new HashMap<>();
 			private final Class<?> type;
-			private Map<String,Object> executeResult;
-			
+			private Map<String, Object> executeResult;
+
 			public P_InvocationHandler(Class<?> type) {
 				this.type = resolveType(type);
 			}
@@ -105,22 +103,22 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			@SuppressWarnings("unchecked")
 			@Override
 			public T answer(InvocationOnMock invocation) throws Throwable {
-				
+
 				Method method = invocation.getMethod();
-				Object [] args = invocation.getArguments();
+				Object[] args = invocation.getArguments();
 				if (method.getName().startsWith("set")) {
 					setValue(getPropertyName(method.getName()), args[0]);
 				} else if (method.getName().equals("run")) {
 					// execute worker
 					if (Command.class.isAssignableFrom(type)) {
 						executeResult = worker.executeCommand((Class<Command>) this.type, this.args);
-					}					
+					}
 				} else if (method.getName().startsWith("get")) {
 					return (T) getValue(getPropertyName(method.getName()), method.getReturnType());
 				}
 				return null;
 			}
-			
+
 			private Object getValue(String propertyName, Class<?> returnType) {
 				return executeResult.get(propertyName);
 			}
@@ -133,8 +131,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				String text = name.substring(3);
 				return text.substring(0, 1).toLowerCase() + text.substring(1);
 			}
-			
-			private Class<?> resolveType(Class<?> inputType) {				
+
+			private Class<?> resolveType(Class<?> inputType) {
 				return inputType;
 			}
 		}
