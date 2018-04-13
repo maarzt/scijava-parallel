@@ -29,7 +29,7 @@ import net.imagej.plugins.commands.imglib.RotateImageXY;
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParallelServiceTestSuite")
 public class DemonstrateParadigm implements Command {
 
-	private static int count = 10;
+	private static int repetitionCount = 10;
 	private static int step = 10;
 	
 	private static List<String> hosts;
@@ -81,7 +81,7 @@ public class DemonstrateParadigm implements Command {
 
 	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers) {
 		log.info("Number of workers: " + numberOfWorkers );
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < repetitionCount; i++) {
 			long time = System.currentTimeMillis();
 			paradigm.parallelLoop(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
@@ -124,7 +124,7 @@ public class DemonstrateParadigm implements Command {
 		if (!args[0].equals("-l")) {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
 			
-			count = Integer.parseInt(argIter.next());
+			repetitionCount = Integer.parseInt(argIter.next());
 			step = Integer.parseInt(argIter.next());
 			while(argIter.hasNext()) {
 				DemonstrateParadigm.hosts.add(argIter.next());
@@ -132,7 +132,7 @@ public class DemonstrateParadigm implements Command {
 		} else {
 			Iterator<String> argIter = Arrays.asList(args).iterator();
 			argIter.next();
-			count = Integer.parseInt(argIter.next());
+			repetitionCount = Integer.parseInt(argIter.next());
 			step = Integer.parseInt(argIter.next());
 			maxNumberOfLocalWorkers = Integer.parseInt(argIter.next());
 		}
