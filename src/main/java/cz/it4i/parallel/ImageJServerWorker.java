@@ -29,6 +29,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.scijava.command.Command;
 
 import com.google.common.base.Function;
@@ -85,7 +86,7 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 
 		String obj = new org.json.JSONObject(json).getString("id");
-		Dataset result = Mockito.mock(Dataset.class, p->{throw new UnsupportedOperationException();});
+		Dataset result = Mockito.mock(Dataset.class,(Answer<Dataset>) p->{throw new UnsupportedOperationException();});
 		mockedData2id.put(result, obj);
 		id2mockedData.put(obj, result);
 		return result;

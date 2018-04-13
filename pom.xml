@@ -131,22 +131,13 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.googlecode.mobilityrpc/mobility-rpc -->
-		<dependency>
-		    <groupId>com.googlecode.mobilityrpc</groupId>
-		    <artifactId>mobility-rpc</artifactId>
-		    <version>1.2.1</version>
-		</dependency>
+		
 		<dependency>
 			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy -->
-		<dependency>
-		    <groupId>net.bytebuddy</groupId>
-		    <artifactId>byte-buddy</artifactId>
-		    <version>1.8.3</version>
-		</dependency>
+		
 	</dependencies>
 </project>

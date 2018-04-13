@@ -33,5 +33,5 @@ fi
 
 cd $PROJECT_DIRECTORY
 MAVEN_OPTS=-Xmx2g
-mvn exec:java -Dexec.mainClass="cz.it4i.parallel.TestSuite2" -Dexec.args="$COUNTS $STEP $HOSTS"
+mvn test exec:java -Dexec.mainClass="test.DemonstrateParadigm" -Dexec.classpathScope=test -Dexec.args="$COUNTS $STEP $HOSTS"
 

@@ -25,5 +25,4 @@ if [ ! -e /tmp/input/$NAME_OF_IMAGE ] ; then
 fi
 cd $PROJECT_DIRECTORY
 MAVEN_OPTS=-Xmx20g
-mvn exec:java -Dexec.mainClass="cz.it4i.parallel.TestSuite2" -Dexec.args="-l $COUNTS $STEP $NUMBER_OF_THREADS"
-
+mvn test exec:java -Dexec.mainClass="test.DemonstrateParadigm" -Dexec.args="-l $COUNTS $STEP $NUMBER_OF_THREADS" -Dexec.classpathScope=test
