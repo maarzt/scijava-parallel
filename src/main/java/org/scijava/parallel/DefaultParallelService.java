@@ -13,11 +13,7 @@ public class DefaultParallelService extends AbstractSingletonService<Paralleliza
 		implements ParallelService {
 	
 	@Override
-	public void initialize() {
-		
-		// Perform parallelization paradigms initialization (retrieve persistent values etc.)
-		getInstances().forEach(ParallelizationParadigm::init);
-		
+	public void initialize() {	
 		super.initialize();		
 	}	
 }

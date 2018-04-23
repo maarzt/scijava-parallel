@@ -14,7 +14,7 @@ import org.scijava.service.SciJavaService;
  * @author TODO: Add authors
  */
 public interface ParallelService extends SingletonService<ParallelizationParadigm>, SciJavaService {
-	
+
 	/**
 	 * Gets all available parallelization paradigms
 	 * 
@@ -24,7 +24,21 @@ public interface ParallelService extends SingletonService<ParallelizationParadig
 	default List<ParallelizationParadigm> getParadigms() {
 		return getInstances().stream().collect(Collectors.toList());
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	default <T extends ParallelizationParadigm> T getParadigm(
+			Class<T> desiredParalellizationParadigm) {
+		List<ParallelizationParadigm> matchingParadigms = getInstances().stream()
+				.filter(paradigm -> paradigm.getClass().equals(desiredParalellizationParadigm))
+				.collect(Collectors.toList());
+		
+		if (matchingParadigms.size() == 1) {
+			return (T) matchingParadigms.get(0);
+		}
+		
+		return null;
+	}
+
 	@Override
 	default Class<ParallelizationParadigm> getPluginType() {
 		return ParallelizationParadigm.class;
