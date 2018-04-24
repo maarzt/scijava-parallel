@@ -4,7 +4,7 @@ import java.util.concurrent.BlockingQueue;
 
 public class WorkerPool
 {
-	BlockingQueue<ParallelWorker> availableWorkers;
+	private BlockingQueue<ParallelWorker> availableWorkers;
 	
 	
 	public WorkerPool() {

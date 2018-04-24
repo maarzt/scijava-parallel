@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# script starting ImageJ server
 PROJECT_DIRECTORY= #a path to directory with imagej-server project
 #environment settings needed for ImageJ server run
 EBROOTJAVA=/apps/all/Java/1.8.0_144
