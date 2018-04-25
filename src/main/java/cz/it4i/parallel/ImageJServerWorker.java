@@ -297,7 +297,8 @@ public class ImageJServerWorker implements ParallelWorker {
 
 
 	private Map<String, Object> convertMap(Map<String, ?> map, Function<Object, Object> convertor) {
-		return map.entrySet().stream().map(entry -> new P_Entry(entry.getKey(), convertor.apply(entry.getValue())))
+		return map.entrySet().stream().filter(entry -> entry.getValue() != null)
+				.map(entry -> new P_Entry(entry.getKey(), convertor.apply(entry.getValue())))
 				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 	}
 
