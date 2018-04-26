@@ -8,6 +8,7 @@ import org.scijava.command.Command;
 import net.imagej.Dataset;
 
 public interface ParallelWorker {
+
 	public Dataset importData(Path filePath);
 
 	public void exportData(Dataset dataset, Path filePath);

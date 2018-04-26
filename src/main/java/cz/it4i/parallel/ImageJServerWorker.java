@@ -43,7 +43,6 @@ public class ImageJServerWorker implements ParallelWorker {
 	private Map<Dataset,String> mockedData2id = new HashMap<>();
 	private Map<String, Dataset> id2mockedData = new HashMap<>();
 	
-	
 	private final static Set<String> supportedImageTypes = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
@@ -182,8 +181,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		return unwrapOutputValues(result);
 	}
 
-	
-
 	public String getCommandByName(String name) {
 
 		HashMap<String, String> commandMap = new HashMap<String, String>();
@@ -207,7 +204,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 
 		return commandMap.get(name);
-
 	}
 
 	public Map<String, String> getArgumentsMap(String commandName) {
@@ -238,7 +234,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 
 		return argumentMap;
-
 	}
 
 	public Map<String, String> getCommandArgumentsMap(String commandName) {

@@ -30,7 +30,6 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 		new Context().inject(this);
 	}
 
-	
 	@Override
 	public Dataset importData(Path filePath) {
 		try {
@@ -53,6 +52,7 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	public void deleteData(Dataset ds) {
 		ds.decrementReferences();
 	}
+
 	@Override
 	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> map) {
 
@@ -77,11 +77,9 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 		return null;
 	}
 
-	
 	@Override
 	public Map<String, String> getCommandArgumentsMap(String commandName) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }
