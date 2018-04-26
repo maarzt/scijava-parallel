@@ -33,7 +33,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	protected WorkerPool workerPool;
 
 	private ForkJoinPool forkJoinPool;
-	
+
 	@Parameter
 	CommandService commandService;
 
@@ -77,9 +77,9 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public <T extends Command> T getRemoteCommand(Class<T> type) {
-			
+
 			T mockedCommand = mock(type, CALLS_REAL_METHODS);
-			
+
 			doAnswer(new Answer<T>() {
 				@Override
 				public T answer(InvocationOnMock invocation) throws Throwable {
@@ -89,7 +89,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 					return null;
 				}
 			}).when(mockedCommand).run();
-			
+
 			return mockedCommand;
 		}
 
@@ -100,8 +100,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public Dataset importData(Path path) {
-			Dataset result = worker.importData(path);
-			return result;
+			return worker.importData(path);
 		}
 
 		@Override
