@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.scijava.Context;
 import org.scijava.command.Command;
-import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 
@@ -60,26 +59,13 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 		Map<String, Object> inputMap = new HashMap<>();
 		inputMap.putAll(map);
 
-		// Retrieve command and replace GUIDs in inputs where applicable
-		CommandInfo commandInfo = commandService.getCommand(commandType);
-		if (commandInfo != null) {
-			// Execute command and cache outputs
-			Map<String, Object> outputs = null;
-			try {
-				outputs = commandService.run(commandInfo, true, inputMap).get().getOutputs();
-				return outputs;
-			} catch (InterruptedException | ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		// Execute command and return outputs
+		try {
+			return commandService.run(commandType, true, inputMap).get().getOutputs();
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
 		}
 
-		return null;
-	}
-
-	@Override
-	public Map<String, String> getCommandArgumentsMap(String commandName) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }
