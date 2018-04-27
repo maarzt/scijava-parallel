@@ -45,7 +45,6 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			forkJoinPool.shutdown();
 		}
 		forkJoinPool = new ForkJoinPool(poolSize);
-
 	}
 
 	@Override

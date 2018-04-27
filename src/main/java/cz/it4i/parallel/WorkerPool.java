@@ -5,7 +5,7 @@ import java.util.concurrent.BlockingQueue;
 
 public class WorkerPool {
 
-	private BlockingQueue<ParallelWorker> availableWorkers;
+	private final BlockingQueue<ParallelWorker> availableWorkers;
 
 	public WorkerPool() {
 		availableWorkers = new ArrayBlockingQueue<ParallelWorker>(1024);

@@ -16,6 +16,4 @@ public interface ParallelWorker {
 	public void deleteData(Dataset ds);
 
 	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> map);
-
-	public Map<String, String> getCommandArgumentsMap(String commandName);
 }
