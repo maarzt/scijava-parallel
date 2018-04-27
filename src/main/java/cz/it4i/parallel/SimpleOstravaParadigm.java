@@ -1,6 +1,5 @@
 package cz.it4i.parallel;
 
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -76,19 +75,18 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public <T extends Command> T getRemoteCommand(Class<T> type) {
-
-			T mockedCommand = mock(type, CALLS_REAL_METHODS);
-
-			doAnswer(new Answer<T>() {
+			T command = commandService.create(type);
+			T mockedCommand = mock(type,
+					(Answer<Object>) invocation -> invocation.getMethod().invoke(command, invocation.getArguments()));
+			doAnswer(new Answer<Void>() {
 				@Override
-				public T answer(InvocationOnMock invocation) throws Throwable {
+				public Void answer(InvocationOnMock invocation) throws Throwable {
 					CommandInfo cInfo = commandService.getCommand(type);
-					CommandModule cModule = new CommandModule(cInfo, mockedCommand);
+					CommandModule cModule = new CommandModule(cInfo, command);
 					cModule.setOutputs(worker.executeCommand(type, cModule.getInputs()));
 					return null;
 				}
 			}).when(mockedCommand).run();
-
 			return mockedCommand;
 		}
 
