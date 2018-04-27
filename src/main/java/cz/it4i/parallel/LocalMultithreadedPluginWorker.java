@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 
 import io.scif.services.DatasetIOService;
@@ -21,6 +22,9 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 
 	@Parameter
 	private DatasetIOService datasetIOService;
+
+	@Parameter
+	private LogService logService;
 
 	@Parameter
 	private Context context;
@@ -63,7 +67,7 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 		try {
 			return commandService.run(commandType, true, inputMap).get().getOutputs();
 		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+			logService.error(e.getMessage(), e);
 		}
 
 		return null;

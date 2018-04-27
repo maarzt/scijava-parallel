@@ -35,7 +35,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	private ForkJoinPool forkJoinPool;
 
 	@Parameter
-	CommandService commandService;
+	private CommandService commandService;
 
 	@Override
 	public void init() {
