@@ -30,11 +30,15 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+import org.scijava.Context;
 import org.scijava.command.Command;
+import org.scijava.plugin.SciJavaPlugin;
 
 import com.google.common.base.Function;
 
 import net.imagej.Dataset;
+
+import static org.mockito.Mockito.doAnswer;
 
 public class ImageJServerWorker implements ParallelWorker {
 
@@ -42,7 +46,6 @@ public class ImageJServerWorker implements ParallelWorker {
 	private final int port;
 	private Map<Dataset,String> mockedData2id = new HashMap<>();
 	private Map<String, Dataset> id2mockedData = new HashMap<>();
-	
 	
 	private final static Set<String> supportedImageTypes = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
@@ -86,7 +89,11 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 
 		String obj = new org.json.JSONObject(json).getString("id");
-		Dataset result = Mockito.mock(Dataset.class,(Answer<Dataset>) p->{throw new UnsupportedOperationException();});
+		Dataset result = Mockito.mock(Dataset.class, (Answer<Dataset>) p -> {
+			throw new UnsupportedOperationException();
+		});
+		doAnswer(p -> "Dataset(mocked)[id = " + obj).when(result).toString();
+		
 		mockedData2id.put(result, obj);
 		id2mockedData.put(obj, result);
 		return result;
@@ -182,8 +189,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		return unwrapOutputValues(result);
 	}
 
-	
-
 	public String getCommandByName(String name) {
 
 		HashMap<String, String> commandMap = new HashMap<String, String>();
@@ -207,7 +212,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 
 		return commandMap.get(name);
-
 	}
 
 	public Map<String, String> getArgumentsMap(String commandName) {
@@ -238,7 +242,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 
 		return argumentMap;
-
 	}
 
 	public Map<String, String> getCommandArgumentsMap(String commandName) {
@@ -297,7 +300,8 @@ public class ImageJServerWorker implements ParallelWorker {
 
 
 	private Map<String, Object> convertMap(Map<String, ?> map, Function<Object, Object> convertor) {
-		return map.entrySet().stream().map(entry -> new P_Entry(entry.getKey(), convertor.apply(entry.getValue())))
+		return map.entrySet().stream().filter(ImageJServerWorker::filterResolvableEntries)
+				.map(entry -> new P_Entry(entry.getKey(), convertor.apply(entry.getValue())))
 				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 	}
 
@@ -319,6 +323,14 @@ public class ImageJServerWorker implements ParallelWorker {
 			value = obj;
 		}
 		return value;
+	}
+	
+	/**
+	 * Filters out entries which are resolvable from the SciJava Context
+	 */
+	private static boolean filterResolvableEntries(Map.Entry<String, ?> entry) {
+		return entry.getValue() != null && !(entry.getValue() instanceof SciJavaPlugin)
+				&& !(entry.getValue() instanceof Context);
 	}
 	
 	private static class P_Entry implements Map.Entry<String, Object> {

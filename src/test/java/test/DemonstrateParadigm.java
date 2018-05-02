@@ -93,7 +93,7 @@ public class DemonstrateParadigm implements Command {
 			paradigm.parallelLoop(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
 				Dataset ds = task.importData(input.dataset);
-				RotateImageXY<?> command = task.getRemoteModule(RotateImageXY.class);
+				RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
 				command.setAngle(Double.parseDouble(input.angle));
 				command.setDataset(ds);
 				command.run();

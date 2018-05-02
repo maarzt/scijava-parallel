@@ -47,7 +47,7 @@ public class Cisim2018PaperSnippet implements Command {
 		ParallelizationParadigm paradigm = parallelService.getParadigms().get(0);
 		paradigm.parallelLoop(inputs, (input, task) -> {
 			Dataset ds = task.importData(input.dataset);
-			RotateImageXY<?> command = task.getRemoteModule(RotateImageXY.class);
+			RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
 			command.setAngle(input.angle);
 			command.setDataset(ds);
 			command.run();
