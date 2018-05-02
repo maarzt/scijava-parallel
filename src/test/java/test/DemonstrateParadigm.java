@@ -95,9 +95,7 @@ public class DemonstrateParadigm implements Command {
 				Dataset ds = task.importData(input.dataset);
 				RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
 				command.setAngle(Double.parseDouble(input.angle));
-				command.setUnit("Degrees");
 				command.setDataset(ds);
-				command.setInterpolationMethod("Linear");
 				command.run();
 				ds = command.getDataset();
 				task.exportData(ds, constructOutputPath(input));

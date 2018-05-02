@@ -75,18 +75,25 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 		@Override
 		public <T extends Command> T getRemoteCommand(Class<T> type) {
-			T command = commandService.create(type);
-			T mockedCommand = mock(type,
-					(Answer<Object>) invocation -> invocation.getMethod().invoke(command, invocation.getArguments()));
+
+			// Create a new command so that its input parameters are properly initialized
+			T realCommand = commandService.create(type);
+			
+			// Create a mocked command which will call real command methods...
+			T mockedCommand = mock(type, (Answer<Object>) invocation -> invocation.getMethod().invoke(realCommand,
+					invocation.getArguments()));
+			
+			// ...apart from run() which will be customized
 			doAnswer(new Answer<Void>() {
 				@Override
 				public Void answer(InvocationOnMock invocation) throws Throwable {
 					CommandInfo cInfo = commandService.getCommand(type);
-					CommandModule cModule = new CommandModule(cInfo, command);
+					CommandModule cModule = new CommandModule(cInfo, realCommand);
 					cModule.setOutputs(worker.executeCommand(type, cModule.getInputs()));
 					return null;
 				}
 			}).when(mockedCommand).run();
+			
 			return mockedCommand;
 		}
 
