@@ -9,6 +9,8 @@ import org.scijava.plugin.SingletonPlugin;
 // TODO: Add description
 
 public interface ParallelizationParadigm extends SingletonPlugin {
+	
 	void init();
+	
 	<T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer);
 }

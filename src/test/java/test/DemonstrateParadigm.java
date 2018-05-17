@@ -37,6 +37,7 @@ public class DemonstrateParadigm implements Command {
 
 	private static int repetitionCount = 10;
 	private static int step = 10;
+	private static int port = 8080;
 
 	private static List<String> hosts;
 	private static int maxNumberOfLocalWorkers;
@@ -55,6 +56,7 @@ public class DemonstrateParadigm implements Command {
 			for (int numberOfHosts = hosts.size(); 0 < numberOfHosts; numberOfHosts--) {
 				List<String> usedHosts = hosts.subList(0, numberOfHosts);
 				remoteParadigm.setHosts(usedHosts);
+				remoteParadigm.setConnectionConfig(port);
 				remoteParadigm.setPoolSize(usedHosts.size());
 				remoteParadigm.init();
 				doTest(remoteParadigm, inputs, usedHosts.size());
