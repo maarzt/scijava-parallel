@@ -57,7 +57,6 @@ public class DemonstrateParadigm implements Command {
 				List<String> usedHosts = hosts.subList(0, numberOfHosts);
 				remoteParadigm.setHosts(usedHosts);
 				remoteParadigm.setConnectionConfig(port);
-				remoteParadigm.setPoolSize(usedHosts.size());
 				remoteParadigm.init();
 				doTest(remoteParadigm, inputs, usedHosts.size());
 			}

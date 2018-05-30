@@ -5,9 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.io.Closeable;
 import java.nio.file.Path;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
-import java.util.stream.StreamSupport;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -18,6 +16,7 @@ import org.scijava.command.CommandService;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.ParallelTask;
 import org.scijava.plugin.Parameter;
+import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,39 +26,43 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
-	protected Integer poolSize;
-
 	protected WorkerPool workerPool;
-
-	private ForkJoinPool forkJoinPool;
+	
+	@Parameter
+	private ThreadService threadService;
 
 	@Parameter
 	private CommandService commandService;
 
+	// -- SimpleOstravaParadigm methods --
+
+	abstract protected void initWorkerPool();
+	
+	// -- ParallelizationParadigm methods --
+	
 	@Override
 	public void init() {
 		workerPool = new WorkerPool();
 		initWorkerPool();
-		if (forkJoinPool != null) {
-			forkJoinPool.shutdown();
-		}
-		forkJoinPool = new ForkJoinPool(poolSize);
 	}
 
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		forkJoinPool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(val -> {
-			try (P_ParallelTask task = new P_ParallelTask()) {
-				consumer.accept(val, task);
-			}
-		})).join();
-	}
+		
+		arguments.forEach(val -> {
+			threadService.run(new Runnable() {
 
-	public void setPoolSize(Integer val) {
-		poolSize = val;
+				@Override
+				public void run() {
+					try (P_ParallelTask task = new P_ParallelTask()) {
+						consumer.accept(val, task);
+					}
+				}
+			});
+		});
 	}
-
-	abstract protected void initWorkerPool();
+	
+	// -- Private classes and helper methods --
 
 	private class P_ParallelTask implements ParallelTask, Closeable {
 
