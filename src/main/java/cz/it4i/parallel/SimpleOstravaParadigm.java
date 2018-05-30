@@ -69,6 +69,9 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			try {
 				f.get();
 			} catch (InterruptedException | ExecutionException e) {
+				if (e instanceof InterruptedException) {
+					Thread.currentThread().interrupt();
+				}
 				log.error(e.getMessage(), e);
 			}
 		});
