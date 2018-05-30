@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
@@ -54,17 +55,16 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
 		Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
-		arguments.forEach(val -> {
-			futures.add(threadService.run(new Runnable() {
+		arguments.forEach(val -> futures.add(threadService.run(new Callable<Void>() {
 
-				@Override
-				public void run() {
-					try (P_ParallelTask task = new P_ParallelTask()) {
-						consumer.accept(val, task);
-					}
+			@Override
+			public Void call() throws Exception {
+				try (P_ParallelTask task = new P_ParallelTask()) {
+					consumer.accept(val, task);
 				}
-			}));
-		});
+				return null;
+			}
+		})));
 		futures.forEach(f->{
 			try {
 				f.get();
