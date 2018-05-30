@@ -53,13 +53,10 @@ public class DemonstrateParadigm implements Command {
 
 		if (hosts.size() > 0) {
 			ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class);
-			for (int numberOfHosts = hosts.size(); 0 < numberOfHosts; numberOfHosts--) {
-				List<String> usedHosts = hosts.subList(0, numberOfHosts);
-				remoteParadigm.setHosts(usedHosts);
-				remoteParadigm.setPort(port);
-				remoteParadigm.init();
-				doTest(remoteParadigm, inputs, usedHosts.size());
-			}
+			remoteParadigm.setHosts(hosts);
+			remoteParadigm.setPort(port);
+			remoteParadigm.init();
+			doTest(remoteParadigm, inputs, hosts.size());
 		} else {
 			LocalMultithreadedParadigm localParadigm = parallelService.getParadigm(LocalMultithreadedParadigm.class);
 			for (int numberOfWorkers = maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--) {
