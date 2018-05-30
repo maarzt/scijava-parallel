@@ -5,6 +5,11 @@ import static org.mockito.Mockito.mock;
 
 import java.io.Closeable;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 
 import org.mockito.invocation.InvocationOnMock;
@@ -48,9 +53,9 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		
+		Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
 		arguments.forEach(val -> {
-			threadService.run(new Runnable() {
+			futures.add(threadService.run(new Runnable() {
 
 				@Override
 				public void run() {
@@ -58,7 +63,14 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 						consumer.accept(val, task);
 					}
 				}
-			});
+			}));
+		});
+		futures.forEach(f->{
+			try {
+				f.get();
+			} catch (InterruptedException | ExecutionException e) {
+				log.error(e.getMessage(), e);
+			}
 		});
 	}
 	
