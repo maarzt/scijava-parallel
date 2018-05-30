@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
@@ -33,7 +34,7 @@ import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.SciJavaPlugin;
 
-import com.google.common.base.Function;
+
 
 import net.imagej.Dataset;
 
