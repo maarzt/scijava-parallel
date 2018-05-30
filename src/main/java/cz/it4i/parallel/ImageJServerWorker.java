@@ -33,7 +33,6 @@ import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.SciJavaPlugin;
 
-import com.google.common.base.Function;
 
 import net.imagej.Dataset;
 
