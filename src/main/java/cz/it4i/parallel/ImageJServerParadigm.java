@@ -18,8 +18,8 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	private final Collection<String> hosts = new LinkedList<>();
 
 	// -- ImageJServerParadigm methods --
-	
-	public void setConnectionConfig(int port) {
+
+	public void setPort(int port) {
 		this.port = port;
 	}
 
@@ -34,11 +34,5 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	protected void initWorkerPool() {
 		hosts.forEach(host -> workerPool.addWorker(new ImageJServerWorker(host, port)));
 	}
-	
-	// -- ParallelizationParadigm methods --
-	
-	@Override
-	public void init() {	
-		super.init();
-	}
+
 }

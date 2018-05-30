@@ -24,7 +24,7 @@ import net.imagej.Dataset;
 
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
+	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected WorkerPool workerPool;
 	

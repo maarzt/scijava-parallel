@@ -56,7 +56,7 @@ public class DemonstrateParadigm implements Command {
 			for (int numberOfHosts = hosts.size(); 0 < numberOfHosts; numberOfHosts--) {
 				List<String> usedHosts = hosts.subList(0, numberOfHosts);
 				remoteParadigm.setHosts(usedHosts);
-				remoteParadigm.setConnectionConfig(port);
+				remoteParadigm.setPort(port);
 				remoteParadigm.init();
 				doTest(remoteParadigm, inputs, usedHosts.size());
 			}
