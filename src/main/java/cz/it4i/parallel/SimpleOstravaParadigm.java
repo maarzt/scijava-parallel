@@ -55,14 +55,18 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	@Override
 	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
 		Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
-		arguments.forEach(val -> futures.add(threadService.run(new Callable<Void>() {
+		arguments.forEach(val -> futures.add(threadService.run(new Callable<Integer>() {
 
 			@Override
-			public Void call() throws Exception {
+			public Integer call() {
 				try (P_ParallelTask task = new P_ParallelTask()) {
-					consumer.accept(val, task);
+					try {
+						consumer.accept(val, task);
+					} catch (Exception e) {
+						log.error(e.getMessage(),e);
+					}
 				}
-				return null;
+				return 0;
 			}
 		})));
 		futures.forEach(f->{
