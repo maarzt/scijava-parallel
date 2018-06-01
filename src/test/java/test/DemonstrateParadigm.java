@@ -52,21 +52,24 @@ public class DemonstrateParadigm implements Command {
 		Collection<P_Input> inputs = prepareInputs();
 
 		if (hosts.size() > 0) {
-			ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class);
-			for (int numberOfHosts = hosts.size(); 0 < numberOfHosts; numberOfHosts--) {
-				List<String> usedHosts = hosts.subList(0, numberOfHosts);
-				remoteParadigm.setHosts(usedHosts);
-				remoteParadigm.setConnectionConfig(port);
-				remoteParadigm.setPoolSize(usedHosts.size());
-				remoteParadigm.init();
-				doTest(remoteParadigm, inputs, usedHosts.size());
+			try (ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class)) {
+				for (int numberOfHosts = hosts.size(); 0 < numberOfHosts; numberOfHosts--) {
+					List<String> usedHosts = hosts.subList(0, numberOfHosts);
+					remoteParadigm.setHosts(usedHosts);
+					remoteParadigm.setConnectionConfig(port);
+					remoteParadigm.setPoolSize(usedHosts.size());
+					remoteParadigm.init();
+					doTest(remoteParadigm, inputs, usedHosts.size());
+				}
 			}
 		} else {
-			LocalMultithreadedParadigm localParadigm = parallelService.getParadigm(LocalMultithreadedParadigm.class);
-			for (int numberOfWorkers = maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--) {
-				localParadigm.setPoolSize(numberOfWorkers);
-				localParadigm.init();
-				doTest(localParadigm, inputs, numberOfWorkers);
+			try (LocalMultithreadedParadigm localParadigm = parallelService
+					.getParadigm(LocalMultithreadedParadigm.class)) {
+				for (int numberOfWorkers = maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--) {
+					localParadigm.setPoolSize(numberOfWorkers);
+					localParadigm.init();
+					doTest(localParadigm, inputs, numberOfWorkers);
+				}
 			}
 		}
 	}
