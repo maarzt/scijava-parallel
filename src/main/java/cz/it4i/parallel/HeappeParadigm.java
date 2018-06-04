@@ -51,8 +51,8 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	protected void initWorkerPool() {
 
 		haasClient = new HaaSClient(SettingsProvider.getSettings(Constants.TEMPLATE_ID, Constants.TIMEOUT,
-				Constants.CLUSTER_NODE_TYPE, Constants.PROJECT_ID, numberOfHosts, Constants.CONFIG_FILE_NAME));
-		long jobId = haasClient.createJob(Constants.JOB_NAME, Collections.emptyList());
+				Constants.CLUSTER_NODE_TYPE, Constants.PROJECT_ID, Constants.NUMBER_OF_CORE, Constants.CONFIG_FILE_NAME));
+		long jobId = haasClient.createJob(Constants.JOB_NAME, numberOfHosts, Collections.emptyList());
 		haasClient.submitJob(jobId);
 		Collection<String> nodes = getAllocatedNodes(jobId);
 		nodes.stream().map(node -> new HeappeWorker(node, port, createConnectionSocketFactory())).forEach(worker -> workerPool.addWorker(worker));

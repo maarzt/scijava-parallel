@@ -91,7 +91,7 @@ public class HeappeParadigm2 extends AbstractParallelizationParadigm {
 			}
 
 			@Override
-			public int getNumberOfNodes() {
+			public int getNumberOfCoresPerNode() {
 				// TODO Auto-generated method stub
 				return 0;
 			}
