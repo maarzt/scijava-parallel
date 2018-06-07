@@ -88,7 +88,7 @@ public class DemonstrateParadigm implements Command {
 		log.info("Number of workers: " + numberOfWorkers);
 		for (int i = 0; i < repetitionCount; i++) {
 			long time = System.currentTimeMillis();
-			paradigm.parallelLoop(inputs, (input, task) -> {
+			paradigm.parallelFor(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
 				Dataset ds = task.importData(input.dataset);
 				RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);

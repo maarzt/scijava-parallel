@@ -12,5 +12,5 @@ public interface ParallelizationParadigm extends SingletonPlugin {
 	
 	void init();
 	
-	<T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer);
+	<T> void parallelFor(Iterable<T> arguments, BiConsumer<T, ExecutionContext> consumer);
 }

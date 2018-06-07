@@ -48,9 +48,14 @@ public class ImageJServerWorker implements ParallelWorker {
 	private final static Set<String> supportedImageTypes = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
-	ImageJServerWorker(String hostName, int port) {
+	ImageJServerWorker(String hostName, int defaultPort) {
 		this.hostName = hostName;
-		this.port = port;
+		if(hostName.contains(":")) {
+			this.port = Integer.parseInt(hostName.split(":")[1]);
+		} else {
+			this.port = defaultPort;	
+		}
+		
 	}
 
 	public String getHostName() {

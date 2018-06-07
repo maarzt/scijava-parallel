@@ -19,7 +19,7 @@ import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.parallel.AbstractParallelizationParadigm;
-import org.scijava.parallel.ParallelTask;
+import org.scijava.parallel.ExecutionContext;
 import org.scijava.plugin.Parameter;
 import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
@@ -52,13 +52,13 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	}
 
 	@Override
-	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
+	public <T> void parallelFor(Iterable<T> arguments, BiConsumer<T, ExecutionContext> consumer) {
 		Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
 		arguments.forEach(val -> futures.add(threadService.run(new Runnable() {
 
 			@Override
 			public void run() {
-				try (P_ParallelTask task = new P_ParallelTask()) {
+				try (P_ExecutionContext task = new P_ExecutionContext()) {
 					try {
 						consumer.accept(val, task);
 					} catch (Exception e) {
@@ -81,11 +81,11 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	
 	// -- Private classes and helper methods --
 
-	private class P_ParallelTask implements ParallelTask, Closeable {
+	private class P_ExecutionContext implements ExecutionContext, Closeable {
 
 		private ParallelWorker worker;
 
-		public P_ParallelTask() {
+		public P_ExecutionContext() {
 			try {
 				worker = workerPool.takeFreeWorker();
 			} catch (InterruptedException e) {
