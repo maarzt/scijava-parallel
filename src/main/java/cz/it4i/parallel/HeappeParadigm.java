@@ -25,28 +25,19 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	private int numberOfHosts;
 
 	private HaaSClient haasClient;
+	
+	// -- HeappeParadigm methods --
 
 	public void setPort(int port) {
 		this.port = port;
 	}
 	
-	@Override
-	public void init() {
-		if (poolSize == null) {
-			poolSize = Math.max(numberOfHosts, 1);
-		}
-		super.init();
-	}
-	
-	@Override
-	public void close() {
-		//TODO clean possible open connections
-	}
-
 	public void setNumberOfNodes(int number) {
 		this.numberOfHosts = number;
 	}
 
+	// -- SimpleOstravaParadigm methods --
+	
 	@Override
 	protected void initWorkerPool() {
 
@@ -57,7 +48,16 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		Collection<String> nodes = getAllocatedNodes(jobId);
 		nodes.stream().map(node -> new HeappeWorker(node, port, createConnectionSocketFactory())).forEach(worker -> workerPool.addWorker(worker));
 	}
-
+	
+	// -- Closeable methods --
+	
+	@Override
+	public void close() {
+		//TODO clean possible open connections
+	}
+	
+	// -- Helper methods --
+	
 	private ConnectionSocketFactory createConnectionSocketFactory() {
 		throw new NotImplementedException("needs to implement in haasClient");
 	}
