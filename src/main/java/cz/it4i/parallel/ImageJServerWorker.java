@@ -34,8 +34,6 @@ import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.SciJavaPlugin;
 
-
-
 import net.imagej.Dataset;
 
 public class ImageJServerWorker implements ParallelWorker {
