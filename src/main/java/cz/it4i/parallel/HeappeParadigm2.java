@@ -21,18 +21,18 @@ public class HeappeParadigm2 extends AbstractParallelizationParadigm {
 	
 
 	@Override
+	public void init() {
+		
+		haasClient = new HaaSClient(BuildHaasClientSettings());
+	}
+
+	@Override
 	public <T> void parallelFor(Iterable<T> arguments, BiConsumer<T, ExecutionContext> consumer) {
 		// TODO Auto-generated method stub
 		
 	}
 	
-	@Override
-	public void init() {
-		
-		haasClient = new HaaSClient(BuildHaasClientSettings());
-	}
-	
-	// -- helper methods --
+	// -- Helper methods --
 	
 	private Settings BuildHaasClientSettings() {
 		return new Settings() {
