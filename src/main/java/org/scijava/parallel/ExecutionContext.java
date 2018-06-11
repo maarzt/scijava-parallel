@@ -6,7 +6,7 @@ import org.scijava.command.Command;
 
 import net.imagej.Dataset;
 
-public interface ParallelTask {
+public interface ExecutionContext {
 
 	<T extends Command> T getRemoteCommand(Class<T> type);
 	

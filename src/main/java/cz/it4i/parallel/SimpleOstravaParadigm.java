@@ -5,9 +5,12 @@ import static org.mockito.Mockito.mock;
 
 import java.io.Closeable;
 import java.nio.file.Path;
-import java.util.concurrent.ForkJoinPool;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
-import java.util.stream.StreamSupport;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -16,8 +19,9 @@ import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.parallel.AbstractParallelizationParadigm;
-import org.scijava.parallel.ParallelTask;
+import org.scijava.parallel.ExecutionContext;
 import org.scijava.plugin.Parameter;
+import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,47 +29,63 @@ import net.imagej.Dataset;
 
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
-
-	protected Integer poolSize;
+	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected WorkerPool workerPool;
-
-	private ForkJoinPool forkJoinPool;
+	
+	@Parameter
+	private ThreadService threadService;
 
 	@Parameter
 	private CommandService commandService;
 
+	// -- SimpleOstravaParadigm methods --
+
+	abstract protected void initWorkerPool();
+	
+	// -- ParallelizationParadigm methods --
+	
 	@Override
 	public void init() {
 		workerPool = new WorkerPool();
 		initWorkerPool();
-		if (forkJoinPool != null) {
-			forkJoinPool.shutdown();
-		}
-		forkJoinPool = new ForkJoinPool(poolSize);
 	}
 
 	@Override
-	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		forkJoinPool.submit(() -> StreamSupport.stream(arguments.spliterator(), true).forEach(val -> {
-			try (P_ParallelTask task = new P_ParallelTask()) {
-				consumer.accept(val, task);
+	public <T> void parallelFor(Iterable<T> arguments, BiConsumer<T, ExecutionContext> consumer) {
+		Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
+		arguments.forEach(val -> futures.add(threadService.run(new Runnable() {
+
+			@Override
+			public void run() {
+				try (P_ExecutionContext task = new P_ExecutionContext()) {
+					try {
+						consumer.accept(val, task);
+					} catch (Exception e) {
+						log.error(e.getMessage(), e);
+					}
+				}
 			}
-		})).join();
+		})));
+		futures.forEach(f -> {
+			try {
+				f.get();
+			} catch (InterruptedException | ExecutionException e) {
+				if (e instanceof InterruptedException) {
+					Thread.currentThread().interrupt();
+				}
+				log.error(e.getMessage(), e);
+			}
+		});
 	}
+	
+	// -- Private classes and helper methods --
 
-	public void setPoolSize(Integer val) {
-		poolSize = val;
-	}
-
-	abstract protected void initWorkerPool();
-
-	private class P_ParallelTask implements ParallelTask, Closeable {
+	private class P_ExecutionContext implements ExecutionContext, Closeable {
 
 		private ParallelWorker worker;
 
-		public P_ParallelTask() {
+		public P_ExecutionContext() {
 			try {
 				worker = workerPool.takeFreeWorker();
 			} catch (InterruptedException e) {

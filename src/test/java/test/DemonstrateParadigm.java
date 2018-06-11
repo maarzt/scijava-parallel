@@ -53,15 +53,11 @@ public class DemonstrateParadigm implements Command {
 
 		if (hosts.size() > 0) {
 			try (ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class)) {
-				for (int numberOfHosts = hosts.size(); 0 < numberOfHosts; numberOfHosts--) {
-					List<String> usedHosts = hosts.subList(0, numberOfHosts);
-					remoteParadigm.setHosts(usedHosts);
-					remoteParadigm.setConnectionConfig(port);
-					remoteParadigm.setPoolSize(usedHosts.size());
-					remoteParadigm.init();
-					doTest(remoteParadigm, inputs, usedHosts.size());
-				}
-			}
+				remoteParadigm.setHosts(hosts);
+				remoteParadigm.setPort(port);
+				remoteParadigm.init();
+				doTest(remoteParadigm, inputs, hosts.size());
+			}			
 		} else {
 			try (LocalMultithreadedParadigm localParadigm = parallelService
 					.getParadigm(LocalMultithreadedParadigm.class)) {
@@ -95,7 +91,7 @@ public class DemonstrateParadigm implements Command {
 		log.info("Number of workers: " + numberOfWorkers);
 		for (int i = 0; i < repetitionCount; i++) {
 			long time = System.currentTimeMillis();
-			paradigm.parallelLoop(inputs, (input, task) -> {
+			paradigm.parallelFor(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
 				Dataset ds = task.importData(input.dataset);
 				RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
