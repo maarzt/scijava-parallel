@@ -32,7 +32,19 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 
 	@Override
 	protected void initWorkerPool() {
-		hosts.forEach(host -> workerPool.addWorker(new ImageJServerWorker(host, port)));
+		hosts.forEach(host -> workerPool.addWorker(createWorker(host)));
+	}
+
+	private ParallelWorker createWorker(String host) {
+		int port;
+		if (host.contains(":")) {
+			String[] tokensOfHost = host.split(":");
+			port = Integer.parseInt(tokensOfHost[1]);
+			host = tokensOfHost[0];
+		} else {
+			port = this.port;
+		}
+		return new ImageJServerWorker(host, port);
 	}
 
 }

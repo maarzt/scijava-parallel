@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.stream.IntStream;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -58,7 +57,6 @@ public class Demonstration implements Command {
 
 		paradigm.parallelFor(angles, (angle, executionContext) -> {
 			log.info("processing angle=" + angle);
-			IntStream.iterate(0, n->n+step).takeWhile(n->n<10);
 			Dataset ds = executionContext.importData(fileToRotate);
 			RotateImageXY<?> command = executionContext.getRemoteCommand(RotateImageXY.class);
 			command.setAngle(angle);
