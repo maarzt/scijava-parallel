@@ -31,14 +31,6 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	}
 	
 	@Override
-	public void init() {
-		if (poolSize == null) {
-			poolSize = Math.max(numberOfHosts, 1);
-		}
-		super.init();
-	}
-	
-	@Override
 	public void close() {
 		//TODO clean possible open connections
 	}

@@ -3,7 +3,7 @@ package cz.it4i.parallel;
 import java.util.function.BiConsumer;
 
 import org.scijava.parallel.AbstractParallelizationParadigm;
-import org.scijava.parallel.ParallelTask;
+import org.scijava.parallel.ExecutionContext;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
 
@@ -19,16 +19,17 @@ public class HeappeParadigm2 extends AbstractParallelizationParadigm {
 	
 	// -- ParallelizationParadigm methods --
 	
+
+	@Override
+	public <T> void parallelFor(Iterable<T> arguments, BiConsumer<T, ExecutionContext> consumer) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public void init() {
 		
 		haasClient = new HaaSClient(BuildHaasClientSettings());
-	}
-
-	@Override
-	public <T> void parallelLoop(Iterable<T> arguments, BiConsumer<T, ParallelTask> consumer) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	// -- helper methods --
@@ -97,5 +98,6 @@ public class HeappeParadigm2 extends AbstractParallelizationParadigm {
 			}
 		};
 	}
+
 
 }
