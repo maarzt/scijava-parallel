@@ -62,12 +62,12 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 					try {
 						consumer.accept(val, task);
 					} catch (Exception e) {
-						log.error(e.getMessage(),e);
+						log.error(e.getMessage(), e);
 					}
 				}
 			}
 		})));
-		futures.forEach(f->{
+		futures.forEach(f -> {
 			try {
 				f.get();
 			} catch (InterruptedException | ExecutionException e) {
