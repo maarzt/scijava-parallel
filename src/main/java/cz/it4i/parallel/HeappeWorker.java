@@ -23,14 +23,11 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.mockito.Mockito;
@@ -49,15 +46,13 @@ public class HeappeWorker implements ParallelWorker {
 	private final int port;
 	private final Map<Dataset, String> mockedData2id = new HashMap<>();
 	private final Map<String, Dataset> id2mockedData = new HashMap<>();
-	private final ConnectionSocketFactory connectionSocketFactory;
-
+	
 	private final static Set<String> supportedImageTypes = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
-	HeappeWorker(String hostName, int port, ConnectionSocketFactory csf) {
+	HeappeWorker(String hostName, int port) {
 		this.hostName = hostName;
 		this.port = port;
-		this.connectionSocketFactory = csf;
 	}
 
 	public String getHostName() {
@@ -279,9 +274,6 @@ public class HeappeWorker implements ParallelWorker {
 
 	private CloseableHttpClient createClient() throws IOException, ClientProtocolException {
 		HttpClientBuilder builder = HttpClientBuilder.create();
-		builder.setConnectionManager(new BasicHttpClientConnectionManager(
-				RegistryBuilder.<ConnectionSocketFactory>create().register("http", connectionSocketFactory).build(),
-				null, null, null));
 		return builder.build();
 	}
 

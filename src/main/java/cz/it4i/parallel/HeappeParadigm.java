@@ -2,9 +2,8 @@ package cz.it4i.parallel;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -13,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.haas_java_client.HaaSClient;
 import cz.it4i.fiji.haas_java_client.SettingsProvider;
+import cz.it4i.fiji.haas_java_client.TunnelToNode;
 
 @Plugin(type = ParallelizationParadigm.class)
 public class HeappeParadigm extends SimpleOstravaParadigm {
@@ -25,6 +25,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	private int numberOfHosts;
 
 	private HaaSClient haasClient;
+	private final Collection<TunnelToNode> tunnels = Collections.synchronizedList(new LinkedList<>());
 	
 	// -- HeappeParadigm methods --
 
@@ -46,7 +47,12 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		long jobId = haasClient.createJob(Constants.JOB_NAME, numberOfHosts, Collections.emptyList());
 		haasClient.submitJob(jobId);
 		Collection<String> nodes = getAllocatedNodes(jobId);
-		nodes.stream().map(node -> new HeappeWorker(node, port, createConnectionSocketFactory())).forEach(worker -> workerPool.addWorker(worker));
+		nodes.stream().map(node -> 
+		{	
+			TunnelToNode tunnel;
+			tunnels.add(tunnel = haasClient.openTunnel(jobId, node, 0, port));
+			return new HeappeWorker("localhost", tunnel.getLocalPort());
+		}).forEach(worker -> workerPool.addWorker(worker));
 	}
 	
 	// -- Closeable methods --
@@ -58,13 +64,10 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	
 	// -- Helper methods --
 	
-	private ConnectionSocketFactory createConnectionSocketFactory() {
-		throw new NotImplementedException("needs to implement in haasClient");
-	}
+	
 
 	private Collection<String> getAllocatedNodes(long jobId) {
-		// TODO needs to implement in haasClient
-		throw new NotImplementedException("needs to implement in haasClient");
+		return haasClient.obtainJobInfo(jobId).getNodesIPs();
 	}
 
 }

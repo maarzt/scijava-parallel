@@ -49,7 +49,7 @@ public class Demonstration implements Command {
 		hosts.add("localhost:10001");
 		hosts.add("localhost:10002");
 		hosts.add("localhost:10003");
-		hosts.add("localhost:10004");
+		hosts.add("localhost:10004"); 
 		((ImageJServerParadigm) paradigm).setHosts(hosts);
 		
 		// common initialization
