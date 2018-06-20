@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.haas_java_client.HaaSClient;
+import cz.it4i.fiji.haas_java_client.JobState;
 import cz.it4i.fiji.haas_java_client.SettingsProvider;
 import cz.it4i.fiji.haas_java_client.TunnelToNode;
 
@@ -46,6 +47,13 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 				Constants.CLUSTER_NODE_TYPE, Constants.PROJECT_ID, Constants.NUMBER_OF_CORE, Constants.CONFIG_FILE_NAME));
 		long jobId = haasClient.createJob(Constants.JOB_NAME, numberOfHosts, Collections.emptyList());
 		haasClient.submitJob(jobId);
+		while(haasClient.obtainJobInfo(jobId).getState() == JobState.Queued) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
 		Collection<String> nodes = getAllocatedNodes(jobId);
 		nodes.stream().map(node -> 
 		{	
