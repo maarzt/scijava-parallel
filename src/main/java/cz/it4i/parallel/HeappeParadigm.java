@@ -59,7 +59,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		{	
 			TunnelToNode tunnel;
 			tunnels.add(tunnel = haasClient.openTunnel(jobId, node, 0, port));
-			return new HeappeWorker("localhost", tunnel.getLocalPort());
+			return new HeappeWorker(tunnel.getLocalHost(), tunnel.getLocalPort());
 		}).forEach(worker -> workerPool.addWorker(worker));
 	}
 	
