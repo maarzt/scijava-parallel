@@ -19,6 +19,8 @@ import cz.it4i.fiji.haas_java_client.TunnelToNode;
 @Plugin(type = ParallelizationParadigm.class)
 public class HeappeParadigm extends SimpleOstravaParadigm {
 
+	private static final int TIMEOUT_BETWEEN_JOB_STATE_QUERY = 1000;
+
 	@Parameter
 	private int port;
 
@@ -58,7 +60,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		haasClient.submitJob(jobId);
 		while(logGetState(jobId) == JobState.Queued) {
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(TIMEOUT_BETWEEN_JOB_STATE_QUERY);
 			} catch (InterruptedException e) {
 				log.error(e.getMessage(), e);
 			}
