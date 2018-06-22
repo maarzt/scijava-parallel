@@ -3,9 +3,9 @@
 package org.scijava.parallel;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.scijava.plugin.SingletonService;
+import org.scijava.prefs.PrefService;
 import org.scijava.service.SciJavaService;
 
 /**
@@ -15,31 +15,50 @@ import org.scijava.service.SciJavaService;
  */
 public interface ParallelService extends SingletonService<ParallelizationParadigm>, SciJavaService {
 
+	// TODO: This API is super-preliminary 
+
 	/**
-	 * Gets all available parallelization paradigms
-	 * 
-	 * @return A list of available parallelization paradigms
+	 * Returns an instance of the parallelization paradigm corresponding to the chosen profile, if available
+	 * @return Instance of the corresponding parallelization paradigm
 	 */
-	// TODO: Consider adding configuration parameters to filter the available paradigms 
-	default List<ParallelizationParadigm> getParadigms() {
-		return getInstances().stream().collect(Collectors.toList());
-	}
-
-	@SuppressWarnings("unchecked")
-	default <T extends ParallelizationParadigm> T getParadigm(
-			Class<T> desiredParalellizationParadigm) {
-		List<ParallelizationParadigm> matchingParadigms = getInstances().stream()
-				.filter(paradigm -> paradigm.getClass().equals(desiredParalellizationParadigm))
-				.collect(Collectors.toList());
-		
-		if (matchingParadigms.size() == 1) {
-			return (T) matchingParadigms.get(0);
-		}
-		
-		return null;
-	}
-
-	@Override
+	public ParallelizationParadigm getParadigm();
+	
+	@Deprecated
+	/**
+	 * Returns an instance of a parallelization paradigm, if it is available
+	 * @param Class of the desired parallelization paradigm
+	 * @return Instance of the desired parallelization paradigm
+	 */
+	public <T extends ParallelizationParadigm> T getParadigm(final Class<T> chosenParalellizationParadigm);
+	
+	// TODO: This method is meant to be package-specific only,
+	// profiles should be accessible only from the prospective configuration plugin
+	/**
+	 * Returns all saved parallelization paradigm profiles
+	 * @return List of {@link ParallelizationParadigmProfile}
+	 */
+	public List<ParallelizationParadigmProfile> getProfiles();
+	
+	// TODO: This method is meant to be package-specific only,
+	// profiles should be accessible only from the prospective configuration plugin
+	/** Saves the given {@link ParallelizationParadigmProfile} using the {@link PrefService} */
+	public void addProfile(final ParallelizationParadigmProfile profile);
+	
+	// TODO: This method is meant to be package-specific only,
+	// profiles should be accessible only from the prospective configuration plugin
+	/**
+	 * Selects the given {@link ParallelizationParadigmProfile} 
+	 * @param Name of the {@link ParallelizationParadigmProfile} to be selected
+	 */
+	public void selectProfile(final String name);
+	
+	// TODO: This method is meant to be package-specific only,
+	// profiles should be accessible only from the prospective configuration plugin
+	/** Removes all saved parallelization paradigm profiles  */
+	public void deleteProfiles();
+	
+	// -- PTService methods -- 
+	
 	default Class<ParallelizationParadigm> getPluginType() {
 		return ParallelizationParadigm.class;
 	}

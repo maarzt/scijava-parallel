@@ -4,10 +4,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.parallel.ParallelizationParadigmProfile;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -36,7 +38,24 @@ public class Demonstration implements Command {
 
 	@Override
 	public void run() {
-
+		
+		// See the previously saved profiles
+		List<ParallelizationParadigmProfile> profiles = parallelService.getProfiles();
+		
+		// Remove all saved profiles
+		parallelService.deleteProfiles();
+		
+		// Add a few profiles, just for fun		
+		parallelService.addProfile(new ParallelizationParadigmProfile(ImageJServerParadigm.class, "lonelyBiologist01"));
+		parallelService.addProfile(new ParallelizationParadigmProfile(ImageJServerParadigm.class, "lonelyBiologist02"));
+		parallelService.addProfile(new ParallelizationParadigmProfile(ImageJServerParadigm.class, "lonelyBiologist03"));
+		
+		// See the saved profiles now
+		profiles = parallelService.getProfiles();
+		
+		// Set one of the profiles to be used
+		parallelService.selectProfile("lonelyBiologist02");
+		
 		// prepare inputs
 		Collection<Integer> angles = new LinkedList<>();
 		Path fileToRotate = Paths.get("/tmp/input/lena.jpg");
@@ -44,7 +63,7 @@ public class Demonstration implements Command {
 			angles.add(angle);
 		}
 
-		ParallelizationParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
+		ParallelizationParadigm paradigm = parallelService.getParadigm();
 		Collection<String> hosts = new LinkedList<>();
 		hosts.add("localhost:10001");
 		hosts.add("localhost:10002");

@@ -25,6 +25,7 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.parallel.ImageJServerParadigm;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
@@ -44,7 +45,7 @@ public class Cisim2018PaperSnippet implements Command {
 	public void run() {
 		Collection<P_Input> inputs = prepareInputs();
 		Map<P_Input, Path> outputs = new HashMap<>();
-		ParallelizationParadigm paradigm = parallelService.getParadigms().get(0);
+		ParallelizationParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
 		paradigm.parallelFor(inputs, (input, task) -> {
 			Dataset ds = task.importData(input.dataset);
 			RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
