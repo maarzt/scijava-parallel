@@ -45,8 +45,9 @@ public class DemonstrateHeAppeParadigm implements Command {
 		Collection<P_Input> inputs = prepareInputs();
 		try (HeappeParadigm remoteParadigm = parallelService.getParadigm(HeappeParadigm.class)) {
 			remoteParadigm.setPort(port);
+			remoteParadigm.setNumberOfNodes(numberOfHosts);
 			remoteParadigm.init();
-			doTest(remoteParadigm, inputs, numberOfHosts);
+			doTest(remoteParadigm, inputs);
 		}			
 
 	}
@@ -68,8 +69,8 @@ public class DemonstrateHeAppeParadigm implements Command {
 		return inputs;
 	}
 
-	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers) {
-		log.info("Number of workers: " + numberOfWorkers);
+	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs) {
+		log.info("Number of workers: " + numberOfHosts);
 		long time = System.currentTimeMillis();
 		paradigm.parallelFor(inputs, (input, task) -> {
 			// log.info("processing angle=" + input.angle);
@@ -83,7 +84,7 @@ public class DemonstrateHeAppeParadigm implements Command {
 		});
 		long time2 = System.currentTimeMillis();
 		double sec = (time2 - time) / 1000.;
-		String resultStr = "Number of workers: " + numberOfWorkers + ", time: " + sec;
+		String resultStr = "Number of workers: " + numberOfHosts + ", time: " + sec;
 		writeResult(resultStr);
 		log.info("done iteration: " + resultStr);
 }
@@ -106,7 +107,9 @@ public class DemonstrateHeAppeParadigm implements Command {
 	}
 
 	public static void main(final String... args) {
-
+		if(log.isDebugEnabled()) {
+			log.debug("" + DemonstrateHeAppeParadigm.class + ".main");
+		}
 		DemonstrateHeAppeParadigm.numberOfHosts = Integer.parseInt(args[0]);
 		final ImageJ ij = new ImageJ();
 		ij.command().run(DemonstrateHeAppeParadigm.class, true);

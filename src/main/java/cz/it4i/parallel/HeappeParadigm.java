@@ -1,5 +1,6 @@
 package cz.it4i.parallel;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -42,12 +43,20 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	
 	@Override
 	protected void initWorkerPool() {
-
+		if (log.isDebugEnabled()) {
+			log.debug("initWorkerPool");
+		}
 		haasClient = new HaaSClient(SettingsProvider.getSettings(Constants.TEMPLATE_ID, Constants.TIMEOUT,
 				Constants.CLUSTER_NODE_TYPE, Constants.PROJECT_ID, Constants.NUMBER_OF_CORE, Constants.CONFIG_FILE_NAME));
+		if (log.isDebugEnabled()) {
+			log.debug("createJob");
+		}
 		long jobId = haasClient.createJob(Constants.JOB_NAME, numberOfHosts, Collections.emptyList());
+		if (log.isDebugEnabled()) {
+			log.debug("submitJob");
+		}
 		haasClient.submitJob(jobId);
-		while(haasClient.obtainJobInfo(jobId).getState() == JobState.Queued) {
+		while(logGetState(jobId) == JobState.Queued) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -63,11 +72,25 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		}).forEach(worker -> workerPool.addWorker(worker));
 	}
 	
+	private JobState logGetState(long jobId) {
+		JobState result = haasClient.obtainJobInfo(jobId).getState();
+		if (log.isDebugEnabled()) {
+			log.debug("state of job " + jobId + " - " + result);
+		}
+		return result;
+	}
+
 	// -- Closeable methods --
 	
 	@Override
 	public void close() {
-		//TODO clean possible open connections
+		tunnels.forEach(t->{
+			try {
+				t.close();
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+			}
+		});
 	}
 	
 	// -- Helper methods --
