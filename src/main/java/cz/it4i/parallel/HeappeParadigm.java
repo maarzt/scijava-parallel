@@ -44,6 +44,19 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 
 	// -- SimpleOstravaParadigm methods --
 
+	// -- Closeable methods --
+	
+	@Override
+	public void close() {
+		tunnels.forEach(t -> {
+			try {
+				t.close();
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+			}
+		});
+	}
+
 	@Override
 	protected void initWorkerPool() {
 		if (log.isDebugEnabled()) {
@@ -69,12 +82,17 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 				log.error(e.getMessage(), e);
 			}
 		}
-		Collection<String> nodes = getAllocatedNodes(jobId);
-		nodes.stream().map(node -> {
-			TunnelToNode tunnel;
-			tunnels.add(tunnel = haasClient.openTunnel(jobId, node, 0, port));
-			return new HeappeWorker(tunnel.getLocalHost(), tunnel.getLocalPort());
-		}).forEach(worker -> workerPool.addWorker(worker));
+		JobState state = logGetState(jobId);
+		if(state == JobState.Running) {
+			Collection<String> nodes = getAllocatedNodes(jobId);
+			nodes.stream().map(node -> {
+				TunnelToNode tunnel;
+				tunnels.add(tunnel = haasClient.openTunnel(jobId, node, 0, port));
+				return new HeappeWorker(tunnel.getLocalHost(), tunnel.getLocalPort());
+			}).forEach(worker -> workerPool.addWorker(worker));
+		} else {
+			log.error("Job ID: %d not running. It is in state %s.", jobId, state.toString());
+		}
 	}
 
 	private JobState logGetState(long jobId) {
@@ -87,16 +105,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 
 	// -- Closeable methods --
 
-	@Override
-	public void close() {
-		tunnels.forEach(t -> {
-			try {
-				t.close();
-			} catch (IOException e) {
-				log.error(e.getMessage(), e);
-			}
-		});
-	}
+	
 
 	// -- Helper methods --
 
