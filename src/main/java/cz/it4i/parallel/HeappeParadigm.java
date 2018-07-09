@@ -24,10 +24,9 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 
 	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.HeappeParadigm.class);
 
-	
 	@Parameter
 	private int port;
-	
+
 	@Parameter
 	private int numberOfHosts;
 
@@ -45,18 +44,6 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	}
 
 	// -- SimpleOstravaParadigm methods --
-
-	// -- Closeable methods --
-	@Override
-	public void close() {
-		tunnels.forEach(t -> {
-			try {
-				t.close();
-			} catch (IOException e) {
-				log.error(e.getMessage(), e);
-			}
-		});
-	}
 
 	// -- Init methods --
 	@Override
@@ -85,7 +72,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 			}
 		}
 		JobState state = logGetState(jobId);
-		if(state == JobState.Running) {
+		if (state == JobState.Running) {
 			Collection<String> nodes = getAllocatedNodes(jobId);
 			nodes.stream().map(node -> {
 				TunnelToNode tunnel;
@@ -97,14 +84,23 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		}
 	}
 
-	
+	// -- Closeable methods --
+	@Override
+	public void close() {
+		tunnels.forEach(t -> {
+			try {
+				t.close();
+			} catch (IOException e) {
+				log.error(e.getMessage(), e);
+			}
+		});
+	}
 
-	
 	// -- Helper methods --
 	private Collection<String> getAllocatedNodes(long jobId) {
 		return haasClient.obtainJobInfo(jobId).getNodesIPs();
 	}
-	
+
 	private JobState logGetState(long jobId) {
 		JobState result = haasClient.obtainJobInfo(jobId).getState();
 		if (log.isDebugEnabled()) {
