@@ -40,6 +40,7 @@ public class Demonstration implements Command {
 	public void run() {
 		
 		// See the previously saved profiles
+		@SuppressWarnings("unused")
 		List<ParallelizationParadigmProfile> profiles = parallelService.getProfiles();
 		
 		// Remove all saved profiles
