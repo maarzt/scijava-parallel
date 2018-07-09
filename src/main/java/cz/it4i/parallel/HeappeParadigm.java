@@ -22,11 +22,13 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 
 	private static final int TIMEOUT_BETWEEN_JOB_STATE_QUERY = 1000;
 
+	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.HeappeParadigm.class);
+
+	
 	@Parameter
 	private int port;
-
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.HeappeParadigm.class);
-
+	
+	@Parameter
 	private int numberOfHosts;
 
 	private HaaSClient haasClient;
@@ -45,7 +47,6 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	// -- SimpleOstravaParadigm methods --
 
 	// -- Closeable methods --
-	
 	@Override
 	public void close() {
 		tunnels.forEach(t -> {
@@ -57,6 +58,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		});
 	}
 
+	// -- Init methods --
 	@Override
 	protected void initWorkerPool() {
 		if (log.isDebugEnabled()) {
@@ -67,8 +69,8 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 			log.debug("createJob");
 		}
 		long jobId = haasClient.createJob(
-				new JobSettingsBuilder().templateId(Constants.TEMPLATE_ID).walltimeLimit(Constants.TIMEOUT)
-						.clusterNodeType(Constants.CLUSTER_NODE_TYPE).jobName(Constants.JOB_NAME)
+				new JobSettingsBuilder().templateId(Constants.HEAppE.TEMPLATE_ID).walltimeLimit(Constants.WALLTIME)
+						.clusterNodeType(Constants.CLUSTER_NODE_TYPE).jobName(Constants.HEAppE.JOB_NAME)
 						.numberOfNodes(numberOfHosts).numberOfCoresPerNode(Constants.NUMBER_OF_CORE).build(),
 				Collections.emptyList());
 		if (log.isDebugEnabled()) {
@@ -95,22 +97,20 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		}
 	}
 
+	
+
+	
+	// -- Helper methods --
+	private Collection<String> getAllocatedNodes(long jobId) {
+		return haasClient.obtainJobInfo(jobId).getNodesIPs();
+	}
+	
 	private JobState logGetState(long jobId) {
 		JobState result = haasClient.obtainJobInfo(jobId).getState();
 		if (log.isDebugEnabled()) {
 			log.debug("state of job " + jobId + " - " + result);
 		}
 		return result;
-	}
-
-	// -- Closeable methods --
-
-	
-
-	// -- Helper methods --
-
-	private Collection<String> getAllocatedNodes(long jobId) {
-		return haasClient.obtainJobInfo(jobId).getNodesIPs();
 	}
 
 }
