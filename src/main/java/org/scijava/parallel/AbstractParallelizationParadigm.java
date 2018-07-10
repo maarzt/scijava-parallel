@@ -4,7 +4,9 @@ package org.scijava.parallel;
 
 // TODO: Description
 
-public abstract class AbstractParallelizationParadigm implements ParallelizationParadigm {
+public abstract class AbstractParallelizationParadigm implements
+	ParallelizationParadigm
+{
 
 	// Unused code, to be revived later
 

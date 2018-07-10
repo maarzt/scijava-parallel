@@ -20,8 +20,9 @@ import org.scijava.service.Service;
 // TODO: Add description
 
 @Plugin(type = Service.class)
-public class DefaultParallelService extends AbstractSingletonService<ParallelizationParadigm>
-		implements ParallelService {
+public class DefaultParallelService extends
+	AbstractSingletonService<ParallelizationParadigm> implements ParallelService
+{
 
 	@Parameter
 	PrefService prefService;
@@ -36,14 +37,15 @@ public class DefaultParallelService extends AbstractSingletonService<Paralleliza
 
 	@Override
 	public ParallelizationParadigm getParadigm() {
-		final List<ParallelizationParadigmProfile> selectedProfiles = getProfiles().stream()
-				.filter(p -> p.isSelected().equals(true)).collect(Collectors.toList());
+		final List<ParallelizationParadigmProfile> selectedProfiles = getProfiles()
+			.stream().filter(p -> p.isSelected().equals(true)).collect(Collectors
+				.toList());
 
 		if (selectedProfiles.size() == 1) {
 
-			final List<ParallelizationParadigm> foundParadigms = getInstances().stream()
-					.filter(paradigm -> paradigm.getClass().equals(selectedProfiles.get(0).getParadigmType()))
-					.collect(Collectors.toList());
+			final List<ParallelizationParadigm> foundParadigms = getInstances()
+				.stream().filter(paradigm -> paradigm.getClass().equals(selectedProfiles
+					.get(0).getParadigmType())).collect(Collectors.toList());
 
 			if (foundParadigms.size() == 1) {
 				return foundParadigms.get(0);
@@ -56,10 +58,12 @@ public class DefaultParallelService extends AbstractSingletonService<Paralleliza
 	@Deprecated
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends ParallelizationParadigm> T getParadigm(final Class<T> desiredParalellizationParadigm) {
-		final List<ParallelizationParadigm> matchingParadigms = getInstances().stream()
-				.filter(paradigm -> paradigm.getClass().equals(desiredParalellizationParadigm))
-				.collect(Collectors.toList());
+	public <T extends ParallelizationParadigm> T getParadigm(
+		final Class<T> desiredParalellizationParadigm)
+	{
+		final List<ParallelizationParadigm> matchingParadigms = getInstances()
+			.stream().filter(paradigm -> paradigm.getClass().equals(
+				desiredParalellizationParadigm)).collect(Collectors.toList());
 
 		if (matchingParadigms.size() == 1) {
 			return (T) matchingParadigms.get(0);
@@ -84,7 +88,8 @@ public class DefaultParallelService extends AbstractSingletonService<Paralleliza
 		profiles.forEach(p -> {
 			if (p.getName().equals(name)) {
 				p.setSelected(true);
-			} else {
+			}
+			else {
 				p.setSelected(false);
 			}
 		});
@@ -116,34 +121,42 @@ public class DefaultParallelService extends AbstractSingletonService<Paralleliza
 
 	private void retrieveProfiles() {
 		profiles = new LinkedList<>();
-		prefService.getList(this.getClass(), PROFILES).forEach((serializedProfile) -> {
+		prefService.getList(this.getClass(), PROFILES).forEach((
+			serializedProfile) -> {
 			profiles.add(deserializeProfile(serializedProfile));
 		});
 	}
 
-	private String serializeProfile(final ParallelizationParadigmProfile profile) {
+	private String serializeProfile(
+		final ParallelizationParadigmProfile profile)
+	{
 		try {
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(profile);
 			oos.close();
 			return Base64.getEncoder().encodeToString(baos.toByteArray());
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			// TODO: Proper error handling
 		}
 		return null;
 	}
 
-	private ParallelizationParadigmProfile deserializeProfile(final String serializedProfile) {
+	private ParallelizationParadigmProfile deserializeProfile(
+		final String serializedProfile)
+	{
 		try {
 			final byte[] data = Base64.getDecoder().decode(serializedProfile);
-			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+			final ObjectInputStream ois = new ObjectInputStream(
+				new ByteArrayInputStream(data));
 			final Object o = ois.readObject();
 			ois.close();
 			if (ParallelizationParadigmProfile.class.isAssignableFrom(o.getClass())) {
 				return (ParallelizationParadigmProfile) o;
 			}
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			// TODO: Proper error handling
 		}
 		return null;

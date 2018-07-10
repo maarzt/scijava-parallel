@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import org.scijava.parallel.ParallelizationParadigm;
@@ -8,7 +9,8 @@ import org.slf4j.LoggerFactory;
 @Plugin(type = ParallelizationParadigm.class)
 public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.LocalMultithreadedParadigm.class);
+	public static final Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.LocalMultithreadedParadigm.class);
 
 	private Integer poolSize;
 

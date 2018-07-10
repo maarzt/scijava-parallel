@@ -1,3 +1,4 @@
+
 package test;
 
 import static test.Config.JPG_SUFFIX;
@@ -29,14 +30,16 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.HeappeParadigm;
 
-@Plugin(type = Command.class, headless = true, menuPath = "Plugins>DemonstrateOstravaParadigm")
+@Plugin(type = Command.class, headless = true,
+	menuPath = "Plugins>DemonstrateOstravaParadigm")
 public class DemonstrateHeAppeParadigm implements Command {
 
 	private static int step = 10;
 	private static int port = 8080;
 
 	private static int numberOfHosts;
-	public static final Logger log = LoggerFactory.getLogger(DemonstrateHeAppeParadigm.class);
+	public static final Logger log = LoggerFactory.getLogger(
+		DemonstrateHeAppeParadigm.class);
 
 	@Parameter
 	ParallelService parallelService;
@@ -44,7 +47,9 @@ public class DemonstrateHeAppeParadigm implements Command {
 	@Override
 	public void run() {
 		final Collection<P_Input> inputs = prepareInputs();
-		try (HeappeParadigm remoteParadigm = parallelService.getParadigm(HeappeParadigm.class)) {
+		try (HeappeParadigm remoteParadigm = parallelService.getParadigm(
+			HeappeParadigm.class))
+		{
 			remoteParadigm.setPort(port);
 			remoteParadigm.setNumberOfNodes(numberOfHosts);
 			remoteParadigm.init();
@@ -57,26 +62,29 @@ public class DemonstrateHeAppeParadigm implements Command {
 		final Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
-			file = Files
-					.newDirectoryStream(Paths.get(getInputDirectory()),
-							p -> p.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
-					.iterator().next();
+			file = Files.newDirectoryStream(Paths.get(getInputDirectory()), p -> p
+				.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
+				.iterator().next();
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
 			}
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 		return inputs;
 	}
 
-	private void doTest(final ParallelizationParadigm paradigm, final Collection<P_Input> inputs) {
+	private void doTest(final ParallelizationParadigm paradigm,
+		final Collection<P_Input> inputs)
+	{
 		log.info("Number of workers: " + numberOfHosts);
 		final long time = System.currentTimeMillis();
 		paradigm.parallelFor(inputs, (input, task) -> {
 			// log.info("processing angle=" + input.angle);
 			Dataset ds = task.importData(input.dataset);
-			final RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
+			final RotateImageXY<?> command = task.getRemoteCommand(
+				RotateImageXY.class);
 			command.setAngle(Double.parseDouble(input.angle));
 			command.setDataset(ds);
 			command.run();
@@ -85,13 +93,15 @@ public class DemonstrateHeAppeParadigm implements Command {
 		});
 		final long time2 = System.currentTimeMillis();
 		final double sec = (time2 - time) / 1000.;
-		final String resultStr = "Number of workers: " + numberOfHosts + ", time: " + sec;
+		final String resultStr = "Number of workers: " + numberOfHosts +
+			", time: " + sec;
 		writeResult(resultStr);
 		log.info("done iteration: " + resultStr);
 	}
 
 	private Path constructOutputPath(final P_Input input) {
-		return Paths.get(getOutputFilesPattern() + input.angle + suffix(input.dataset));
+		return Paths.get(getOutputFilesPattern() + input.angle + suffix(
+			input.dataset));
 	}
 
 	private String suffix(final Path path) {
@@ -99,10 +109,12 @@ public class DemonstrateHeAppeParadigm implements Command {
 	}
 
 	private void writeResult(final String resultStr) {
-		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(getResultFile()), StandardOpenOption.APPEND,
-				StandardOpenOption.CREATE)) {
+		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(getResultFile()),
+			StandardOpenOption.APPEND, StandardOpenOption.CREATE))
+		{
 			bw.write(resultStr + "\n");
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -117,6 +129,7 @@ public class DemonstrateHeAppeParadigm implements Command {
 	}
 
 	private static class P_Input {
+
 		Path dataset;
 		String angle;
 

@@ -1,3 +1,4 @@
+
 package test;
 
 import java.io.IOException;
@@ -20,8 +21,10 @@ public class Config {
 	static {
 		properties = new Properties();
 		try {
-			properties.load(Config.class.getClassLoader().getResourceAsStream(CONFIG_FILE_NAME));
-		} catch (final IOException e) {
+			properties.load(Config.class.getClassLoader().getResourceAsStream(
+				CONFIG_FILE_NAME));
+		}
+		catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 	}

@@ -1,3 +1,4 @@
+
 package org.scijava.parallel;
 
 import java.util.LinkedList;
@@ -33,7 +34,8 @@ public abstract class Node<T> {
 		nodes.forEach(t -> t.addSuccessor(this));
 	}
 
-	// TODO: Do we want to go for the builder pattern and allow chaining when adding
+	// TODO: Do we want to go for the builder pattern and allow chaining when
+	// adding
 	// single successors?
 
 	// TODO: Create a method for inserting a node between two other nodes

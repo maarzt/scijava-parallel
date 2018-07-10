@@ -1,3 +1,4 @@
+
 package test;
 
 import static test.Config.JPG_SUFFIX;
@@ -33,7 +34,8 @@ import org.slf4j.LoggerFactory;
 import cz.it4i.parallel.ImageJServerParadigm;
 import cz.it4i.parallel.LocalMultithreadedParadigm;
 
-@Plugin(type = Command.class, headless = true, menuPath = "Plugins>DemonstrateOstravaParadigm")
+@Plugin(type = Command.class, headless = true,
+	menuPath = "Plugins>DemonstrateOstravaParadigm")
 public class DemonstrateParadigm implements Command {
 
 	private static int repetitionCount = 10;
@@ -42,7 +44,8 @@ public class DemonstrateParadigm implements Command {
 
 	private static List<String> hosts;
 	private static int maxNumberOfLocalWorkers;
-	public static final Logger log = LoggerFactory.getLogger(DemonstrateParadigm.class);
+	public static final Logger log = LoggerFactory.getLogger(
+		DemonstrateParadigm.class);
 
 	@Parameter
 	ParallelService parallelService;
@@ -53,16 +56,22 @@ public class DemonstrateParadigm implements Command {
 		final Collection<P_Input> inputs = prepareInputs();
 
 		if (hosts.size() > 0) {
-			try (ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class)) {
+			try (ImageJServerParadigm remoteParadigm = parallelService.getParadigm(
+				ImageJServerParadigm.class))
+			{
 				remoteParadigm.setHosts(hosts);
 				remoteParadigm.setPort(port);
 				remoteParadigm.init();
 				doTest(remoteParadigm, inputs, hosts.size());
 			}
-		} else {
+		}
+		else {
 			try (LocalMultithreadedParadigm localParadigm = parallelService
-					.getParadigm(LocalMultithreadedParadigm.class)) {
-				for (int numberOfWorkers = maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--) {
+				.getParadigm(LocalMultithreadedParadigm.class))
+			{
+				for (int numberOfWorkers =
+					maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--)
+				{
 					localParadigm.setPoolSize(numberOfWorkers);
 					localParadigm.init();
 					doTest(localParadigm, inputs, numberOfWorkers);
@@ -75,28 +84,30 @@ public class DemonstrateParadigm implements Command {
 		final Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
-			file = Files
-					.newDirectoryStream(Paths.get(getInputDirectory()),
-							p -> p.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
-					.iterator().next();
+			file = Files.newDirectoryStream(Paths.get(getInputDirectory()), p -> p
+				.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
+				.iterator().next();
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
 			}
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 		return inputs;
 	}
 
-	private void doTest(final ParallelizationParadigm paradigm, final Collection<P_Input> inputs,
-			final int numberOfWorkers) {
+	private void doTest(final ParallelizationParadigm paradigm,
+		final Collection<P_Input> inputs, final int numberOfWorkers)
+	{
 		log.info("Number of workers: " + numberOfWorkers);
 		for (int i = 0; i < repetitionCount; i++) {
 			final long time = System.currentTimeMillis();
 			paradigm.parallelFor(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
 				Dataset ds = task.importData(input.dataset);
-				final RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
+				final RotateImageXY<?> command = task.getRemoteCommand(
+					RotateImageXY.class);
 				command.setAngle(Double.parseDouble(input.angle));
 				command.setDataset(ds);
 				command.run();
@@ -105,14 +116,16 @@ public class DemonstrateParadigm implements Command {
 			});
 			final long time2 = System.currentTimeMillis();
 			final double sec = (time2 - time) / 1000.;
-			final String resultStr = "Number of workers: " + numberOfWorkers + ", time: " + sec;
+			final String resultStr = "Number of workers: " + numberOfWorkers +
+				", time: " + sec;
 			writeResult(resultStr);
 			log.info("done iteration: " + resultStr);
 		}
 	}
 
 	private Path constructOutputPath(final P_Input input) {
-		return Paths.get(getOutputFilesPattern() + input.angle + suffix(input.dataset));
+		return Paths.get(getOutputFilesPattern() + input.angle + suffix(
+			input.dataset));
 	}
 
 	private String suffix(final Path path) {
@@ -120,10 +133,12 @@ public class DemonstrateParadigm implements Command {
 	}
 
 	private void writeResult(final String resultStr) {
-		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(getResultFile()), StandardOpenOption.APPEND,
-				StandardOpenOption.CREATE)) {
+		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(getResultFile()),
+			StandardOpenOption.APPEND, StandardOpenOption.CREATE))
+		{
 			bw.write(resultStr + "\n");
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -139,7 +154,8 @@ public class DemonstrateParadigm implements Command {
 			while (argIter.hasNext()) {
 				DemonstrateParadigm.hosts.add(argIter.next());
 			}
-		} else {
+		}
+		else {
 			final Iterator<String> argIter = Arrays.asList(args).iterator();
 			argIter.next();
 			repetitionCount = Integer.parseInt(argIter.next());
@@ -152,6 +168,7 @@ public class DemonstrateParadigm implements Command {
 	}
 
 	private static class P_Input {
+
 		Path dataset;
 		String angle;
 

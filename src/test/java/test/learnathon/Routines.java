@@ -1,3 +1,4 @@
+
 package test.learnathon;
 
 import static test.Config.getOutputFilesPattern;
@@ -6,7 +7,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Routines {
-	public static Path constructOutputPath(final Path fileToRotate, final int angle) {
+
+	public static Path constructOutputPath(final Path fileToRotate,
+		final int angle)
+	{
 		return Paths.get(getOutputFilesPattern() + angle + suffix(fileToRotate));
 	}
 

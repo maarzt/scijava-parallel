@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import static org.mockito.Mockito.doAnswer;
@@ -47,7 +48,7 @@ public class HeappeWorker implements ParallelWorker {
 	private final Map<String, Dataset> id2mockedData = new HashMap<>();
 
 	private final static Set<String> supportedImageTypes = Collections
-			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
+		.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
 	HeappeWorker(final String hostName, final int port) {
 		this.hostName = hostName;
@@ -74,12 +75,13 @@ public class HeappeWorker implements ParallelWorker {
 
 		try {
 
-			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/upload";
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
+				"/objects/upload";
 			final HttpPost httpPost = new HttpPost(postUrl);
 
-			final HttpEntity entity = MultipartEntityBuilder.create()
-					.addBinaryBody("file", new File(filePath), ContentType.create(getContentType(filePath)), fileName)
-					.build();
+			final HttpEntity entity = MultipartEntityBuilder.create().addBinaryBody(
+				"file", new File(filePath), ContentType.create(getContentType(
+					filePath)), fileName).build();
 			httpPost.setEntity(entity);
 			try (CloseableHttpClient client = createClient()) {
 				final HttpResponse response = client.execute(httpPost);
@@ -97,7 +99,8 @@ public class HeappeWorker implements ParallelWorker {
 				id2mockedData.put(obj, result);
 			}
 
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			e.printStackTrace();
 		}
 
@@ -112,17 +115,19 @@ public class HeappeWorker implements ParallelWorker {
 
 		try {
 
-			final String getUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + objectId + "/"
-					+ getImageType(filePath);
+			final String getUrl = "http://" + hostName + ":" + String.valueOf(port) +
+				"/objects/" + objectId + "/" + getImageType(filePath);
 			final HttpGet httpGet = new HttpGet(getUrl);
 			try (CloseableHttpClient client = createClient()) {
 				final HttpEntity entity = client.execute(httpGet).getEntity();
 
 				if (entity != null) {
 
-					try (BufferedInputStream bis = new BufferedInputStream(entity.getContent());
+					try (BufferedInputStream bis = new BufferedInputStream(entity
+						.getContent());
 							BufferedOutputStream bos = new BufferedOutputStream(
-									new FileOutputStream(new File(filePath)))) {
+								new FileOutputStream(new File(filePath))))
+					{
 						int inByte;
 						while ((inByte = bis.read()) != -1) {
 							bos.write(inByte);
@@ -130,7 +135,8 @@ public class HeappeWorker implements ParallelWorker {
 					}
 				}
 			}
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -145,7 +151,8 @@ public class HeappeWorker implements ParallelWorker {
 
 		try {
 
-			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + objectId;
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
+				"/objects/" + objectId;
 			final HttpDelete httpDelete = new HttpDelete(postUrl);
 			try (CloseableHttpClient client = createClient()) {
 				final HttpResponse response = client.execute(httpDelete);
@@ -154,7 +161,8 @@ public class HeappeWorker implements ParallelWorker {
 
 				json = EntityUtils.toString(response.getEntity());
 			}
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			e.printStackTrace();
 		}
 
@@ -164,8 +172,9 @@ public class HeappeWorker implements ParallelWorker {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(final Class<T> commandType,
-			final Map<String, ?> inputs) {
+	public <T extends Command> Map<String, Object> executeCommand(
+		final Class<T> commandType, final Map<String, ?> inputs)
+	{
 
 		final Map<String, Object> wrappedInputs = wrapInputValues(inputs);
 
@@ -173,8 +182,8 @@ public class HeappeWorker implements ParallelWorker {
 
 		try {
 
-			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:"
-					+ commandType.getCanonicalName();
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
+				"/modules/" + "command:" + commandType.getCanonicalName();
 			final HttpPost httpPost = new HttpPost(postUrl);
 
 			final JSONObject inputJson = new JSONObject();
@@ -192,7 +201,8 @@ public class HeappeWorker implements ParallelWorker {
 
 				json = EntityUtils.toString(response.getEntity());
 			}
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			e.printStackTrace();
 		}
 
@@ -221,37 +231,41 @@ public class HeappeWorker implements ParallelWorker {
 			}
 		}
 
-		throw new UnsupportedOperationException("Only " + supportedImageTypes + " image files supported");
+		throw new UnsupportedOperationException("Only " + supportedImageTypes +
+			" image files supported");
 	}
 
 	private Map<String, Object> wrapInputValues(final Map<String, ?> map) {
 		return convertMap(map, HeappeWorker::isEntryResolvable, this::wrapValue);
 	}
 
-	private Map<String, Object> unwrapOutputValues(final Map<String, Object> map) {
+	private Map<String, Object> unwrapOutputValues(
+		final Map<String, Object> map)
+	{
 		return convertMap(map, HeappeWorker::isEntryResolvable, this::unwrapValue);
 	}
 
 	/**
 	 * Converts an input map into an output map
 	 *
-	 * @param map
-	 *            - an input map
-	 * @param filter
-	 *            - a filter to be applied on all map entries prior the actual
-	 *            conversion
-	 * @param converter
-	 *            - a converter to be applied on each map entry
+	 * @param map - an input map
+	 * @param filter - a filter to be applied on all map entries prior the actual
+	 *          conversion
+	 * @param converter - a converter to be applied on each map entry
 	 * @return a converted map
 	 */
 	private Map<String, Object> convertMap(final Map<String, ?> map,
-			final Function<Map.Entry<String, ?>, Boolean> filter, final Function<Object, Object> converter) {
+		final Function<Map.Entry<String, ?>, Boolean> filter,
+		final Function<Object, Object> converter)
+	{
 		return map.entrySet().stream().filter(entry -> filter.apply(entry)).map(
-				entry -> new SimpleImmutableEntry<>(entry.getKey(), converter.apply(entry.getValue())))
-				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+			entry -> new SimpleImmutableEntry<>(entry.getKey(), converter.apply(entry
+				.getValue()))).collect(Collectors.toMap(e -> e.getKey(), e -> e
+					.getValue()));
 	}
 
-	// TODO: Should not we return null if it is not instance of any supported type?
+	// TODO: Should not we return null if it is not instance of any supported
+	// type?
 	private Object wrapValue(Object value) {
 		if (value instanceof Dataset) {
 			final Dataset ds = (Dataset) value;
@@ -263,7 +277,8 @@ public class HeappeWorker implements ParallelWorker {
 		return value;
 	}
 
-	// TODO: Should not we return null if it is not instance of any supported type?
+	// TODO: Should not we return null if it is not instance of any supported
+	// type?
 	private Object unwrapValue(Object value) {
 		final Dataset obj = id2mockedData.get(value);
 		if (obj != null) {
@@ -272,7 +287,9 @@ public class HeappeWorker implements ParallelWorker {
 		return value;
 	}
 
-	private CloseableHttpClient createClient() throws IOException, ClientProtocolException {
+	private CloseableHttpClient createClient() throws IOException,
+		ClientProtocolException
+	{
 		final HttpClientBuilder builder = HttpClientBuilder.create();
 		return builder.build();
 	}
@@ -281,7 +298,8 @@ public class HeappeWorker implements ParallelWorker {
 	 * Determines whether an entry is resolvable from the SciJava Context
 	 */
 	private static boolean isEntryResolvable(final Map.Entry<String, ?> entry) {
-		return entry.getValue() != null && !(entry.getValue() instanceof SciJavaPlugin)
-				&& !(entry.getValue() instanceof Context);
+		return entry.getValue() != null && !(entry
+			.getValue() instanceof SciJavaPlugin) && !(entry
+				.getValue() instanceof Context);
 	}
 }

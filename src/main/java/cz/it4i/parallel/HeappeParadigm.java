@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import java.io.IOException;
@@ -22,7 +23,8 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 
 	private static final int TIMEOUT_BETWEEN_JOB_STATE_QUERY = 1000;
 
-	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.HeappeParadigm.class);
+	private static final Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.HeappeParadigm.class);
 
 	@Parameter
 	private int port;
@@ -31,7 +33,8 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	private int numberOfHosts;
 
 	private HaaSClient haasClient;
-	private final Collection<TunnelToNode> tunnels = Collections.synchronizedList(new LinkedList<>());
+	private final Collection<TunnelToNode> tunnels = Collections.synchronizedList(
+		new LinkedList<>());
 
 	// -- HeappeParadigm methods --
 
@@ -51,15 +54,17 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		if (log.isDebugEnabled()) {
 			log.debug("initWorkerPool");
 		}
-		haasClient = new HaaSClient(SettingsProvider.getSettings(Constants.PROJECT_ID, Constants.CONFIG_FILE_NAME));
+		haasClient = new HaaSClient(SettingsProvider.getSettings(
+			Constants.PROJECT_ID, Constants.CONFIG_FILE_NAME));
 		if (log.isDebugEnabled()) {
 			log.debug("createJob");
 		}
-		final long jobId = haasClient.createJob(
-				new JobSettingsBuilder().templateId(Constants.HEAppE.TEMPLATE_ID).walltimeLimit(Constants.WALLTIME)
-						.clusterNodeType(Constants.CLUSTER_NODE_TYPE).jobName(Constants.HEAppE.JOB_NAME)
-						.numberOfNodes(numberOfHosts).numberOfCoresPerNode(Constants.NUMBER_OF_CORE).build(),
-				Collections.emptyList());
+		final long jobId = haasClient.createJob(new JobSettingsBuilder().templateId(
+			Constants.HEAppE.TEMPLATE_ID).walltimeLimit(Constants.WALLTIME)
+			.clusterNodeType(Constants.CLUSTER_NODE_TYPE).jobName(
+				Constants.HEAppE.JOB_NAME).numberOfNodes(numberOfHosts)
+			.numberOfCoresPerNode(Constants.NUMBER_OF_CORE).build(), Collections
+				.emptyList());
 		if (log.isDebugEnabled()) {
 			log.debug("submitJob");
 		}
@@ -67,7 +72,8 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		while (logGetState(jobId) == JobState.Queued) {
 			try {
 				Thread.sleep(TIMEOUT_BETWEEN_JOB_STATE_QUERY);
-			} catch (final InterruptedException e) {
+			}
+			catch (final InterruptedException e) {
 				log.error(e.getMessage(), e);
 			}
 		}
@@ -79,8 +85,10 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 				tunnels.add(tunnel = haasClient.openTunnel(jobId, node, 0, port));
 				return new HeappeWorker(tunnel.getLocalHost(), tunnel.getLocalPort());
 			}).forEach(worker -> workerPool.addWorker(worker));
-		} else {
-			log.error("Job ID: %d not running. It is in state %s.", jobId, state.toString());
+		}
+		else {
+			log.error("Job ID: %d not running. It is in state %s.", jobId, state
+				.toString());
 		}
 	}
 
@@ -90,7 +98,8 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		tunnels.forEach(t -> {
 			try {
 				t.close();
-			} catch (final IOException e) {
+			}
+			catch (final IOException e) {
 				log.error(e.getMessage(), e);
 			}
 		});

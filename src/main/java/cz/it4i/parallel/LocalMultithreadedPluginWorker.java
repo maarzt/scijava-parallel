@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import io.scif.services.DatasetIOService;
@@ -38,7 +39,8 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	public Dataset importData(final Path filePath) {
 		try {
 			return datasetIOService.open(filePath.toString());
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -47,7 +49,8 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	public void exportData(final Dataset dataset, final Path filePath) {
 		try {
 			datasetIOService.save(dataset, filePath.toString());
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -58,8 +61,9 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(final Class<T> commandType,
-			final Map<String, ?> map) {
+	public <T extends Command> Map<String, Object> executeCommand(
+		final Class<T> commandType, final Map<String, ?> map)
+	{
 
 		// Create a new Object-typed input map
 		final Map<String, Object> inputMap = new HashMap<>();
@@ -68,7 +72,8 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 		// Execute command and return outputs
 		try {
 			return commandService.run(commandType, true, inputMap).get().getOutputs();
-		} catch (InterruptedException | ExecutionException e) {
+		}
+		catch (InterruptedException | ExecutionException e) {
 			logService.error(e.getMessage(), e);
 		}
 

@@ -1,3 +1,4 @@
+
 package test;
 
 import static test.Config.JPG_SUFFIX;
@@ -31,13 +32,15 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.ImageJServerParadigm;
 
-@Plugin(type = Command.class, headless = true, menuPath = "Plugins>Cisim2018Demonstration")
+@Plugin(type = Command.class, headless = true,
+	menuPath = "Plugins>Cisim2018Demonstration")
 public class Cisim2018PaperSnippet implements Command {
 
 	private static int step = 10;
 
 	private static List<String> hosts;
-	public static final Logger log = LoggerFactory.getLogger(test.Cisim2018PaperSnippet.class);
+	public static final Logger log = LoggerFactory.getLogger(
+		test.Cisim2018PaperSnippet.class);
 
 	@Parameter
 	ParallelService parallelService;
@@ -46,10 +49,12 @@ public class Cisim2018PaperSnippet implements Command {
 	public void run() {
 		final Collection<P_Input> inputs = prepareInputs();
 		final Map<P_Input, Path> outputs = new HashMap<>();
-		final ParallelizationParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
+		final ParallelizationParadigm paradigm = parallelService.getParadigm(
+			ImageJServerParadigm.class);
 		paradigm.parallelFor(inputs, (input, task) -> {
 			Dataset ds = task.importData(input.dataset);
-			final RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
+			final RotateImageXY<?> command = task.getRemoteCommand(
+				RotateImageXY.class);
 			command.setAngle(input.angle);
 			command.setDataset(ds);
 			command.run();
@@ -61,7 +66,8 @@ public class Cisim2018PaperSnippet implements Command {
 	}
 
 	private Path constructOutputPath(final P_Input input) {
-		return Paths.get(getOutputFilesPattern() + input.angle + suffix(input.dataset));
+		return Paths.get(getOutputFilesPattern() + input.angle + suffix(
+			input.dataset));
 	}
 
 	private String suffix(final Path path) {
@@ -72,14 +78,14 @@ public class Cisim2018PaperSnippet implements Command {
 		final Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
-			file = Files
-					.newDirectoryStream(Paths.get(getInputDirectory()),
-							p -> p.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
-					.iterator().next();
+			file = Files.newDirectoryStream(Paths.get(getInputDirectory()), p -> p
+				.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
+				.iterator().next();
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, angle));
 			}
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 		return inputs;
@@ -94,7 +100,8 @@ public class Cisim2018PaperSnippet implements Command {
 			while (argIter.hasNext()) {
 				Cisim2018PaperSnippet.hosts.add(argIter.next());
 			}
-		} else {
+		}
+		else {
 			final Iterator<String> argIter = Arrays.asList(args).iterator();
 			argIter.next();
 
@@ -107,6 +114,7 @@ public class Cisim2018PaperSnippet implements Command {
 	}
 
 	private static class P_Input {
+
 		Path dataset;
 		double angle;
 

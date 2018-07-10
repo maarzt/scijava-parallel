@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import java.util.Collection;
@@ -11,7 +12,8 @@ import org.slf4j.LoggerFactory;
 @Plugin(type = ParallelizationParadigm.class)
 public class ImageJServerParadigm extends SimpleOstravaParadigm {
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.ImageJServerParadigm.class);
+	public static final Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.ImageJServerParadigm.class);
 
 	private int port;
 
@@ -41,7 +43,8 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 			final String[] tokensOfHost = host.split(":");
 			port = Integer.parseInt(tokensOfHost[1]);
 			host = tokensOfHost[0];
-		} else {
+		}
+		else {
 			port = this.port;
 		}
 		return new ImageJServerWorker(host, port);

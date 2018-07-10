@@ -1,3 +1,4 @@
+
 package org.scijava.parallel;
 
 import java.nio.file.Path;

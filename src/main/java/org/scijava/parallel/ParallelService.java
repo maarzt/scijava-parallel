@@ -13,7 +13,9 @@ import org.scijava.service.SciJavaService;
  *
  * @author TODO: Add authors
  */
-public interface ParallelService extends SingletonService<ParallelizationParadigm>, SciJavaService {
+public interface ParallelService extends
+	SingletonService<ParallelizationParadigm>, SciJavaService
+{
 
 	// TODO: This API is super-preliminary
 
@@ -29,14 +31,15 @@ public interface ParallelService extends SingletonService<ParallelizationParadig
 	/**
 	 * Returns an instance of a parallelization paradigm, if it is available
 	 * 
-	 * @param Class
-	 *            of the desired parallelization paradigm
+	 * @param Class of the desired parallelization paradigm
 	 * @return Instance of the desired parallelization paradigm
 	 */
-	public <T extends ParallelizationParadigm> T getParadigm(final Class<T> chosenParalellizationParadigm);
+	public <T extends ParallelizationParadigm> T getParadigm(
+		final Class<T> chosenParalellizationParadigm);
 
 	// TODO: This method is meant to be package-specific only,
-	// profiles should be accessible only from the prospective configuration plugin
+	// profiles should be accessible only from the prospective configuration
+	// plugin
 	/**
 	 * Returns all saved parallelization paradigm profiles
 	 * 
@@ -45,7 +48,8 @@ public interface ParallelService extends SingletonService<ParallelizationParadig
 	public List<ParallelizationParadigmProfile> getProfiles();
 
 	// TODO: This method is meant to be package-specific only,
-	// profiles should be accessible only from the prospective configuration plugin
+	// profiles should be accessible only from the prospective configuration
+	// plugin
 	/**
 	 * Saves the given {@link ParallelizationParadigmProfile} using the
 	 * {@link PrefService}
@@ -53,17 +57,18 @@ public interface ParallelService extends SingletonService<ParallelizationParadig
 	public void addProfile(final ParallelizationParadigmProfile profile);
 
 	// TODO: This method is meant to be package-specific only,
-	// profiles should be accessible only from the prospective configuration plugin
+	// profiles should be accessible only from the prospective configuration
+	// plugin
 	/**
 	 * Selects the given {@link ParallelizationParadigmProfile}
 	 * 
-	 * @param Name
-	 *            of the {@link ParallelizationParadigmProfile} to be selected
+	 * @param Name of the {@link ParallelizationParadigmProfile} to be selected
 	 */
 	public void selectProfile(final String name);
 
 	// TODO: This method is meant to be package-specific only,
-	// profiles should be accessible only from the prospective configuration plugin
+	// profiles should be accessible only from the prospective configuration
+	// plugin
 	/** Removes all saved parallelization paradigm profiles */
 	public void deleteProfiles();
 

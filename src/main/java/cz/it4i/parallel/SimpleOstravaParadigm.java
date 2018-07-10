@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import static org.mockito.Mockito.doAnswer;
@@ -27,9 +28,12 @@ import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
+public abstract class SimpleOstravaParadigm extends
+	AbstractParallelizationParadigm
+{
 
-	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
+	private static final Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected WorkerPool workerPool;
 
@@ -52,8 +56,11 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	}
 
 	@Override
-	public <T> void parallelFor(final Iterable<T> arguments, final BiConsumer<T, ExecutionContext> consumer) {
-		final Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
+	public <T> void parallelFor(final Iterable<T> arguments,
+		final BiConsumer<T, ExecutionContext> consumer)
+	{
+		final Collection<Future<?>> futures = Collections.synchronizedCollection(
+			new LinkedList<>());
 		arguments.forEach(val -> futures.add(threadService.run(new Runnable() {
 
 			@Override
@@ -61,7 +68,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				try (P_ExecutionContext task = new P_ExecutionContext()) {
 					try {
 						consumer.accept(val, task);
-					} catch (final Exception e) {
+					}
+					catch (final Exception e) {
 						log.error(e.getMessage(), e);
 					}
 				}
@@ -70,7 +78,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		futures.forEach(f -> {
 			try {
 				f.get();
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				if (e instanceof InterruptedException) {
 					Thread.currentThread().interrupt();
 				}
@@ -88,7 +97,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		public P_ExecutionContext() {
 			try {
 				worker = workerPool.takeFreeWorker();
-			} catch (final InterruptedException e) {
+			}
+			catch (final InterruptedException e) {
 				log.error(e.getMessage(), e);
 			}
 		}
@@ -96,15 +106,18 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		@Override
 		public <T extends Command> T getRemoteCommand(final Class<T> type) {
 
-			// Create a new command so that its input parameters are properly initialized
+			// Create a new command so that its input parameters are properly
+			// initialized
 			final T realCommand = commandService.create(type);
 
 			// Create a mocked command which will call real command methods...
-			final T mockedCommand = mock(type, (Answer<Object>) invocation -> invocation.getMethod().invoke(realCommand,
-					invocation.getArguments()));
+			final T mockedCommand = mock(type,
+				(Answer<Object>) invocation -> invocation.getMethod().invoke(
+					realCommand, invocation.getArguments()));
 
 			// ...apart from run() which will be customized
 			doAnswer(new Answer<Void>() {
+
 				@Override
 				public Void answer(final InvocationOnMock invocation) throws Throwable {
 					final CommandInfo cInfo = commandService.getCommand(type);

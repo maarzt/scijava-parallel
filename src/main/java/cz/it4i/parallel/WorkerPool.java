@@ -1,3 +1,4 @@
+
 package cz.it4i.parallel;
 
 import java.util.concurrent.ArrayBlockingQueue;

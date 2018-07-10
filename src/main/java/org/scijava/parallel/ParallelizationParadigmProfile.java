@@ -59,8 +59,10 @@ public class ParallelizationParadigmProfile implements Serializable {
 		this.selected = selected;
 	}
 
-	public ParallelizationParadigmProfile(final Class<? extends ParallelizationParadigm> paradigmType,
-			final String profileName) {
+	public ParallelizationParadigmProfile(
+		final Class<? extends ParallelizationParadigm> paradigmType,
+		final String profileName)
+	{
 		this.paradigmType = paradigmType;
 		this.profileName = profileName;
 	}
