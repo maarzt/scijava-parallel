@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 
+import net.imagej.Dataset;
+
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.scijava.command.Command;
@@ -25,14 +27,12 @@ import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.imagej.Dataset;
-
 public abstract class SimpleOstravaParadigm extends AbstractParallelizationParadigm {
 
 	private static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected WorkerPool workerPool;
-	
+
 	@Parameter
 	private ThreadService threadService;
 
@@ -42,9 +42,9 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	// -- SimpleOstravaParadigm methods --
 
 	abstract protected void initWorkerPool();
-	
+
 	// -- ParallelizationParadigm methods --
-	
+
 	@Override
 	public void init() {
 		workerPool = new WorkerPool();
@@ -52,8 +52,8 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 	}
 
 	@Override
-	public <T> void parallelFor(Iterable<T> arguments, BiConsumer<T, ExecutionContext> consumer) {
-		Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
+	public <T> void parallelFor(final Iterable<T> arguments, final BiConsumer<T, ExecutionContext> consumer) {
+		final Collection<Future<?>> futures = Collections.synchronizedCollection(new LinkedList<>());
 		arguments.forEach(val -> futures.add(threadService.run(new Runnable() {
 
 			@Override
@@ -61,7 +61,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 				try (P_ExecutionContext task = new P_ExecutionContext()) {
 					try {
 						consumer.accept(val, task);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						log.error(e.getMessage(), e);
 					}
 				}
@@ -78,7 +78,7 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 			}
 		});
 	}
-	
+
 	// -- Private classes and helper methods --
 
 	private class P_ExecutionContext implements ExecutionContext, Closeable {
@@ -88,32 +88,32 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		public P_ExecutionContext() {
 			try {
 				worker = workerPool.takeFreeWorker();
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				log.error(e.getMessage(), e);
 			}
 		}
 
 		@Override
-		public <T extends Command> T getRemoteCommand(Class<T> type) {
+		public <T extends Command> T getRemoteCommand(final Class<T> type) {
 
 			// Create a new command so that its input parameters are properly initialized
-			T realCommand = commandService.create(type);
-			
+			final T realCommand = commandService.create(type);
+
 			// Create a mocked command which will call real command methods...
-			T mockedCommand = mock(type, (Answer<Object>) invocation -> invocation.getMethod().invoke(realCommand,
+			final T mockedCommand = mock(type, (Answer<Object>) invocation -> invocation.getMethod().invoke(realCommand,
 					invocation.getArguments()));
-			
+
 			// ...apart from run() which will be customized
 			doAnswer(new Answer<Void>() {
 				@Override
-				public Void answer(InvocationOnMock invocation) throws Throwable {
-					CommandInfo cInfo = commandService.getCommand(type);
-					CommandModule cModule = new CommandModule(cInfo, realCommand);
+				public Void answer(final InvocationOnMock invocation) throws Throwable {
+					final CommandInfo cInfo = commandService.getCommand(type);
+					final CommandModule cModule = new CommandModule(cInfo, realCommand);
 					cModule.setOutputs(worker.executeCommand(type, cModule.getInputs()));
 					return null;
 				}
 			}).when(mockedCommand).run();
-			
+
 			return mockedCommand;
 		}
 
@@ -123,12 +123,12 @@ public abstract class SimpleOstravaParadigm extends AbstractParallelizationParad
 		}
 
 		@Override
-		public Dataset importData(Path path) {
+		public Dataset importData(final Path path) {
 			return worker.importData(path);
 		}
 
 		@Override
-		public void exportData(Dataset ds, Path p) {
+		public void exportData(final Dataset ds, final Path p) {
 			worker.exportData(ds, p);
 			worker.deleteData(ds);
 		}

@@ -6,7 +6,7 @@ interface Constants {
 	String PROJECT_ID = "open-12-20";
 	String CONFIG_FILE_NAME = "configuration.properties";
 	int NUMBER_OF_CORE = 24;
-	
+
 	interface HEAppE {
 		String JOB_NAME = "ImageJ-Server-HEAppE";
 		long TEMPLATE_ID = 6;

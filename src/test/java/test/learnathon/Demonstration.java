@@ -6,6 +6,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.imagej.Dataset;
+import net.imagej.ImageJ;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
@@ -16,9 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.ImageJServerParadigm;
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>ParadigmDemonstration")
 public class Demonstration implements Command {
@@ -38,47 +39,47 @@ public class Demonstration implements Command {
 
 	@Override
 	public void run() {
-		
+
 		// See the previously saved profiles
 		@SuppressWarnings("unused")
 		List<ParallelizationParadigmProfile> profiles = parallelService.getProfiles();
-		
+
 		// Remove all saved profiles
 		parallelService.deleteProfiles();
-		
-		// Add a few profiles, just for fun		
+
+		// Add a few profiles, just for fun
 		parallelService.addProfile(new ParallelizationParadigmProfile(ImageJServerParadigm.class, "lonelyBiologist01"));
 		parallelService.addProfile(new ParallelizationParadigmProfile(ImageJServerParadigm.class, "lonelyBiologist02"));
 		parallelService.addProfile(new ParallelizationParadigmProfile(ImageJServerParadigm.class, "lonelyBiologist03"));
-		
+
 		// See the saved profiles now
 		profiles = parallelService.getProfiles();
-		
+
 		// Set one of the profiles to be used
 		parallelService.selectProfile("lonelyBiologist02");
-		
+
 		// prepare inputs
-		Collection<Integer> angles = new LinkedList<>();
-		Path fileToRotate = Paths.get("/tmp/input/lena.jpg");
+		final Collection<Integer> angles = new LinkedList<>();
+		final Path fileToRotate = Paths.get("/tmp/input/lena.jpg");
 		for (int angle = step; angle < 360; angle += step) {
 			angles.add(angle);
 		}
 
-		ParallelizationParadigm paradigm = parallelService.getParadigm();
-		Collection<String> hosts = new LinkedList<>();
+		final ParallelizationParadigm paradigm = parallelService.getParadigm();
+		final Collection<String> hosts = new LinkedList<>();
 		hosts.add("localhost:10001");
 		hosts.add("localhost:10002");
 		hosts.add("localhost:10003");
 		hosts.add("localhost:10004");
 		((ImageJServerParadigm) paradigm).setHosts(hosts);
-		
+
 		// common initialization
 		paradigm.init();
 
 		paradigm.parallelFor(angles, (angle, executionContext) -> {
 			log.info("processing angle=" + angle);
 			Dataset ds = executionContext.importData(fileToRotate);
-			RotateImageXY<?> command = executionContext.getRemoteCommand(RotateImageXY.class);
+			final RotateImageXY<?> command = executionContext.getRemoteCommand(RotateImageXY.class);
 			command.setAngle(angle);
 			command.setDataset(ds);
 			command.run();

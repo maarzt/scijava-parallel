@@ -1,19 +1,20 @@
 package cz.it4i.parallel;
 
+import io.scif.services.DatasetIOService;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import net.imagej.Dataset;
+
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
-
-import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
 
 public class LocalMultithreadedPluginWorker implements ParallelWorker {
 
@@ -34,33 +35,34 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public Dataset importData(Path filePath) {
+	public Dataset importData(final Path filePath) {
 		try {
 			return datasetIOService.open(filePath.toString());
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public void exportData(Dataset dataset, Path filePath) {
+	public void exportData(final Dataset dataset, final Path filePath) {
 		try {
 			datasetIOService.save(dataset, filePath.toString());
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public void deleteData(Dataset ds) {
+	public void deleteData(final Dataset ds) {
 		ds.decrementReferences();
 	}
 
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> map) {
+	public <T extends Command> Map<String, Object> executeCommand(final Class<T> commandType,
+			final Map<String, ?> map) {
 
 		// Create a new Object-typed input map
-		Map<String, Object> inputMap = new HashMap<>();
+		final Map<String, Object> inputMap = new HashMap<>();
 		inputMap.putAll(map);
 
 		// Execute command and return outputs

@@ -8,10 +8,10 @@ public class WorkerPool {
 	private final BlockingQueue<ParallelWorker> availableWorkers;
 
 	public WorkerPool() {
-		availableWorkers = new ArrayBlockingQueue<ParallelWorker>(1024);
+		availableWorkers = new ArrayBlockingQueue<>(1024);
 	}
 
-	public void addWorker(ParallelWorker worker) {
+	public void addWorker(final ParallelWorker worker) {
 		availableWorkers.add(worker);
 	}
 

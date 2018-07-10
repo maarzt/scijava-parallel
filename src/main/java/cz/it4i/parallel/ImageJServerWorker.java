@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import net.imagej.Dataset;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -34,19 +36,17 @@ import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.SciJavaPlugin;
 
-import net.imagej.Dataset;
-
 public class ImageJServerWorker implements ParallelWorker {
 
 	private final String hostName;
 	private final int port;
 	private final Map<Dataset, String> mockedData2id = new HashMap<>();
 	private final Map<String, Dataset> id2mockedData = new HashMap<>();
-	
+
 	private final static Set<String> supportedImageTypes = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
-	ImageJServerWorker(String hostName, int port) {
+	ImageJServerWorker(final String hostName, final int port) {
 		this.hostName = hostName;
 		this.port = port;
 	}
@@ -58,43 +58,43 @@ public class ImageJServerWorker implements ParallelWorker {
 	public int getPort() {
 		return port;
 	}
-	
+
 	// -- ParallelWorker methods --
 
 	@Override
-	public Dataset importData(Path path) {
-		
+	public Dataset importData(final Path path) {
+
 		final String filePath = path.toAbsolutePath().toString();
 		final String fileName = path.getFileName().toString();
-				
+
 		Dataset result = null;
 
 		try {
 
-			String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/upload";
-			HttpPost httpPost = new HttpPost(postUrl);
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/upload";
+			final HttpPost httpPost = new HttpPost(postUrl);
 
-			HttpEntity entity = MultipartEntityBuilder.create()
+			final HttpEntity entity = MultipartEntityBuilder.create()
 					.addBinaryBody("file", new File(filePath), ContentType.create(getContentType(filePath)), fileName)
 					.build();
 			httpPost.setEntity(entity);
 
-			HttpResponse response = HttpClientBuilder.create().build().execute(httpPost);
+			final HttpResponse response = HttpClientBuilder.create().build().execute(httpPost);
 
 			// TODO check result code properly
 
-			String json = EntityUtils.toString(response.getEntity());
-			String obj = new org.json.JSONObject(json).getString("id");
-			
+			final String json = EntityUtils.toString(response.getEntity());
+			final String obj = new org.json.JSONObject(json).getString("id");
+
 			result = Mockito.mock(Dataset.class, (Answer<Dataset>) p -> {
 				throw new UnsupportedOperationException();
 			});
 			doAnswer(p -> "Dataset(mocked)[id = " + obj).when(result).toString();
-			
+
 			mockedData2id.put(result, obj);
 			id2mockedData.put(obj, result);
-			
-		} catch (Exception e) {
+
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
@@ -102,18 +102,18 @@ public class ImageJServerWorker implements ParallelWorker {
 	}
 
 	@Override
-	public void exportData(Dataset dataset, Path p) {
+	public void exportData(final Dataset dataset, final Path p) {
 
 		final String filePath = p.toString();
 		final String objectId = mockedData2id.get(dataset);
 
 		try {
 
-			String getUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + objectId + "/"
+			final String getUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + objectId + "/"
 					+ getImageType(filePath);
-			HttpGet httpGet = new HttpGet(getUrl);
+			final HttpGet httpGet = new HttpGet(getUrl);
 
-			HttpEntity entity = HttpClientBuilder.create().build().execute(httpGet).getEntity();
+			final HttpEntity entity = HttpClientBuilder.create().build().execute(httpGet).getEntity();
 
 			if (entity != null) {
 
@@ -125,13 +125,13 @@ public class ImageJServerWorker implements ParallelWorker {
 					}
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void deleteData(Dataset dataset) {
+	public void deleteData(final Dataset dataset) {
 
 		final String objectId = mockedData2id.get(dataset);
 
@@ -140,16 +140,16 @@ public class ImageJServerWorker implements ParallelWorker {
 
 		try {
 
-			String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + objectId;
-			HttpDelete httpDelete = new HttpDelete(postUrl);
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/objects/" + objectId;
+			final HttpDelete httpDelete = new HttpDelete(postUrl);
 
-			HttpResponse response = HttpClientBuilder.create().build().execute(httpDelete);
+			final HttpResponse response = HttpClientBuilder.create().build().execute(httpDelete);
 
 			// TODO check result code properly
 
 			json = EntityUtils.toString(response.getEntity());
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
@@ -159,57 +159,58 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(Class<T> commandType, Map<String, ?> inputs) {
+	public <T extends Command> Map<String, Object> executeCommand(final Class<T> commandType,
+			final Map<String, ?> inputs) {
 
-		Map<String, Object> wrappedInputs = wrapInputValues(inputs);
+		final Map<String, Object> wrappedInputs = wrapInputValues(inputs);
 
 		String json = null;
 
 		try {
 
-			String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:"
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) + "/modules/" + "command:"
 					+ commandType.getCanonicalName();
-			HttpPost httpPost = new HttpPost(postUrl);
+			final HttpPost httpPost = new HttpPost(postUrl);
 
-			JSONObject inputJson = new JSONObject();
+			final JSONObject inputJson = new JSONObject();
 
-			for (Map.Entry<String, ?> pair : wrappedInputs.entrySet()) {
+			for (final Map.Entry<String, ?> pair : wrappedInputs.entrySet()) {
 				inputJson.put(pair.getKey(), pair.getValue());
 			}
 
 			httpPost.setEntity(new StringEntity(inputJson.toString()));
 			httpPost.setHeader("Content-type", "application/json");
 
-			HttpResponse response = HttpClientBuilder.create().build().execute(httpPost);
+			final HttpResponse response = HttpClientBuilder.create().build().execute(httpPost);
 
 			// TODO check result code properly
 
 			json = EntityUtils.toString(response.getEntity());
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
-		Map<String, Object> rawOutputs = new HashMap<>();
+		final Map<String, Object> rawOutputs = new HashMap<>();
 
-		org.json.JSONObject jsonObj = new org.json.JSONObject(json);
+		final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
 
-		for (String key : jsonObj.keySet()) {
+		for (final String key : jsonObj.keySet()) {
 			rawOutputs.put(key, jsonObj.get(key));
 		}
 
 		return unwrapOutputValues(rawOutputs);
 	}
-	
+
 	// -- Helper methods --
 
 	// TODO: support another types
-	private String getContentType(String path) {
+	private String getContentType(final String path) {
 		return "image/" + getImageType(path);
 	}
-	
-	private String getImageType(String path) {
-		for (String type : supportedImageTypes) {
+
+	private String getImageType(final String path) {
+		for (final String type : supportedImageTypes) {
 			if (path.endsWith("." + type)) {
 				return type;
 			}
@@ -218,53 +219,58 @@ public class ImageJServerWorker implements ParallelWorker {
 		throw new UnsupportedOperationException("Only " + supportedImageTypes + " image files supported");
 	}
 
-	private Map<String, Object> wrapInputValues(Map<String, ?> map) {
+	private Map<String, Object> wrapInputValues(final Map<String, ?> map) {
 		return convertMap(map, ImageJServerWorker::isEntryResolvable, this::wrapValue);
 	}
-	
-	private Map<String, Object> unwrapOutputValues(Map<String, Object> map) {
+
+	private Map<String, Object> unwrapOutputValues(final Map<String, Object> map) {
 		return convertMap(map, ImageJServerWorker::isEntryResolvable, this::unwrapValue);
 	}
 
 	/**
 	 * Converts an input map into an output map
-	 * @param map - an input map
-	 * @param filter - a filter to be applied on all map entries prior the actual conversion
-	 * @param converter - a converter to be applied on each map entry
+	 * 
+	 * @param map
+	 *            - an input map
+	 * @param filter
+	 *            - a filter to be applied on all map entries prior the actual
+	 *            conversion
+	 * @param converter
+	 *            - a converter to be applied on each map entry
 	 * @return a converted map
 	 */
-	private Map<String, Object> convertMap(Map<String, ?> map, Function<Map.Entry<String, ?>, Boolean> filter, Function<Object, Object> converter) {
-		return map.entrySet().stream()
-				.filter(entry -> filter.apply(entry))
-				.map(entry -> new SimpleImmutableEntry<String, Object>(entry.getKey(), converter.apply(entry.getValue())))
+	private Map<String, Object> convertMap(final Map<String, ?> map,
+			final Function<Map.Entry<String, ?>, Boolean> filter, final Function<Object, Object> converter) {
+		return map.entrySet().stream().filter(entry -> filter.apply(entry)).map(
+				entry -> new SimpleImmutableEntry<>(entry.getKey(), converter.apply(entry.getValue())))
 				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 	}
-	
-	// TODO: Should not we return null if it is not instance of any supported type? 
+
+	// TODO: Should not we return null if it is not instance of any supported type?
 	private Object wrapValue(Object value) {
 		if (value instanceof Dataset) {
-			Dataset ds = (Dataset) value;
-			Object id = mockedData2id.get(ds);
+			final Dataset ds = (Dataset) value;
+			final Object id = mockedData2id.get(ds);
 			if (id != null) {
 				value = id;
 			}
 		}
 		return value;
 	}
-	
-	// TODO: Should not we return null if it is not instance of any supported type? 
+
+	// TODO: Should not we return null if it is not instance of any supported type?
 	private Object unwrapValue(Object value) {
-		Dataset obj = id2mockedData.get(value);
+		final Dataset obj = id2mockedData.get(value);
 		if (obj != null) {
 			value = obj;
 		}
 		return value;
 	}
-	
+
 	/**
 	 * Determines whether an entry is resolvable from the SciJava Context
 	 */
-	private static boolean isEntryResolvable(Map.Entry<String, ?> entry) {
+	private static boolean isEntryResolvable(final Map.Entry<String, ?> entry) {
 		return entry.getValue() != null && !(entry.getValue() instanceof SciJavaPlugin)
 				&& !(entry.getValue() instanceof Context);
 	}

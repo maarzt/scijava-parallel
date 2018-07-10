@@ -35,11 +35,11 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 
 	// -- HeappeParadigm methods --
 
-	public void setPort(int port) {
+	public void setPort(final int port) {
 		this.port = port;
 	}
 
-	public void setNumberOfNodes(int number) {
+	public void setNumberOfNodes(final int number) {
 		this.numberOfHosts = number;
 	}
 
@@ -55,7 +55,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		if (log.isDebugEnabled()) {
 			log.debug("createJob");
 		}
-		long jobId = haasClient.createJob(
+		final long jobId = haasClient.createJob(
 				new JobSettingsBuilder().templateId(Constants.HEAppE.TEMPLATE_ID).walltimeLimit(Constants.WALLTIME)
 						.clusterNodeType(Constants.CLUSTER_NODE_TYPE).jobName(Constants.HEAppE.JOB_NAME)
 						.numberOfNodes(numberOfHosts).numberOfCoresPerNode(Constants.NUMBER_OF_CORE).build(),
@@ -67,13 +67,13 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		while (logGetState(jobId) == JobState.Queued) {
 			try {
 				Thread.sleep(TIMEOUT_BETWEEN_JOB_STATE_QUERY);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				log.error(e.getMessage(), e);
 			}
 		}
-		JobState state = logGetState(jobId);
+		final JobState state = logGetState(jobId);
 		if (state == JobState.Running) {
-			Collection<String> nodes = getAllocatedNodes(jobId);
+			final Collection<String> nodes = getAllocatedNodes(jobId);
 			nodes.stream().map(node -> {
 				TunnelToNode tunnel;
 				tunnels.add(tunnel = haasClient.openTunnel(jobId, node, 0, port));
@@ -90,19 +90,19 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		tunnels.forEach(t -> {
 			try {
 				t.close();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				log.error(e.getMessage(), e);
 			}
 		});
 	}
 
 	// -- Helper methods --
-	private Collection<String> getAllocatedNodes(long jobId) {
+	private Collection<String> getAllocatedNodes(final long jobId) {
 		return haasClient.obtainJobInfo(jobId).getNodesIPs();
 	}
 
-	private JobState logGetState(long jobId) {
-		JobState result = haasClient.obtainJobInfo(jobId).getState();
+	private JobState logGetState(final long jobId) {
+		final JobState result = haasClient.obtainJobInfo(jobId).getState();
 		if (log.isDebugEnabled()) {
 			log.debug("state of job " + jobId + " - " + result);
 		}

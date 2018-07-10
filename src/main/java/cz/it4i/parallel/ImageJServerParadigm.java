@@ -10,24 +10,24 @@ import org.slf4j.LoggerFactory;
 
 @Plugin(type = ParallelizationParadigm.class)
 public class ImageJServerParadigm extends SimpleOstravaParadigm {
-	
+
 	public static final Logger log = LoggerFactory.getLogger(cz.it4i.parallel.ImageJServerParadigm.class);
-		
+
 	private int port;
 
 	private final Collection<String> hosts = new LinkedList<>();
 
 	// -- ImageJServerParadigm methods --
 
-	public void setPort(int port) {
+	public void setPort(final int port) {
 		this.port = port;
 	}
 
-	public void setHosts(Collection<String> hosts) {
+	public void setHosts(final Collection<String> hosts) {
 		this.hosts.clear();
 		this.hosts.addAll(hosts);
 	}
-	
+
 	// -- SimpleOstravaParadigm methods --
 
 	@Override
@@ -38,7 +38,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	private ParallelWorker createWorker(String host) {
 		int port;
 		if (host.contains(":")) {
-			String[] tokensOfHost = host.split(":");
+			final String[] tokensOfHost = host.split(":");
 			port = Integer.parseInt(tokensOfHost[1]);
 			host = tokensOfHost[0];
 		} else {

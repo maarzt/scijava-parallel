@@ -18,6 +18,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.imagej.Dataset;
+import net.imagej.ImageJ;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
@@ -28,9 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.ImageJServerParadigm;
 import cz.it4i.parallel.LocalMultithreadedParadigm;
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>DemonstrateOstravaParadigm")
 public class DemonstrateParadigm implements Command {
@@ -49,7 +50,7 @@ public class DemonstrateParadigm implements Command {
 	@Override
 	public void run() {
 
-		Collection<P_Input> inputs = prepareInputs();
+		final Collection<P_Input> inputs = prepareInputs();
 
 		if (hosts.size() > 0) {
 			try (ImageJServerParadigm remoteParadigm = parallelService.getParadigm(ImageJServerParadigm.class)) {
@@ -57,7 +58,7 @@ public class DemonstrateParadigm implements Command {
 				remoteParadigm.setPort(port);
 				remoteParadigm.init();
 				doTest(remoteParadigm, inputs, hosts.size());
-			}			
+			}
 		} else {
 			try (LocalMultithreadedParadigm localParadigm = parallelService
 					.getParadigm(LocalMultithreadedParadigm.class)) {
@@ -71,7 +72,7 @@ public class DemonstrateParadigm implements Command {
 	}
 
 	private Collection<P_Input> prepareInputs() {
-		Collection<P_Input> inputs = new LinkedList<>();
+		final Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
 			file = Files
@@ -81,47 +82,48 @@ public class DemonstrateParadigm implements Command {
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 		return inputs;
 	}
 
-	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs, int numberOfWorkers) {
+	private void doTest(final ParallelizationParadigm paradigm, final Collection<P_Input> inputs,
+			final int numberOfWorkers) {
 		log.info("Number of workers: " + numberOfWorkers);
 		for (int i = 0; i < repetitionCount; i++) {
-			long time = System.currentTimeMillis();
+			final long time = System.currentTimeMillis();
 			paradigm.parallelFor(inputs, (input, task) -> {
 				// log.info("processing angle=" + input.angle);
 				Dataset ds = task.importData(input.dataset);
-				RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
+				final RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
 				command.setAngle(Double.parseDouble(input.angle));
 				command.setDataset(ds);
 				command.run();
 				ds = command.getDataset();
 				task.exportData(ds, constructOutputPath(input));
 			});
-			long time2 = System.currentTimeMillis();
-			double sec = (time2 - time) / 1000.;
-			String resultStr = "Number of workers: " + numberOfWorkers + ", time: " + sec;
+			final long time2 = System.currentTimeMillis();
+			final double sec = (time2 - time) / 1000.;
+			final String resultStr = "Number of workers: " + numberOfWorkers + ", time: " + sec;
 			writeResult(resultStr);
 			log.info("done iteration: " + resultStr);
 		}
 	}
 
-	private Path constructOutputPath(P_Input input) {
+	private Path constructOutputPath(final P_Input input) {
 		return Paths.get(getOutputFilesPattern() + input.angle + suffix(input.dataset));
 	}
 
-	private String suffix(Path path) {
+	private String suffix(final Path path) {
 		return path.toString().substring(path.toString().lastIndexOf('.'));
 	}
 
-	private void writeResult(String resultStr) {
+	private void writeResult(final String resultStr) {
 		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(getResultFile()), StandardOpenOption.APPEND,
 				StandardOpenOption.CREATE)) {
 			bw.write(resultStr + "\n");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -130,7 +132,7 @@ public class DemonstrateParadigm implements Command {
 
 		DemonstrateParadigm.hosts = new LinkedList<>();
 		if (!args[0].equals("-l")) {
-			Iterator<String> argIter = Arrays.asList(args).iterator();
+			final Iterator<String> argIter = Arrays.asList(args).iterator();
 
 			repetitionCount = Integer.parseInt(argIter.next());
 			step = Integer.parseInt(argIter.next());
@@ -138,7 +140,7 @@ public class DemonstrateParadigm implements Command {
 				DemonstrateParadigm.hosts.add(argIter.next());
 			}
 		} else {
-			Iterator<String> argIter = Arrays.asList(args).iterator();
+			final Iterator<String> argIter = Arrays.asList(args).iterator();
 			argIter.next();
 			repetitionCount = Integer.parseInt(argIter.next());
 			step = Integer.parseInt(argIter.next());
@@ -153,7 +155,7 @@ public class DemonstrateParadigm implements Command {
 		Path dataset;
 		String angle;
 
-		public P_Input(Path dataset, String angle) {
+		public P_Input(final Path dataset, final String angle) {
 			this.dataset = dataset;
 			this.angle = angle;
 		}

@@ -3,9 +3,9 @@ package cz.it4i.parallel;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.scijava.command.Command;
-
 import net.imagej.Dataset;
+
+import org.scijava.command.Command;
 
 public interface ParallelWorker {
 

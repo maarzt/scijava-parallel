@@ -17,6 +17,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.imagej.Dataset;
+import net.imagej.ImageJ;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
@@ -26,9 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.ImageJServerParadigm;
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>Cisim2018Demonstration")
 public class Cisim2018PaperSnippet implements Command {
@@ -43,32 +44,32 @@ public class Cisim2018PaperSnippet implements Command {
 
 	@Override
 	public void run() {
-		Collection<P_Input> inputs = prepareInputs();
-		Map<P_Input, Path> outputs = new HashMap<>();
-		ParallelizationParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
+		final Collection<P_Input> inputs = prepareInputs();
+		final Map<P_Input, Path> outputs = new HashMap<>();
+		final ParallelizationParadigm paradigm = parallelService.getParadigm(ImageJServerParadigm.class);
 		paradigm.parallelFor(inputs, (input, task) -> {
 			Dataset ds = task.importData(input.dataset);
-			RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
+			final RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
 			command.setAngle(input.angle);
 			command.setDataset(ds);
 			command.run();
 			ds = command.getDataset();
-			Path outputPath = constructOutputPath(input);
+			final Path outputPath = constructOutputPath(input);
 			task.exportData(ds, outputPath);
 			outputs.put(input, outputPath);
 		});
 	}
 
-	private Path constructOutputPath(P_Input input) {
+	private Path constructOutputPath(final P_Input input) {
 		return Paths.get(getOutputFilesPattern() + input.angle + suffix(input.dataset));
 	}
 
-	private String suffix(Path path) {
+	private String suffix(final Path path) {
 		return path.toString().substring(path.toString().lastIndexOf('.'));
 	}
 
 	private Collection<P_Input> prepareInputs() {
-		Collection<P_Input> inputs = new LinkedList<>();
+		final Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
 			file = Files
@@ -78,7 +79,7 @@ public class Cisim2018PaperSnippet implements Command {
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, angle));
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 		return inputs;
@@ -87,14 +88,14 @@ public class Cisim2018PaperSnippet implements Command {
 	public static void main(final String... args) {
 		Cisim2018PaperSnippet.hosts = new LinkedList<>();
 		if (!args[0].equals("-l")) {
-			Iterator<String> argIter = Arrays.asList(args).iterator();
+			final Iterator<String> argIter = Arrays.asList(args).iterator();
 
 			step = Integer.parseInt(argIter.next());
 			while (argIter.hasNext()) {
 				Cisim2018PaperSnippet.hosts.add(argIter.next());
 			}
 		} else {
-			Iterator<String> argIter = Arrays.asList(args).iterator();
+			final Iterator<String> argIter = Arrays.asList(args).iterator();
 			argIter.next();
 
 			step = Integer.parseInt(argIter.next());
@@ -109,7 +110,7 @@ public class Cisim2018PaperSnippet implements Command {
 		Path dataset;
 		double angle;
 
-		public P_Input(Path dataset, double angle) {
+		public P_Input(final Path dataset, final double angle) {
 			this.dataset = dataset;
 			this.angle = angle;
 		}

@@ -15,6 +15,10 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import net.imagej.Dataset;
+import net.imagej.ImageJ;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
@@ -24,9 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.HeappeParadigm;
-import net.imagej.Dataset;
-import net.imagej.ImageJ;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 @Plugin(type = Command.class, headless = true, menuPath = "Plugins>DemonstrateOstravaParadigm")
 public class DemonstrateHeAppeParadigm implements Command {
@@ -42,18 +43,18 @@ public class DemonstrateHeAppeParadigm implements Command {
 
 	@Override
 	public void run() {
-		Collection<P_Input> inputs = prepareInputs();
+		final Collection<P_Input> inputs = prepareInputs();
 		try (HeappeParadigm remoteParadigm = parallelService.getParadigm(HeappeParadigm.class)) {
 			remoteParadigm.setPort(port);
 			remoteParadigm.setNumberOfNodes(numberOfHosts);
 			remoteParadigm.init();
 			doTest(remoteParadigm, inputs);
-		}			
+		}
 
 	}
 
 	private Collection<P_Input> prepareInputs() {
-		Collection<P_Input> inputs = new LinkedList<>();
+		final Collection<P_Input> inputs = new LinkedList<>();
 		Path file;
 		try {
 			file = Files
@@ -63,51 +64,51 @@ public class DemonstrateHeAppeParadigm implements Command {
 			for (int angle = step; angle < 360; angle += step) {
 				inputs.add(new P_Input(file, String.valueOf(angle)));
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 		return inputs;
 	}
 
-	private void doTest(ParallelizationParadigm paradigm, Collection<P_Input> inputs) {
+	private void doTest(final ParallelizationParadigm paradigm, final Collection<P_Input> inputs) {
 		log.info("Number of workers: " + numberOfHosts);
-		long time = System.currentTimeMillis();
+		final long time = System.currentTimeMillis();
 		paradigm.parallelFor(inputs, (input, task) -> {
 			// log.info("processing angle=" + input.angle);
 			Dataset ds = task.importData(input.dataset);
-			RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
+			final RotateImageXY<?> command = task.getRemoteCommand(RotateImageXY.class);
 			command.setAngle(Double.parseDouble(input.angle));
 			command.setDataset(ds);
 			command.run();
 			ds = command.getDataset();
 			task.exportData(ds, constructOutputPath(input));
 		});
-		long time2 = System.currentTimeMillis();
-		double sec = (time2 - time) / 1000.;
-		String resultStr = "Number of workers: " + numberOfHosts + ", time: " + sec;
+		final long time2 = System.currentTimeMillis();
+		final double sec = (time2 - time) / 1000.;
+		final String resultStr = "Number of workers: " + numberOfHosts + ", time: " + sec;
 		writeResult(resultStr);
 		log.info("done iteration: " + resultStr);
-}
+	}
 
-	private Path constructOutputPath(P_Input input) {
+	private Path constructOutputPath(final P_Input input) {
 		return Paths.get(getOutputFilesPattern() + input.angle + suffix(input.dataset));
 	}
 
-	private String suffix(Path path) {
+	private String suffix(final Path path) {
 		return path.toString().substring(path.toString().lastIndexOf('.'));
 	}
 
-	private void writeResult(String resultStr) {
+	private void writeResult(final String resultStr) {
 		try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(getResultFile()), StandardOpenOption.APPEND,
 				StandardOpenOption.CREATE)) {
 			bw.write(resultStr + "\n");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(e.getMessage(), e);
 		}
 	}
 
 	public static void main(final String... args) {
-		if(log.isDebugEnabled()) {
+		if (log.isDebugEnabled()) {
 			log.debug("" + DemonstrateHeAppeParadigm.class + ".main");
 		}
 		DemonstrateHeAppeParadigm.numberOfHosts = Integer.parseInt(args[0]);
@@ -119,7 +120,7 @@ public class DemonstrateHeAppeParadigm implements Command {
 		Path dataset;
 		String angle;
 
-		public P_Input(Path dataset, String angle) {
+		public P_Input(final Path dataset, final String angle) {
 			this.dataset = dataset;
 			this.angle = angle;
 		}
