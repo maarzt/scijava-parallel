@@ -17,7 +17,7 @@ public class Config {
 
 	static Properties properties;
 
-	static final String CONFIG_FILE_NAME = "config.properties";
+	static final String CONFIG_FILE_NAME = "configuration.properties";
 	static {
 		properties = new Properties();
 		try {

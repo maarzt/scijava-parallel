@@ -42,8 +42,16 @@ public class DemonstrateParadigm implements Command {
 
 	private static int step;
 	private static int repetitionCount;
-	private static List<String> hosts;
+
+	// ImageJServerParadigm-specific stuff
+	private static List<String> hosts = new LinkedList<>();
+
+	// LocalMultithreadedParadigm-specific stuff
 	private static int maxNumberOfLocalWorkers;
+
+	// HeappeParadigm-specific stuff
+	private static int remotePort;
+	private static int numberOfNodes;
 
 	public static final Logger log = LoggerFactory.getLogger(
 		DemonstrateParadigm.class);
@@ -53,21 +61,26 @@ public class DemonstrateParadigm implements Command {
 
 	public static void main(final String... args) {
 
-		hosts = new LinkedList<>();
-		if (!args[0].equals("-l")) {
-			final Iterator<String> argIter = Arrays.asList(args).iterator();
-			repetitionCount = Integer.parseInt(argIter.next());
-			step = Integer.parseInt(argIter.next());
+		final Iterator<String> argIter = Arrays.asList(args).iterator();
+		argIter.next();
+		repetitionCount = Integer.parseInt(argIter.next());
+		step = Integer.parseInt(argIter.next());
+
+		if (args[0].equals("-s")) {
 			while (argIter.hasNext()) {
 				hosts.add(argIter.next());
 			}
 		}
-		else {
-			final Iterator<String> argIter = Arrays.asList(args).iterator();
-			argIter.next();
-			repetitionCount = Integer.parseInt(argIter.next());
-			step = Integer.parseInt(argIter.next());
+		else if (args[0].equals("-l")) {
 			maxNumberOfLocalWorkers = Integer.parseInt(argIter.next());
+		}
+		else if (args[0].equals("-h")) {
+			remotePort = Integer.parseInt(argIter.next());
+			numberOfNodes = Integer.parseInt(argIter.next());
+		}
+		else {
+			log.error("Invalid input arguments.");
+			return;
 		}
 
 		// Launch ImageJ as usual
@@ -86,7 +99,7 @@ public class DemonstrateParadigm implements Command {
 		// Remove all saved profiles
 		parallelService.deleteProfiles();
 
-		// Add a few profiles
+		// Add few profiles
 		parallelService.addProfile(new ParallelizationParadigmProfile(
 			ImageJServerParadigm.class, "lonelyBiologist01"));
 		parallelService.addProfile(new ParallelizationParadigmProfile(
@@ -100,6 +113,9 @@ public class DemonstrateParadigm implements Command {
 		if (hosts.size() > 0) {
 			parallelService.selectProfile("lonelyBiologist01");
 		}
+		else if (numberOfNodes > 0) {
+			parallelService.selectProfile("lonelyBiologist03");
+		}
 		else {
 			parallelService.selectProfile("lonelyBiologist02");
 		}
@@ -107,11 +123,17 @@ public class DemonstrateParadigm implements Command {
 		// Retrieve the paradigm
 		ParallelizationParadigm paradigm = parallelService.getParadigm();
 
-		// Set it up and do the stuff
+		// Init the paradigm and do the tests
 		if (hosts.size() > 0) {
 			((ImageJServerParadigm) paradigm).setHosts(hosts);
 			paradigm.init();
 			doTest(paradigm, inputs, hosts.size());
+		}
+		else if (numberOfNodes > 0) {
+			((HeappeParadigm) paradigm).setPort(remotePort);
+			((HeappeParadigm) paradigm).setNumberOfNodes(numberOfNodes);
+			((HeappeParadigm) paradigm).init();
+			doTest(paradigm, inputs, numberOfNodes);
 		}
 		else {
 			for (int numberOfWorkers =
