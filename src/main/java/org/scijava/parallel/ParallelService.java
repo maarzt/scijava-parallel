@@ -27,16 +27,6 @@ public interface ParallelService extends
 	 */
 	public ParallelizationParadigm getParadigm();
 
-	@Deprecated
-	/**
-	 * Returns an instance of a parallelization paradigm, if it is available
-	 * 
-	 * @param Class of the desired parallelization paradigm
-	 * @return Instance of the desired parallelization paradigm
-	 */
-	public <T extends ParallelizationParadigm> T getParadigm(
-		final Class<T> chosenParalellizationParadigm);
-
 	// TODO: This method is meant to be package-specific only,
 	// profiles should be accessible only from the prospective configuration
 	// plugin
