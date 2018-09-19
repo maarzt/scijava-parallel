@@ -121,27 +121,28 @@ public class DemonstrateParadigm implements Command {
 		}
 
 		// Retrieve the paradigm
-		ParallelizationParadigm paradigm = parallelService.getParadigm();
-
-		// Init the paradigm and do the tests
-		if (hosts.size() > 0) {
-			((ImageJServerParadigm) paradigm).setHosts(hosts);
-			paradigm.init();
-			doTest(paradigm, inputs, hosts.size());
-		}
-		else if (numberOfNodes > 0) {
-			((HeappeParadigm) paradigm).setPort(remotePort);
-			((HeappeParadigm) paradigm).setNumberOfNodes(numberOfNodes);
-			((HeappeParadigm) paradigm).init();
-			doTest(paradigm, inputs, numberOfNodes);
-		}
-		else {
-			for (int numberOfWorkers =
-				maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--)
-			{
-				((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfWorkers);
+		try (ParallelizationParadigm paradigm = parallelService.getParadigm()) {
+	
+			// Init the paradigm and do the tests
+			if (hosts.size() > 0) {
+				((ImageJServerParadigm) paradigm).setHosts(hosts);
 				paradigm.init();
-				doTest(paradigm, inputs, numberOfWorkers);
+				doTest(paradigm, inputs, hosts.size());
+			}
+			else if (numberOfNodes > 0) {
+				((HeappeParadigm) paradigm).setPort(remotePort);
+				((HeappeParadigm) paradigm).setNumberOfNodes(numberOfNodes);
+				((HeappeParadigm) paradigm).init();
+				doTest(paradigm, inputs, numberOfNodes);
+			}
+			else {
+				for (int numberOfWorkers =
+					maxNumberOfLocalWorkers; 0 < numberOfWorkers; numberOfWorkers--)
+				{
+					((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfWorkers);
+					paradigm.init();
+					doTest(paradigm, inputs, numberOfWorkers);
+				}
 			}
 		}
 	}
