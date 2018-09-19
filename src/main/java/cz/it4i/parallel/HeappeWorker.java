@@ -7,6 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
@@ -37,9 +38,14 @@ import org.mockito.stubbing.Answer;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.SciJavaPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HeappeWorker implements ParallelWorker {
 
+	private final static Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.HeappeWorker.class);
+	
 	private final String hostName;
 	private final int port;
 	private final Map<Dataset, String> mockedData2id = new HashMap<>();
@@ -215,7 +221,27 @@ public class HeappeWorker implements ParallelWorker {
 		return unwrapOutputValues(rawOutputs);
 	}
 
+	// -- Overriden methods
+	@Override
+	public void close() {
+		stopImageJServer();
+	}
+
+	
 	// -- Helper methods --
+	private void stopImageJServer() {
+		final String deleteUrl = "http://" + hostName + ":" + String.valueOf(port) +
+			"/admin/stop";
+		final HttpDelete httpDelete = new HttpDelete(deleteUrl);
+		try (CloseableHttpClient client = createClient()) {
+			final HttpResponse response = client.execute(httpDelete);
+			log.info(response.toString());
+			
+		}
+		catch (IOException exc) {
+			log.error("Shutdown server",exc);
+		}
+	}
 
 	// TODO: support another types
 	private String getContentType(final String path) {

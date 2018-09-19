@@ -88,6 +88,14 @@ public abstract class SimpleOstravaParadigm extends
 		});
 	}
 
+	// -- Overriden method --
+	@Override
+	public void close() {
+		super.close();
+		workerPool.close();
+		threadService.dispose();
+	}
+	
 	// -- Private classes and helper methods --
 
 	private class P_ExecutionContext implements ExecutionContext, Closeable {

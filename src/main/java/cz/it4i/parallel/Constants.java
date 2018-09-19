@@ -1,7 +1,7 @@
 
 package cz.it4i.parallel;
 
-interface Constants {
+public interface Constants {
 
 	int WALLTIME = 3600;
 	long CLUSTER_NODE_TYPE = 7l;
