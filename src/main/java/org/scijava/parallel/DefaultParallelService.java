@@ -55,23 +55,6 @@ public class DefaultParallelService extends
 		return null;
 	}
 
-	@Deprecated
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends ParallelizationParadigm> T getParadigm(
-		final Class<T> desiredParalellizationParadigm)
-	{
-		final List<ParallelizationParadigm> matchingParadigms = getInstances()
-			.stream().filter(paradigm -> paradigm.getClass().equals(
-				desiredParalellizationParadigm)).collect(Collectors.toList());
-
-		if (matchingParadigms.size() == 1) {
-			return (T) matchingParadigms.get(0);
-		}
-
-		return null;
-	}
-
 	@Override
 	public List<ParallelizationParadigmProfile> getProfiles() {
 		return profiles;
