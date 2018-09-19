@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
@@ -98,14 +99,17 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		if (state == JobState.Running) {
 			final Collection<String> nodes = getAllocatedNodes();
 			nodes.stream().map(node -> {
-				try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+				try (CloseableHttpClient client = HttpClientBuilder.create()
+					.setRetryHandler(new DefaultHttpRequestRetryHandler(0, false))
+					.build())
+				{
 					do {
 						TunnelToNode tunnel;
 						tunnel = haasClient.openTunnel(jobId, node, 0, port);
 						if (!checkTunnel2ImageJServer(client, tunnel)) {
 							try {
 								tunnel.close();
-								Thread.sleep(1000);
+								Thread.sleep(5000);
 							}
 							catch (IOException | InterruptedException exc) {
 								log.error("Restart tunnel", exc);
@@ -139,7 +143,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 			return true;
 		}
 		catch (IOException exc) {
-			log.error("modules", exc);
+			log.debug("modules", exc);
 		}
 	
 		return false;
