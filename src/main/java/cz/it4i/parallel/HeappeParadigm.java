@@ -2,6 +2,7 @@
 package cz.it4i.parallel;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -13,13 +14,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.haas_java_client.HaaSClient;
+import cz.it4i.fiji.haas_java_client.HaaSFileTransfer;
 import cz.it4i.fiji.haas_java_client.JobSettingsBuilder;
 import cz.it4i.fiji.haas_java_client.JobState;
 import cz.it4i.fiji.haas_java_client.SettingsProvider;
 import cz.it4i.fiji.haas_java_client.TunnelToNode;
+import cz.it4i.fiji.haas_java_client.UploadingFileData;
 
 @Plugin(type = ParallelizationParadigm.class)
 public class HeappeParadigm extends SimpleOstravaParadigm {
+
+	
 
 	private static final int TIMEOUT_BETWEEN_JOB_STATE_QUERY = 1000;
 
@@ -67,6 +72,12 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 				.emptyList());
 		if (log.isDebugEnabled()) {
 			log.debug("submitJob");
+		}
+		try(HaaSFileTransfer hft = haasClient.startFileTransfer(jobId)) {
+			hft.upload(new UploadingFileData(Constants.HEAppE.RUN_IJS));
+		}
+		catch (InterruptedIOException exc) {
+			log.error(exc.getMessage(), exc);
 		}
 		haasClient.submitJob(jobId);
 		while (logGetState(jobId) == JobState.Queued) {

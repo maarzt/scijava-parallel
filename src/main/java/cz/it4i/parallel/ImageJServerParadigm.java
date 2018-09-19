@@ -38,14 +38,10 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	}
 
 	private ParallelWorker createWorker(String host) {
-		int port;
 		if (host.contains(":")) {
 			final String[] tokensOfHost = host.split(":");
 			port = Integer.parseInt(tokensOfHost[1]);
 			host = tokensOfHost[0];
-		}
-		else {
-			port = this.port;
 		}
 		return new ImageJServerWorker(host, port);
 	}

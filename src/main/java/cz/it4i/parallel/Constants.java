@@ -12,6 +12,7 @@ interface Constants {
 	interface HEAppE {
 
 		String JOB_NAME = "ImageJ-Server-HEAppE";
-		long TEMPLATE_ID = 6;
+		long TEMPLATE_ID = 4;
+		String RUN_IJS = "run-ijs";
 	}
 }
