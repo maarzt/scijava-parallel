@@ -7,7 +7,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
@@ -23,7 +22,6 @@ import net.imagej.Dataset;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -287,9 +285,7 @@ public class HeappeWorker implements ParallelWorker {
 		return value;
 	}
 
-	private CloseableHttpClient createClient() throws IOException,
-		ClientProtocolException
-	{
+	private CloseableHttpClient createClient() {
 		final HttpClientBuilder builder = HttpClientBuilder.create();
 		return builder.build();
 	}
