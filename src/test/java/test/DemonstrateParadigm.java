@@ -22,6 +22,7 @@ import java.util.List;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
+import net.imagej.server.external.ScriptEval;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -122,7 +123,7 @@ public class DemonstrateParadigm implements Command {
 
 		// Retrieve the paradigm
 		try (ParallelizationParadigm paradigm = parallelService.getParadigm()) {
-	
+
 			// Init the paradigm and do the tests
 			if (hosts.size() > 0) {
 				((ImageJServerParadigm) paradigm).setHosts(hosts);
@@ -192,6 +193,24 @@ public class DemonstrateParadigm implements Command {
 		}
 	}
 
+	private void doScriptyThings(final ParallelizationParadigm paradigm,
+		final int numberOfWorkers)
+	{
+		final String language = "groovy";
+		final String script = "println 'hello'";
+
+		final List<P_ScriptInput> inputs = new LinkedList<>();
+		inputs.add(new P_ScriptInput(language, script));
+
+		paradigm.parallelFor(inputs, (input, executionContext) -> {
+			final ScriptEval command = executionContext.getRemoteCommand(
+				ScriptEval.class);
+			command.run();
+
+		});
+
+	}
+
 	private Path constructOutputPath(final P_Input input) {
 		return Paths.get(getOutputFilesPattern() + input.angle + suffix(
 			input.file));
@@ -225,6 +244,23 @@ public class DemonstrateParadigm implements Command {
 		@Override
 		public String toString() {
 			return "P_Input [dataset=" + file + ", angle=" + angle + "]";
+		}
+
+	}
+
+	private static class P_ScriptInput {
+
+		String language;
+		String script;
+
+		public P_ScriptInput(final String language, final String script) {
+			this.language = language;
+			this.script = script;
+		}
+
+		@Override
+		public String toString() {
+			return "P_StringInput [language=" + language + ", script=" + script + "]";
 		}
 
 	}

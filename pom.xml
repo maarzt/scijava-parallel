@@ -98,6 +98,11 @@
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-plugins-commands</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-server</artifactId>
+			<version>0.1.1-SNAPSHOT</version>
+		</dependency>
 		<!-- SciJava dependencies -->
 		<dependency>
 			<groupId>org.scijava</groupId>
