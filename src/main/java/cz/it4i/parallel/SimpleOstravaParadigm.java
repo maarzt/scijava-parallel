@@ -8,7 +8,9 @@ import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
@@ -95,14 +97,16 @@ public abstract class SimpleOstravaParadigm extends
 		workerPool.close();
 		threadService.dispose();
 	}
-	
+
 	// -- Private classes and helper methods --
 
 	private class P_ExecutionContext implements ExecutionContext, Closeable {
 
 		private ParallelWorker worker;
+		private final Map<Command, Map<String, Object>> parameters;
 
 		public P_ExecutionContext() {
+			parameters = new LinkedHashMap<>();
 			try {
 				worker = workerPool.takeFreeWorker();
 			}
@@ -110,6 +114,8 @@ public abstract class SimpleOstravaParadigm extends
 				log.error(e.getMessage(), e);
 			}
 		}
+
+		// -- ExecutionContext methods --
 
 		@Override
 		public <T extends Command> T getRemoteCommand(final Class<T> type) {
@@ -130,6 +136,12 @@ public abstract class SimpleOstravaParadigm extends
 				public Void answer(final InvocationOnMock invocation) throws Throwable {
 					final CommandInfo cInfo = commandService.getCommand(type);
 					final CommandModule cModule = new CommandModule(cInfo, realCommand);
+					Map<String, Object> innerMap = parameters.get(mockedCommand);
+					if (innerMap != null) {
+						innerMap.entrySet().forEach(e -> {
+							cModule.setInput(e.getKey(), e.getValue());
+						});
+					}
 					cModule.setOutputs(worker.executeCommand(type, cModule.getInputs()));
 					return null;
 				}
@@ -139,8 +151,13 @@ public abstract class SimpleOstravaParadigm extends
 		}
 
 		@Override
-		public void close() {
-			workerPool.addWorker(worker);
+		public void setField(Command command, String field, Object value) {
+			Map<String, Object> innerMap = parameters.get(command);
+			if (innerMap == null) {
+				innerMap = new LinkedHashMap<>();
+			}
+			innerMap.putIfAbsent(field, value);
+			parameters.putIfAbsent(command, innerMap);
 		}
 
 		@Override
@@ -153,5 +170,13 @@ public abstract class SimpleOstravaParadigm extends
 			worker.exportData(ds, p);
 			worker.deleteData(ds);
 		}
+
+		// -- Closeable methods --
+
+		@Override
+		public void close() {
+			workerPool.addWorker(worker);
+		}
+
 	}
 }

@@ -142,7 +142,8 @@ public class DemonstrateParadigm implements Command {
 				{
 					((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfWorkers);
 					paradigm.init();
-					doTest(paradigm, inputs, numberOfWorkers);
+					// doTest(paradigm, inputs, numberOfWorkers);
+					doScriptyThings(paradigm, numberOfWorkers);
 				}
 			}
 		}
@@ -196,15 +197,19 @@ public class DemonstrateParadigm implements Command {
 	private void doScriptyThings(final ParallelizationParadigm paradigm,
 		final int numberOfWorkers)
 	{
-		final String language = "groovy";
-		final String script = "println 'hello'";
+		final String FIELD_NAME_LANGUAGE = "language";
+		final String FIELD_NAME_SCRIPT = "script";
+		final String LANGUAGE_GROOVY = "groovy";
+		final String HELLO_WORLD = "println 'hello'";
 
 		final List<P_ScriptInput> inputs = new LinkedList<>();
-		inputs.add(new P_ScriptInput(language, script));
+		inputs.add(new P_ScriptInput(LANGUAGE_GROOVY, HELLO_WORLD));
 
 		paradigm.parallelFor(inputs, (input, executionContext) -> {
 			final ScriptEval command = executionContext.getRemoteCommand(
 				ScriptEval.class);
+			executionContext.setField(command, FIELD_NAME_LANGUAGE, input.language);
+			executionContext.setField(command, FIELD_NAME_SCRIPT, HELLO_WORLD);
 			command.run();
 
 		});
