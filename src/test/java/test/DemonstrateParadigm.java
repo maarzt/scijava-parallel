@@ -128,7 +128,8 @@ public class DemonstrateParadigm implements Command {
 			if (hosts.size() > 0) {
 				((ImageJServerParadigm) paradigm).setHosts(hosts);
 				paradigm.init();
-				doTest(paradigm, inputs, hosts.size());
+				// doTest(paradigm, inputs, hosts.size());
+				doScriptyThings(paradigm, hosts.size());
 			}
 			else if (numberOfNodes > 0) {
 				((HeappeParadigm) paradigm).setPort(remotePort);
