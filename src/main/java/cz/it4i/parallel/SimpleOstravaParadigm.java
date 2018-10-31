@@ -4,7 +4,6 @@ package cz.it4i.parallel;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,7 +64,7 @@ public abstract class SimpleOstravaParadigm extends
 
 			@Override
 			public void run() {
-				try (P_ExecutionContext task = new P_ExecutionContext()) {
+				try (ExecutionContext task = createExecutionContext()) {
 					try {
 						consumer.accept(val, task);
 					}
@@ -88,7 +87,11 @@ public abstract class SimpleOstravaParadigm extends
 		});
 	}
 
-	// -- Overriden method --
+	@Override
+	public ExecutionContext createExecutionContext() {
+		return new P_ExecutionContext();
+	}
+	
 	@Override
 	public void close() {
 		super.close();
@@ -98,7 +101,7 @@ public abstract class SimpleOstravaParadigm extends
 	
 	// -- Private classes and helper methods --
 
-	private class P_ExecutionContext implements ExecutionContext, Closeable {
+	private class P_ExecutionContext implements ExecutionContext {
 
 		private ParallelWorker worker;
 
