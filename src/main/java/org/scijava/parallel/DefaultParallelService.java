@@ -115,7 +115,7 @@ public class DefaultParallelService extends
 	{
 		try {
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			try(final ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+			try (final ObjectOutputStream oos = new ObjectOutputStream(baos)) {
 				oos.writeObject(profile);
 			}
 			return Base64.getEncoder().encodeToString(baos.toByteArray());
@@ -131,10 +131,13 @@ public class DefaultParallelService extends
 	{
 		try {
 			final byte[] data = Base64.getDecoder().decode(serializedProfile);
-			try(final ObjectInputStream ois = new ObjectInputStream(
-				new ByteArrayInputStream(data))) {
+			try (final ObjectInputStream ois = new ObjectInputStream(
+				new ByteArrayInputStream(data)))
+			{
 				final Object o = ois.readObject();
-				if (ParallelizationParadigmProfile.class.isAssignableFrom(o.getClass())) {
+				if (ParallelizationParadigmProfile.class.isAssignableFrom(o
+					.getClass()))
+				{
 					return (ParallelizationParadigmProfile) o;
 				}
 			}

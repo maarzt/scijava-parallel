@@ -35,7 +35,7 @@ public class ParallelizationParadigmProfile implements Serializable {
 	 * Gets the {@link ParallelizationParadigm} type which is to be used in this
 	 * profile
 	 * 
-	 * @return {@link org.scijava.parallel.ParallelizationParadigm}
+	 * @return {@link Class} of given {@link ParallelizationParadigm} 
 	 */
 	@SuppressWarnings("unchecked")
 	<T extends ParallelizationParadigm> Class<T> getParadigmType() {

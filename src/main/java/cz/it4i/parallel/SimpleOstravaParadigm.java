@@ -87,7 +87,6 @@ public abstract class SimpleOstravaParadigm extends
 		});
 	}
 
-	// -- Overriden method --
 	@Override
 	public ExecutionContext createExecutionContext() {
 		return new P_ExecutionContext();
