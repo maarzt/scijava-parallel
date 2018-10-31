@@ -16,6 +16,8 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 	<T> void parallelFor(Iterable<T> arguments,
 		BiConsumer<T, ExecutionContext> consumer);
 
+	ExecutionContext createExecutionContext();
+	
 	// -- Closeable methods --
 
 	@Override
