@@ -127,6 +127,7 @@ public class DemonstrateParadigm implements Command {
 			if (hosts.size() > 0) {
 				((ImageJServerParadigm) paradigm).setHosts(hosts);
 				paradigm.init();
+
 				doTest(paradigm, inputs, hosts.size());
 			}
 			else if (numberOfNodes > 0) {

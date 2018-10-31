@@ -52,7 +52,7 @@ public interface ParallelService extends
 	/**
 	 * Selects the given {@link ParallelizationParadigmProfile}
 	 * 
-	 * @param Name of the {@link ParallelizationParadigmProfile} to be selected
+	 * @param name of the {@link ParallelizationParadigmProfile} to be selected
 	 */
 	public void selectProfile(final String name);
 
