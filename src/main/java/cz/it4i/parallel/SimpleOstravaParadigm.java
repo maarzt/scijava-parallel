@@ -7,7 +7,10 @@ import static org.mockito.Mockito.mock;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
@@ -53,8 +56,18 @@ public abstract class SimpleOstravaParadigm extends
 		workerPool = new WorkerPool();
 		initWorkerPool();
 	}
-
+	
 	@Override
+	public List<Map<String, Object>> runAll(List<Class<?>> commands,
+		List<Map<String, ?>> parameters)
+	{
+		
+		Iterator<Map<String, ?>> parIterator = parameters.iterator();
+		for(Class<?> clazz: commands) {
+			
+		}
+	}
+
 	public <T> void parallelFor(final Iterable<T> arguments,
 		final BiConsumer<T, ExecutionContext> consumer)
 	{
@@ -87,11 +100,12 @@ public abstract class SimpleOstravaParadigm extends
 		});
 	}
 
-	@Override
-	public ExecutionContext createExecutionContext() {
-		return new P_ExecutionContext();
-	}
 	
+	
+	
+
+	
+
 	@Override
 	public void close() {
 		super.close();

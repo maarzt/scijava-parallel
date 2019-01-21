@@ -15,9 +15,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
@@ -172,18 +174,13 @@ public class DemonstrateParadigm implements Command {
 		log.info("Number of workers: " + numberOfWorkers);
 		for (int i = 0; i < repetitionCount; i++) {
 			final long startTime = System.currentTimeMillis();
-			paradigm.parallelFor(inputs, (input, executionContext) -> {
-				log.debug("Processing angle=" + input.angle);
-				Dataset ds = executionContext.importData(input.file);
-				final RotateImageXY<?> command = executionContext.getRemoteCommand(
-					RotateImageXY.class);
-				command.setAngle(input.angle);
-				command.setDataset(ds);
-				command.run();
-				ds = command.getDataset();
-				executionContext.exportData(ds, constructOutputPath(input));
-				log.debug("DONE: processing angle=" + input.angle);
-			});
+			
+			Map<String,Object> parameter = new HashMap<>();
+			parameter.put("dataset", new RemoteDataset("/tmp/input/lena.jpg"));
+			parameter.put("angle", 30);
+			List<Map<String,Object>> result = paradigm.runAll(Arrays.asList(RotateImageXY.class), Arrays.asList(parameter));
+			WritableDataset wd = (WritableDataset) result.get(0).get("dataset");
+			
 			final long endTime = System.currentTimeMillis();
 			final double timeNeededInSec = (endTime - startTime) / 1000.;
 			final String resultStr = "Number of workers: " + numberOfWorkers +
