@@ -1,6 +1,14 @@
 
 package test;
 
+import static test.Config.JPG_SUFFIX;
+import static test.Config.PNG_SUFFIX;
+import static test.Config.getInputDirectory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,11 +18,13 @@ import java.util.Map;
 
 import net.imagej.ImageJ;
 import net.imagej.ops.math.PrimitiveMath;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.parallel.ParallelizationParadigmProfile;
+import org.scijava.parallel.RemoteDataset;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -107,7 +117,7 @@ public class DemonstrateParadigmRotate implements Command {
 
 		// Retrieve the paradigm
 		try (ParallelizationParadigm paradigm = parallelService.getParadigm()) {
-	
+
 			// Init the paradigm and do the tests
 			if (hosts.size() > 0) {
 				((ImageJServerParadigm) paradigm).setHosts(hosts);
@@ -127,26 +137,32 @@ public class DemonstrateParadigmRotate implements Command {
 		}
 	}
 
-	
+	private void doTest(final ParallelizationParadigm paradigm) {
+		Path file;
+		RemoteDataset rd;
+		try {
+			file = Files.newDirectoryStream(Paths.get(getInputDirectory()), p -> p
+				.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
+				.iterator().next();
+			rd = paradigm.createRemoteDataset(file.toUri());
+		}
+		catch (IOException exc) {
+			log.error("doTest", exc);
+			throw new RuntimeException(exc);
+		}
 
-	private void doTest(final ParallelizationParadigm paradigm)
-	{
 		List<Class<? extends Command>> commands = new LinkedList<>();
-		List<Map<String,?>> paramsList = new LinkedList<>();
+		List<Map<String, ?>> paramsList = new LinkedList<>();
 		for (double angle = step; angle < 360; angle += step) {
-			commands.add(PrimitiveMath.DoubleMultiply.class);
+			commands.add(RotateImageXY.class);
 			Map<String, Object> params = new HashMap<>();
-			params.put("a", angle);
-			params.put("b", angle + 2);
+			params.put("dataset", rd);
+			params.put("angle", angle);
 			paramsList.add(params);
 		}
-		List<Map<String,?>> result = paradigm.runAll(commands, paramsList);
+		List<Map<String, ?>> result = paradigm.runAll(commands, paramsList);
 		log.info("result: " + result);
-		
+
 	}
-
-	
-
-
 
 }

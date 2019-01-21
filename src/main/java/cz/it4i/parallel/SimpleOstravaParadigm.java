@@ -2,16 +2,21 @@
 package cz.it4i.parallel;
 
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+
+import net.imagej.Dataset;
 
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
@@ -36,6 +41,8 @@ public abstract class SimpleOstravaParadigm extends
 
 	@Parameter
 	private CommandService commandService;
+	
+	private Map<ParallelWorker,Map<RemoteDataset, Dataset>> usedDataset = new HashMap<>();
 
 	// -- SimpleOstravaParadigm methods --
 
@@ -66,7 +73,9 @@ public abstract class SimpleOstravaParadigm extends
 					try {
 						ParallelWorker pw = workerPool.takeFreeWorker();
 						try {
-							return pw.executeCommand(clazz, parIterator.next());
+							Map<String,?> params = parIterator.next();
+							params = processDataset(pw, params);
+							return pw.executeCommand(clazz, params);
 						} finally {
 							workerPool.addWorker(pw);
 						}
@@ -76,6 +85,8 @@ public abstract class SimpleOstravaParadigm extends
 						throw new RuntimeException(exc);
 					}
 				}
+
+				
 			}));
 		}
 		return futures.stream().map(f -> {
@@ -99,6 +110,23 @@ public abstract class SimpleOstravaParadigm extends
 		super.close();
 		workerPool.close();
 		threadService.dispose();
+	}
+	
+	private Map<String, ?> processDataset(ParallelWorker pw,
+		Map<String, ?> params)
+	{
+		Map<String, Object> result = new HashMap<>();
+		for(Entry<String,?> entry: params.entrySet()) {
+			Object value = entry.getValue();
+			if (value instanceof RemoteDataset) {
+				RemoteDataset rd = (RemoteDataset) entry.getValue();
+				Map<RemoteDataset,Dataset> map = usedDataset.computeIfAbsent(pw, __ -> new HashMap<>());
+				Dataset ds = map.computeIfAbsent(rd, rdd -> pw.importData(Paths.get(rdd.getUri())));
+				value = ds;
+			} 
+			result.put(entry.getKey(), value);
+		}
+		return result;
 	}
 	
 	private class P_RemoteDataset extends RemoteDataset {
