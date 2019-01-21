@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -42,7 +44,7 @@ public abstract class SimpleOstravaParadigm extends
 	@Parameter
 	private CommandService commandService;
 	
-	
+	private ExecutorService executorService;
 
 	// -- SimpleOstravaParadigm methods --
 
@@ -54,6 +56,7 @@ public abstract class SimpleOstravaParadigm extends
 	public void init() {
 		workerPool = new WorkerPool();
 		initWorkerPool();
+		executorService = Executors.newFixedThreadPool(workerPool.size(), threadService);
 	}
 	
 	@Override
@@ -66,7 +69,7 @@ public abstract class SimpleOstravaParadigm extends
 			new LinkedList<>());
 		
 		for(Class<? extends Command> clazz: commands) {
-			futures.add(threadService.run(new Callable<Map<String,Object>>() {
+			futures.add(executorService.submit(new Callable<Map<String,Object>>() {
 				
 				@Override
 				public Map<String,Object> call() {
@@ -113,6 +116,7 @@ public abstract class SimpleOstravaParadigm extends
 	public void close() {
 		super.close();
 		workerPool.close();
+		executorService.shutdown();
 		threadService.dispose();
 	}
 	

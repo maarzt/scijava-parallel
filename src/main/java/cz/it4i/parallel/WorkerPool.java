@@ -31,4 +31,8 @@ public class WorkerPool implements Closeable {
 			}
 		}
 	}
+
+	public int size() {
+		return availableWorkers.size();
+	}
 }
