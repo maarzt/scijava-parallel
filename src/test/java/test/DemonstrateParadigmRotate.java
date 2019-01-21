@@ -4,6 +4,7 @@ package test;
 import static test.Config.JPG_SUFFIX;
 import static test.Config.PNG_SUFFIX;
 import static test.Config.getInputDirectory;
+import static test.Config.getOutputFilesPattern;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.imagej.ImageJ;
-import net.imagej.ops.math.PrimitiveMath;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.command.Command;
@@ -25,6 +25,7 @@ import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.parallel.ParallelizationParadigmProfile;
 import org.scijava.parallel.RemoteDataset;
+import org.scijava.parallel.WritableDataset;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -39,8 +40,7 @@ import cz.it4i.parallel.LocalMultithreadedParadigm;
 public class DemonstrateParadigmRotate implements Command {
 
 	private static int step;
-	private static int repetitionCount;
-
+	
 	// ImageJServerParadigm-specific stuff
 	private static List<String> hosts = new LinkedList<>();
 
@@ -132,6 +132,7 @@ public class DemonstrateParadigmRotate implements Command {
 				doTest(paradigm);
 			}
 			else {
+				((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfLocalWorkers);
 				doTest(paradigm);
 			}
 		}
@@ -139,12 +140,10 @@ public class DemonstrateParadigmRotate implements Command {
 
 	private void doTest(final ParallelizationParadigm paradigm) {
 		Path file;
-		RemoteDataset rd;
 		try {
 			file = Files.newDirectoryStream(Paths.get(getInputDirectory()), p -> p
 				.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
 				.iterator().next();
-			rd = paradigm.createRemoteDataset(file.toUri());
 		}
 		catch (IOException exc) {
 			log.error("doTest", exc);
@@ -156,12 +155,18 @@ public class DemonstrateParadigmRotate implements Command {
 		for (double angle = step; angle < 360; angle += step) {
 			commands.add(RotateImageXY.class);
 			Map<String, Object> params = new HashMap<>();
+			RemoteDataset rd = paradigm.createRemoteDataset(file.toUri());
 			params.put("dataset", rd);
 			params.put("angle", angle);
 			paramsList.add(params);
 		}
-		List<Map<String, ?>> result = paradigm.runAll(commands, paramsList);
-		log.info("result: " + result);
+		List<Map<String, ?>> results = paradigm.runAll(commands, paramsList);
+		int angle = step;
+		for (Map<String,?> result: results) {
+			paradigm.exportWritableDatased((WritableDataset) result.get("dataset"), Paths.get(getOutputFilesPattern() + angle + ".png").toUri());
+			angle += step;
+		}
+		log.info("result: " + results);
 
 	}
 

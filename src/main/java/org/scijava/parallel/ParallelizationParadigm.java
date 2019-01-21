@@ -4,7 +4,6 @@ package org.scijava.parallel;
 
 import java.io.Closeable;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -17,11 +16,14 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 
 	void init();
 
-	List<Map<String,?>> runAll(List<Class<? extends Command>> commands, List<Map<String,?>> parameters);
-	
-	// -- Closeable methods --
+	List<Map<String, ?>> runAll(List<Class<? extends Command>> commands,
+		List<Map<String, ?>> parameters);
+
 	RemoteDataset createRemoteDataset(URI uri);
-	
+
+	void exportWritableDatased(WritableDataset writableDataset, URI uri);
+
+	// -- Closeable methods --
 	@Override
 	default public void close() {
 

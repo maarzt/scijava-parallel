@@ -29,8 +29,7 @@ import cz.it4i.parallel.LocalMultithreadedParadigm;
 public class DemonstrateParadigmAdd implements Command {
 
 	private static int step;
-	private static int repetitionCount;
-
+	
 	// ImageJServerParadigm-specific stuff
 	private static List<String> hosts = new LinkedList<>();
 
@@ -122,6 +121,7 @@ public class DemonstrateParadigmAdd implements Command {
 				doTest(paradigm);
 			}
 			else {
+				((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfLocalWorkers);
 				doTest(paradigm);
 			}
 		}
