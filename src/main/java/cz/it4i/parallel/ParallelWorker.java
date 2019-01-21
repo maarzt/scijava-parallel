@@ -17,8 +17,8 @@ public interface ParallelWorker extends Closeable{
 
 	public void deleteData(Dataset ds);
 
-	public <T extends Command> Map<String, Object> executeCommand(
-		Class<T> commandType, Map<String, ?> map);
+	public   Map<String, Object> executeCommand(
+		Class<? extends Command> commandType, Map<String, ?> map);
 	
 	
 	@Override

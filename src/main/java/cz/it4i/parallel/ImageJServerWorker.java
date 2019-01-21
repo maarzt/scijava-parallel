@@ -171,8 +171,8 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(
-		final Class<T> commandType, final Map<String, ?> inputs)
+	public Map<String, Object> executeCommand(
+		final Class<? extends Command> commandType, final Map<String, ?> inputs)
 	{
 
 		final Map<String, Object> wrappedInputs = wrapInputValues(inputs);
@@ -182,7 +182,7 @@ public class ImageJServerWorker implements ParallelWorker {
 		try {
 
 			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
-				"/modules/" + "command:" + commandType.getCanonicalName();
+				"/modules/" + "command:" + commandType.getName();
 			final HttpPost httpPost = new HttpPost(postUrl);
 
 			final JSONObject inputJson = new JSONObject();

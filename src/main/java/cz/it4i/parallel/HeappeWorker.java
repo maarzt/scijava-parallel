@@ -176,8 +176,8 @@ public class HeappeWorker implements ParallelWorker {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(
-		final Class<T> commandType, final Map<String, ?> inputs)
+	public Map<String, Object> executeCommand(
+		final Class<? extends Command> commandType, final Map<String, ?> inputs)
 	{
 
 		final Map<String, Object> wrappedInputs = wrapInputValues(inputs);

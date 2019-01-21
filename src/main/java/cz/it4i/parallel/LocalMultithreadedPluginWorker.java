@@ -61,8 +61,8 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public <T extends Command> Map<String, Object> executeCommand(
-		final Class<T> commandType, final Map<String, ?> map)
+	public Map<String, Object> executeCommand(
+		final Class<? extends Command> commandType, final Map<String, ?> map)
 	{
 
 		// Create a new Object-typed input map

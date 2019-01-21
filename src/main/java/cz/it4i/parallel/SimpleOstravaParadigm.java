@@ -11,9 +11,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import net.imagej.Dataset;
 
@@ -58,55 +60,46 @@ public abstract class SimpleOstravaParadigm extends
 	}
 	
 	@Override
-	public List<Map<String, Object>> runAll(List<Class<?>> commands,
+	public List<Map<String, ?>> runAll(List<Class<? extends Command>> commands,
 		List<Map<String, ?>> parameters)
 	{
 		
 		Iterator<Map<String, ?>> parIterator = parameters.iterator();
-		for(Class<?> clazz: commands) {
-			
-		}
-	}
-
-	public <T> void parallelFor(final Iterable<T> arguments,
-		final BiConsumer<T, ExecutionContext> consumer)
-	{
-		final Collection<Future<?>> futures = Collections.synchronizedCollection(
+		final Collection<Future<Map<String,Object>>> futures = Collections.synchronizedCollection(
 			new LinkedList<>());
-		arguments.forEach(val -> futures.add(threadService.run(new Runnable() {
-
-			@Override
-			public void run() {
-				try (ExecutionContext task = createExecutionContext()) {
+		
+		for(Class<? extends Command> clazz: commands) {
+			futures.add(threadService.run(new Callable<Map<String,Object>>() {
+				
+				@Override
+				public Map<String,Object> call() {
 					try {
-						consumer.accept(val, task);
+						ParallelWorker pw = workerPool.takeFreeWorker();
+						try {
+							return pw.executeCommand(clazz, parIterator.next());
+						} finally {
+							workerPool.addWorker(pw);
+						}
 					}
-					catch (final Exception e) {
-						log.error(e.getMessage(), e);
+					catch (InterruptedException exc) {
+						log.error(exc.getMessage(), exc);
+						throw new RuntimeException(exc);
 					}
 				}
-			}
-		})));
-		futures.forEach(f -> {
+			}));
+		}
+		return futures.stream().map(f -> {
 			try {
-				f.get();
+				return f.get();
 			}
-			catch (InterruptedException | ExecutionException e) {
-				if (e instanceof InterruptedException) {
-					Thread.currentThread().interrupt();
-				}
-				log.error(e.getMessage(), e);
+			catch (InterruptedException | ExecutionException exc) {
+				log.error("f.get", exc);
+				throw new RuntimeException(exc);
 			}
-		});
+		}).collect(Collectors.toList());
 	}
-
 	
-	
-	
-
-	
-
-	@Override
+		@Override
 	public void close() {
 		super.close();
 		workerPool.close();
@@ -128,7 +121,6 @@ public abstract class SimpleOstravaParadigm extends
 			}
 		}
 
-		@Override
 		public <T extends Command> T getRemoteCommand(final Class<T> type) {
 
 			// Create a new command so that its input parameters are properly

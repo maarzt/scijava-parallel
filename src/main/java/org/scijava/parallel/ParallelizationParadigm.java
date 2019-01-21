@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
+import org.scijava.command.Command;
 import org.scijava.plugin.SingletonPlugin;
 
 // TODO: Add description
@@ -14,9 +15,7 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 
 	void init();
 
-	List<Map<String,Object>> runAll(List<Class<?>> commands, List<Map<String,?>> parameters);
-	
-	ExecutionContext createExecutionContext();
+	List<Map<String,?>> runAll(List<Class<? extends Command>> commands, List<Map<String,?>> parameters);
 	
 	// -- Closeable methods --
 

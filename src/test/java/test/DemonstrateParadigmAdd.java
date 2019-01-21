@@ -20,9 +20,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imagej.ops.math.PrimitiveMath;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.command.Command;
@@ -40,7 +41,7 @@ import cz.it4i.parallel.LocalMultithreadedParadigm;
 
 @Plugin(type = Command.class, headless = true,
 	menuPath = "Plugins>DemonstrateOstravaParadigm")
-public class DemonstrateParadigm implements Command {
+public class DemonstrateParadigmAdd implements Command {
 
 	private static int step;
 	private static int repetitionCount;
@@ -56,7 +57,7 @@ public class DemonstrateParadigm implements Command {
 	private static int numberOfNodes;
 
 	public static final Logger log = LoggerFactory.getLogger(
-		DemonstrateParadigm.class);
+		DemonstrateParadigmAdd.class);
 
 	@Parameter
 	private ParallelService parallelService;
@@ -87,7 +88,7 @@ public class DemonstrateParadigm implements Command {
 
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
-		ij.command().run(DemonstrateParadigm.class, true);
+		ij.command().run(DemonstrateParadigmAdd.class, true);
 	}
 
 	@Override
@@ -109,7 +110,7 @@ public class DemonstrateParadigm implements Command {
 		parallelService.addProfile(new ParallelizationParadigmProfile(
 			HeappeParadigm.class, "lonelyBiologist03"));
 
-		Collection<P_Input> inputs = prepareInputs();
+		List<P_Input> inputs = prepareInputs();
 
 		// Set one of the profiles to be used
 		if (hosts.size() > 0) {
@@ -150,20 +151,12 @@ public class DemonstrateParadigm implements Command {
 		}
 	}
 
-	private Collection<P_Input> prepareInputs() {
-		final Collection<P_Input> inputs = new LinkedList<>();
-		Path file;
-		try {
-			file = Files.newDirectoryStream(Paths.get(getInputDirectory()), p -> p
-				.toString().endsWith(PNG_SUFFIX) || p.toString().endsWith(JPG_SUFFIX))
-				.iterator().next();
-			for (double angle = step; angle < 360; angle += step) {
-				inputs.add(new P_Input(file, angle));
-			}
+	private List<P_Input> prepareInputs() {
+		final List<P_Input> inputs = new LinkedList<>();
+		for (double angle = step; angle < 360; angle += step) {
+			inputs.add(new P_Input(PrimitiveMath.DoubleMultiply.class, angle, angle));
 		}
-		catch (final IOException e) {
-			log.error(e.getMessage(), e);
-		}
+	
 		return inputs;
 	}
 
@@ -175,11 +168,15 @@ public class DemonstrateParadigm implements Command {
 		for (int i = 0; i < repetitionCount; i++) {
 			final long startTime = System.currentTimeMillis();
 			
-			Map<String,Object> parameter = new HashMap<>();
-			parameter.put("dataset", new RemoteDataset("/tmp/input/lena.jpg"));
-			parameter.put("angle", 30);
-			List<Map<String,?>> result = paradigm.runAll(Arrays.asList(RotateImageXY.class), Arrays.asList(parameter));
-			WritableDataset wd = (WritableDataset) result.get(0).get("dataset");
+			List<Class<? extends Command>> commands = inputs.stream().map(inp -> inp.getCommand()).collect(Collectors.toList());
+			List<Map<String,?>> parameters = inputs.stream().map(inp -> {
+				Map<String,Object> par = new HashMap<>();
+				par.put("a", inp.getA());
+				par.put("b", inp.getB());
+				return par;
+			}).collect(Collectors.toList());
+			List<Map<String,?>> result = paradigm.runAll(commands, parameters);
+			log.info("result: " + result);
 			
 			final long endTime = System.currentTimeMillis();
 			final double timeNeededInSec = (endTime - startTime) / 1000.;
@@ -190,10 +187,7 @@ public class DemonstrateParadigm implements Command {
 		}
 	}
 
-	private Path constructOutputPath(final P_Input input) {
-		return Paths.get(getOutputFilesPattern() + input.angle + suffix(
-			input.file));
-	}
+	
 
 	private String suffix(final Path path) {
 		return path.toString().substring(path.toString().lastIndexOf('.'));
@@ -212,17 +206,34 @@ public class DemonstrateParadigm implements Command {
 
 	private static class P_Input {
 
-		Path file;
-		double angle;
+		
+		private double a;
+		private double b;
+		private Class<? extends Command> command;
 
-		public P_Input(final Path file, final double angle) {
-			this.file = file;
-			this.angle = angle;
+		public P_Input(final Class<? extends Command> command, final double a, final double b) {
+			this.a = a;
+			this.b = b;
+			this.command = command;
+		}
+
+		public Class<? extends Command> getCommand() {
+			return command;
+		}
+		
+		
+		public double getA() {
+			return a;
+		}
+		
+		
+		public double getB() {
+			return b;
 		}
 
 		@Override
 		public String toString() {
-			return "P_Input [dataset=" + file + ", angle=" + angle + "]";
+			return "P_Input [a=" + a + ", b=" + b + "]";
 		}
 
 	}
