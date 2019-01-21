@@ -1,4 +1,4 @@
-package test;
+package org.scijava.parallel;
 
 
 public class WritableDataset {
