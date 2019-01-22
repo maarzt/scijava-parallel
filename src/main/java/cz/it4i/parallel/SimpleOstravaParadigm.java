@@ -22,7 +22,7 @@ import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.RemoteDataset;
-import org.scijava.parallel.WritableDataset;
+import org.scijava.parallel.WriteableDataset;
 import org.scijava.plugin.Parameter;
 import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
@@ -117,7 +117,7 @@ public abstract class SimpleOstravaParadigm extends
 	}
 	
 	@Override
-	public void exportWritableDatased(WritableDataset writableDataset, URI uri) {
+	public void exportWriteableDatased(WriteableDataset writableDataset, URI uri) {
 		P_WritableDataset wd = (P_WritableDataset) writableDataset;
 		wd.export(uri);
 	}
@@ -138,6 +138,11 @@ public abstract class SimpleOstravaParadigm extends
 			if (val instanceof RemoteDataset) {
 				P_RemoteDataset remoteDataset = (P_RemoteDataset) val;
 				return remoteDataset.importIfNeaded(pw);
+			} else if (val instanceof WriteableDataset) {
+				P_WritableDataset wd = (P_WritableDataset) val;
+				if (wd.pw != pw) {
+					throw new AssertionError("writable dataset is loaded in " + wd.pw + " but used " + pw);
+				}
 			}
 			return val;
 		}));
@@ -171,7 +176,7 @@ public abstract class SimpleOstravaParadigm extends
 		
 	}
 		
-	private class P_WritableDataset extends WritableDataset {
+	private class P_WritableDataset extends WriteableDataset {
 		
 		private ParallelWorker pw;
 		private Dataset dataset;

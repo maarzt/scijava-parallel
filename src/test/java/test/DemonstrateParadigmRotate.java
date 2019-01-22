@@ -31,7 +31,7 @@ import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.parallel.ParallelizationParadigmProfile;
 import org.scijava.parallel.RemoteDataset;
-import org.scijava.parallel.WritableDataset;
+import org.scijava.parallel.WriteableDataset;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -206,7 +206,7 @@ public class DemonstrateParadigmRotate implements Command {
 		@Override
 		public Map<String,?> apply(Map<String, ?> result) {
 			log.info("handling:" + angle);
-			paradigm.exportWritableDatased((WritableDataset) result.get(
+			paradigm.exportWriteableDatased((WriteableDataset) result.get(
 				"dataset"), Paths.get(getOutputFilesPattern() + angle + ".png")
 					.toUri());
 			return result;

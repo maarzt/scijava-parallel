@@ -25,7 +25,7 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 
 	RemoteDataset createRemoteDataset(URI uri);
 
-	void exportWritableDatased(WritableDataset writableDataset, URI uri);
+	void exportWriteableDatased(WriteableDataset writeableDataset, URI uri);
 
 	// -- Closeable methods --
 	@Override
