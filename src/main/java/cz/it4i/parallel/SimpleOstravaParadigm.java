@@ -1,20 +1,19 @@
 
 package cz.it4i.parallel;
 
+import com.google.common.collect.Streams;
+
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import net.imagej.Dataset;
@@ -63,33 +62,9 @@ public abstract class SimpleOstravaParadigm extends
 	public List<Map<String, ?>> runAll(List<Class<? extends Command>> commands,
 		List<Map<String, ?>> parameters)
 	{
-		
-		Iterator<Map<String, ?>> parIterator = parameters.iterator();
-		final Collection<Future<Map<String,Object>>> futures = Collections.synchronizedCollection(
-			new LinkedList<>());
-		
-		for(Class<? extends Command> clazz: commands) {
-			futures.add(executorService.submit(new Callable<Map<String,Object>>() {
-				
-				@Override
-				public Map<String,Object> call() {
-					try {
-						ParallelWorker pw = workerPool.takeFreeWorker();
-						try {
-							Map<String,?> params = parIterator.next();
-							params = processInputDataset(pw, params);
-							return processOutputDataset(pw, pw.executeCommand(clazz, params));
-						} finally {
-							workerPool.addWorker(pw);
-						}
-					}
-					catch (InterruptedException exc) {
-						log.error(exc.getMessage(), exc);
-						throw new RuntimeException(exc);
-					}
-				}
-			}));
-		}
+		List<CompletableFuture<Map<String, ?>>> futures = runAllAsync(commands,
+			parameters);
+			
 		return futures.stream().map(f -> {
 			try {
 				return f.get();
@@ -99,6 +74,41 @@ public abstract class SimpleOstravaParadigm extends
 				throw new RuntimeException(exc);
 			}
 		}).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<CompletableFuture<Map<String, ?>>> runAllAsync(
+		List<Class<? extends Command>> commands, List<Map<String, ?>> parameters)
+	{
+		List<CompletableFuture<Map<String, ?>>> futures = Streams.zip(commands.stream(), parameters.stream(), new BiFunction<Class<? extends Command>, Map<String, ?>, CompletableFuture<Map<String, ?>>>() {
+
+			@Override
+			public CompletableFuture<Map<String, ?>> apply(Class<? extends Command> commmand,
+				Map<String, ?> params)
+			{
+				return CompletableFuture.supplyAsync(new Supplier<Map<String, ?>>() {
+
+					@Override
+					public Map<String, ?> get() {
+						Map<String, ?> localParams = params;
+						try {
+							ParallelWorker pw = workerPool.takeFreeWorker();
+							try {
+								localParams = processInputDataset(pw, localParams);
+								return processOutputDataset(pw, pw.executeCommand(commmand, localParams));
+							} finally {
+								workerPool.addWorker(pw);
+							}
+						}
+						catch (InterruptedException exc) {
+							log.error(exc.getMessage(), exc);
+							throw new RuntimeException(exc);
+						}
+					}
+				}, executorService);
+			}
+		}).collect(Collectors.toList());
+		return futures;
 	}
 	
 	@Override

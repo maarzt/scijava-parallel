@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.SingletonPlugin;
@@ -19,6 +20,9 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 	List<Map<String, ?>> runAll(List<Class<? extends Command>> commands,
 		List<Map<String, ?>> parameters);
 
+	List<CompletableFuture<Map<String, ?>>> runAllAsync(
+		List<Class<? extends Command>> commands, List<Map<String, ?>> parameters);
+
 	RemoteDataset createRemoteDataset(URI uri);
 
 	void exportWritableDatased(WritableDataset writableDataset, URI uri);
@@ -28,4 +32,5 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 	default public void close() {
 
 	}
+
 }
