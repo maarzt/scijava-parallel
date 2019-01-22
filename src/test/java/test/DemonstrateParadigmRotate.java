@@ -6,6 +6,8 @@ import static test.Config.PNG_SUFFIX;
 import static test.Config.getInputDirectory;
 import static test.Config.getOutputFilesPattern;
 
+import com.google.common.collect.Streams;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +18,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
@@ -133,6 +139,7 @@ public class DemonstrateParadigmRotate implements Command {
 			}
 			else {
 				((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfLocalWorkers);
+				((LocalMultithreadedParadigm) paradigm).init();
 				doTest(paradigm);
 			}
 		}
@@ -160,14 +167,50 @@ public class DemonstrateParadigmRotate implements Command {
 			params.put("angle", angle);
 			paramsList.add(params);
 		}
-		List<Map<String, ?>> results = paradigm.runAll(commands, paramsList);
-		int angle = step;
-		for (Map<String,?> result: results) {
-			paradigm.exportWritableDatased((WritableDataset) result.get("dataset"), Paths.get(getOutputFilesPattern() + angle + ".png").toUri());
-			angle += step;
-		}
-		log.info("result: " + results);
-
+		List<CompletableFuture<Map<String, ?>>> futures = paradigm.runAllAsync(
+			commands, paramsList);
+		List<Map<String, ?>> results = Streams.zip(paramsList.stream()
+                                              , futures.stream()
+                                              , (input, result) -> 
+                                                result.thenApplyAsync(
+                                                 new P_Consumer(paradigm, 
+                                                                (Double) input.get("angle"))))
+			.collect(Collectors.toList())
+			.stream()
+			.map(cf -> get(cf))
+			.collect(Collectors.toList());
+		log.info("results: " + results);
 	}
 
+	private Map<String, ?> get(CompletableFuture<Map<String, ?>> cf) {
+		try {
+			return cf.get();
+		}
+		catch (InterruptedException | ExecutionException exc) {
+			throw new RuntimeException(exc);
+		}
+	}
+
+	private static class P_Consumer implements Function<Map<String,?>,Map<String,?>> {
+
+		private ParallelizationParadigm paradigm;
+		private Double angle;
+		
+		
+		public P_Consumer(ParallelizationParadigm paradigm, Double angle) {
+			this.paradigm = paradigm;
+			this.angle = angle;
+		}
+
+
+		@Override
+		public Map<String,?> apply(Map<String, ?> result) {
+			log.info("handling:" + angle);
+			paradigm.exportWritableDatased((WritableDataset) result.get(
+				"dataset"), Paths.get(getOutputFilesPattern() + angle + ".png")
+					.toUri());
+			return result;
+		}
+		
+	}
 }
