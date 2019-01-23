@@ -52,7 +52,7 @@ public class DemonstrationParadigmScriptEval implements Command {
 	private void doTest(final ParallelizationParadigm paradigm)
 	{
 		List<String> commands = new LinkedList<>();
-		List<Map<String,?>> paramsList = new LinkedList<>();
+		List<Map<String,Object>> paramsList = new LinkedList<>();
 		for (int i = 0; i < step; i++) {
 			commands.add("net.imagej.server.external.ScriptEval");
 			Map<String, Object> params = new HashMap<>();
@@ -60,7 +60,7 @@ public class DemonstrationParadigmScriptEval implements Command {
 			params.put("script", "print('hello from script" + i + "'); getDirectory('home'); exec('whoami');");
 			paramsList.add(params);
 		}
-		List<Map<String,?>> result = paradigm.runAllCommands(commands, paramsList);
+		List<Map<String,Object>> result = paradigm.runAllCommands(commands, paramsList);
 		log.info("result: " + result);
 		
 	}

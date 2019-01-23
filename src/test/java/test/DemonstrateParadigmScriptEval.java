@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.imagej.ImageJ;
-import net.imagej.ops.math.PrimitiveMath;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -131,7 +130,7 @@ public class DemonstrateParadigmScriptEval implements Command {
 	private void doTest(final ParallelizationParadigm paradigm)
 	{
 		List<Class<? extends Command>> commands = new LinkedList<>();
-		List<Map<String,?>> paramsList = new LinkedList<>();
+		List<Map<String, Object>> paramsList = new LinkedList<>();
 		for (int i = 0; i < step; i++) {
 			//commands.add(net.imagej.server.external.ScriptEval.class);
 			Map<String, Object> params = new HashMap<>();
@@ -139,7 +138,7 @@ public class DemonstrateParadigmScriptEval implements Command {
 			params.put("script", "print('hello from script" + i + "'); getDirectory('home'); exec('whoami');");
 			paramsList.add(params);
 		}
-		List<Map<String,?>> result = paradigm.runAll(commands, paramsList);
+		List<Map<String,Object>> result = paradigm.runAll(commands, paramsList);
 		log.info("result: " + result);
 		
 	}

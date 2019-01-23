@@ -203,4 +203,12 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	private interface P_Runnable {
 		void run () throws Exception;
 	}
+
+	@Override
+	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
+		String command)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

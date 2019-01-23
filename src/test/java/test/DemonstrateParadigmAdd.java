@@ -132,7 +132,7 @@ public class DemonstrateParadigmAdd implements Command {
 	private void doTest(final ParallelizationParadigm paradigm)
 	{
 		List<Class<? extends Command>> commands = new LinkedList<>();
-		List<Map<String,?>> paramsList = new LinkedList<>();
+		List<Map<String,Object>> paramsList = new LinkedList<>();
 		for (double angle = step; angle < 360; angle += step) {
 			commands.add(PrimitiveMath.DoubleMultiply.class);
 			Map<String, Object> params = new HashMap<>();
@@ -140,7 +140,7 @@ public class DemonstrateParadigmAdd implements Command {
 			params.put("b", angle + 2);
 			paramsList.add(params);
 		}
-		List<Map<String,?>> result = paradigm.runAll(commands, paramsList);
+		List<Map<String, Object>> result = paradigm.runAll(commands, paramsList);
 		log.info("result: " + result);
 		
 	}

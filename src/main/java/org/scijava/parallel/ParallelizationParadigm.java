@@ -3,7 +3,6 @@
 package org.scijava.parallel;
 
 import java.io.Closeable;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -18,28 +17,24 @@ public interface ParallelizationParadigm extends SingletonPlugin, Closeable {
 
 	void init();
 
-	default List<Map<String, ?>> runAll(List<Class<? extends Command>> commands,
-		List<Map<String, ?>> parameters) {
+	default List<Map<String, Object>> runAll(List<Class<? extends Command>> commands,
+		List<Map<String, Object>> parameters) {
 		return runAllCommands(commands.stream().map(clazz -> clazz.getName())
 			.collect(Collectors.toList()), parameters);
 	}
 
-	default List<CompletableFuture<Map<String, ?>>> runAllAsync(
-		List<Class<? extends Command>> commands, List<Map<String, ?>> parameters) {
+	default List<CompletableFuture<Map<String, Object>>> runAllAsync(
+		List<Class<? extends Command>> commands, List<Map<String, Object>> parameters) {
 		return runAllCommandsAsync(commands.stream().map(clazz -> clazz.getName())
 			.collect(Collectors.toList()), parameters);
 	}
 
-	List<Map<String, ?>> runAllCommands(List<String> commands,
-		List<Map<String, ?>> parameters);
+	List<Map<String, Object>> runAllCommands(List<String> commands,
+		List<Map<String, Object>> parameters);
 
-	List<CompletableFuture<Map<String, ?>>> runAllCommandsAsync(
-		List<String> commands, List<Map<String, ?>> parameters);
+	List<CompletableFuture<Map<String, Object>>> runAllCommandsAsync(
+		List<String> commands, List<Map<String, Object>> parameters);
 	
-	RemoteDataset createRemoteDataset(URI uri);
-
-	void exportWriteableDataset(WriteableDataset writeableDataset, URI uri);
-
 	// -- Closeable methods --
 	@Override
 	default public void close() {

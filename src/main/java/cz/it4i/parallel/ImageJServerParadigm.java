@@ -1,9 +1,21 @@
 
 package cz.it4i.parallel;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import static cz.it4i.parallel.Routines.supplyWithExceptionHandling;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -18,6 +30,9 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	private int port;
 
 	private final Collection<String> hosts = new LinkedList<>();
+	
+	private ParameterTypeProvider typeProvider = new P_ParameterTypeProvider(); 
+	
 
 	// -- ImageJServerParadigm methods --
 
@@ -46,4 +61,51 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 		return new ImageJServerWorker(host, port);
 	}
 
+	
+	@Override
+	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
+		String command)
+	{
+		return new TestParameterProcessor(typeProvider, pw, command);
+	}
+	
+	private class P_ParameterTypeProvider implements ParameterTypeProvider {
+
+		private Map<String,Map<String,String>> mappedTypes = new HashMap<>();
+		
+		
+		@Override
+		public String provideParameterTypeName(String commandName,
+			String parameterName)
+		{
+			Map<String,String> paramToClass = mappedTypes.computeIfAbsent(commandName, c -> obtainCommandInfo(c));
+			return paramToClass.get(parameterName);
+		}
+
+		private Map<String, String> obtainCommandInfo(String commandTypeName) {
+			Map<String, String> result = new HashMap<>();
+			final String getUrl = "http://" + hosts.iterator().next() + ":" + String
+				.valueOf(port) + "/modules/" + "command:" + commandTypeName;
+			final HttpGet httpGet = new HttpGet(getUrl);
+			final HttpResponse response = supplyWithExceptionHandling(
+				() -> HttpClientBuilder.create().build().execute(httpGet), log,
+				"get response");
+			org.json.JSONObject json = supplyWithExceptionHandling(
+				() -> new org.json.JSONObject(EntityUtils.toString(response
+					.getEntity())), log, "obtain command info");
+
+			JSONArray inputs = (JSONArray) json.get("inputs");
+			Iterator<?> iter = inputs.iterator();
+			while (iter.hasNext()) {
+				JSONObject param = (JSONObject) iter.next();
+				String typeName = ((String) param.get("genericType")).trim();
+				if (typeName.contains(" ")) {
+					typeName = typeName.split(" ")[1];
+				}
+				result.put((String) param.get("name"), typeName);
+			}
+			return result;
+		}
+		
+	}
 }

@@ -1,16 +1,15 @@
 package test;
 
-import java.io.File;
+import static cz.it4i.parallel.Routines.runWithExceptionHandling;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,13 +23,13 @@ import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.parallel.ParallelizationParadigmProfile;
-import org.scijava.parallel.WriteableDataset;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.ImageJServerParadigm;
+import cz.it4i.parallel.Routines;
 
 @Plugin(type = Command.class, headless = true,
 	menuPath = "Plugins>DemonstrateOstravaParadigm")
@@ -68,54 +67,43 @@ public class DemonstrationExample implements Command {
 	protected void doRotation(final ParallelizationParadigm paradigm)
 	{
 		Path outputDirectory = prepareoutputDirectory();
-		List<Map<String,?>> parametersList = new LinkedList<>();
+		List<Map<String, Object>> parametersList = new LinkedList<>();
 		List<Class<? extends Command>> commands = new LinkedList<>();
-		initParameters(paradigm,commands,parametersList);
+		initParameters(commands,parametersList);
 		
-		List<Map<String, ?>> results = paradigm.runAll(commands, parametersList);
-		Iterator<Map<String,?>> inputIterator = parametersList.iterator();
+		List<Map<String, Object>> results = paradigm.runAll(commands, parametersList);
+		Iterator<Map<String,Object>> inputIterator = parametersList.iterator();
 		for(Map<String,?> result: results) {
-			paradigm.exportWriteableDataset((WriteableDataset) result.get("dataset"), getResultURI(outputDirectory,(Double) inputIterator.next().get("angle")));
+			runWithExceptionHandling(
+				() -> Files.move((Path) result.get("dataset")
+												, getResultPath(outputDirectory,(Double) inputIterator.next().get("angle"))
+												, StandardCopyOption.REPLACE_EXISTING)
+				,log, "moving file");
 		}
 	}
 
-	final protected void initParameters(ParallelizationParadigm paradigm ,List<Class<? extends Command>> commands, List<Map<String, ?>> parametersList) {
+	final protected void initParameters(List<Class<? extends Command>> commands, List<Map<String, Object>> parametersList) {
 		
 		Path path = getImagetToRotate();
-				
 		for (double angle = step; angle < 360; angle += step) {
 			commands.add(RotateImageXY.class);
 			Map<String, Object> parameters = new HashMap<>();
-			parameters.put("dataset", paradigm.createRemoteDataset(path.toUri()));
+			parameters.put("dataset", path);
 			parameters.put("angle", angle);
 			parametersList.add(parameters);
 		}
 	}
 
-	final protected URI getResultURI(Path outputDirectory,Double angle) {
-		return outputDirectory.resolve("result_" + angle + ".jpg").toUri();
+	final protected Path getResultPath(Path outputDirectory,Double angle) {
+		return outputDirectory.resolve("result_" + angle + ".jpg");
 	}
 
 	final protected Path prepareoutputDirectory() {
 		Path outputDirectory = Paths.get(OUTPUT_DIRECTORY);
-		if (Files.exists(outputDirectory)) {
-			try {
-				Files.walk(outputDirectory)
-				.sorted(Comparator.reverseOrder())
-				.map(Path::toFile)
-				.forEach(File::delete);
-			}
-			catch (IOException exc) {
-				log.error("delete directory: " + outputDirectory.toAbsolutePath());
-				throw new RuntimeException(exc);
-			}
-		}
-		try {
-			Files.createDirectories(outputDirectory);
-		}
-		catch (IOException exc) {
-			log.error("create directory: " + outputDirectory.toAbsolutePath());
-			throw new RuntimeException(exc);
+		if (!Files.exists(outputDirectory)) {
+			Routines.runWithExceptionHandling(
+				() -> Files.createDirectories(outputDirectory)
+				, log, "create directory");
 		}
 		return outputDirectory;
 	}
