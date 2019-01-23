@@ -1,8 +1,6 @@
 
 package cz.it4i.parallel;
 
-import static org.mockito.Mockito.doAnswer;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -18,8 +16,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import net.imagej.Dataset;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -31,21 +27,25 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 import org.scijava.Context;
 import org.scijava.plugin.SciJavaPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageJServerWorker implements ParallelWorker {
 
+	private final static Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.ImageJServerWorker.class);
+	
 	private final String hostName;
 	private final int port;
-	private final Map<Dataset, String> mockedData2id = new HashMap<>();
-	private final Map<String, Dataset> id2mockedData = new HashMap<>();
-
+	
 	private final static Set<String> supportedImageTypes = Collections
 		.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
+	private final Map<org.json.JSONObject, String> importedData2id = new HashMap<>();
+	private final Map<String, org.json.JSONObject> id2importedData = new HashMap<>();
+	
 	ImageJServerWorker(final String hostName, final int port) {
 		this.hostName = hostName;
 		this.port = port;
@@ -62,14 +62,13 @@ public class ImageJServerWorker implements ParallelWorker {
 	// -- ParallelWorker methods --
 
 	@Override
-	public Dataset importData(final Path path) {
+	public org.json.JSONObject importData(final Path path) {
 
 		final String filePath = path.toAbsolutePath().toString();
 		final String fileName = path.getFileName().toString();
 
-		Dataset result = null;
-
-		try {
+		
+		return Routines.supplyWithExceptionHandling(() -> {
 
 			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
 				"/objects/upload";
@@ -86,29 +85,21 @@ public class ImageJServerWorker implements ParallelWorker {
 			// TODO check result code properly
 
 			final String json = EntityUtils.toString(response.getEntity());
-			final String obj = new org.json.JSONObject(json).getString("id");
+			org.json.JSONObject result = new org.json.JSONObject(json);  
+			final String objId = result.getString("id");
+			
+			importedData2id.put(result, objId);
+			id2importedData.put(objId, result);
+			return result;
+		},log,"importData");
 
-			result = Mockito.mock(Dataset.class, (Answer<Dataset>) p -> {
-				throw new UnsupportedOperationException();
-			});
-			doAnswer(p -> "Dataset(mocked)[id = " + obj).when(result).toString();
-
-			mockedData2id.put(result, obj);
-			id2mockedData.put(obj, result);
-
-		}
-		catch (final Exception e) {
-			e.printStackTrace();
-		}
-
-		return result;
 	}
 
 	@Override
-	public void exportData(final Dataset dataset, final Path p) {
+	public void exportData(final Object dataset, final Path p) {
 
 		final String filePath = p.toString();
-		final String objectId = mockedData2id.get(dataset);
+		final String objectId = ((org.json.JSONObject)dataset).getString("id");
 
 		try {
 
@@ -139,9 +130,9 @@ public class ImageJServerWorker implements ParallelWorker {
 	}
 
 	@Override
-	public void deleteData(final Dataset dataset) {
+	public void deleteData(final Object dataset) {
 
-		final String objectId = mockedData2id.get(dataset);
+		final String objectId = ((org.json.JSONObject)dataset).getString("id");
 
 		@SuppressWarnings("unused")
 		String json = null;
@@ -163,9 +154,6 @@ public class ImageJServerWorker implements ParallelWorker {
 		catch (final Exception e) {
 			e.printStackTrace();
 		}
-
-		mockedData2id.remove(dataset);
-		id2mockedData.remove(objectId);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -174,7 +162,7 @@ public class ImageJServerWorker implements ParallelWorker {
 		final String commandTypeName, final Map<String, ?> inputs)
 	{
 
-		final Map<String, Object> wrappedInputs = wrapInputValues(inputs);
+		final Map<String, ?> wrappedInputs = wrapInputValues(inputs);
 
 		String json = null;
 
@@ -265,12 +253,9 @@ public class ImageJServerWorker implements ParallelWorker {
 					.getValue()));
 	}
 
-	// TODO: Should not we return null if it is not instance of any supported
-	// type?
 	private Object wrapValue(Object value) {
-		if (value instanceof Dataset) {
-			final Dataset ds = (Dataset) value;
-			final Object id = mockedData2id.get(ds);
+		if (value instanceof org.json.JSONObject) {
+			final Object id = importedData2id.get(value);
 			if (id != null) {
 				value = id;
 			}
@@ -278,10 +263,8 @@ public class ImageJServerWorker implements ParallelWorker {
 		return value;
 	}
 
-	// TODO: Should not we return null if it is not instance of any supported
-	// type?
 	private Object unwrapValue(Object value) {
-		final Dataset obj = id2mockedData.get(value);
+		final Object obj = id2importedData.get(value);
 		if (obj != null) {
 			value = obj;
 		}

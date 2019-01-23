@@ -46,9 +46,9 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public void exportData(final Dataset dataset, final Path filePath) {
+	public void exportData(final Object dataset, final Path filePath) {
 		try {
-			datasetIOService.save(dataset, filePath.toString());
+			datasetIOService.save((Dataset) dataset, filePath.toString());
 		}
 		catch (final IOException e) {
 			throw new RuntimeException(e);
@@ -56,8 +56,8 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	}
 
 	@Override
-	public void deleteData(final Dataset ds) {
-		ds.decrementReferences();
+	public void deleteData(final Object ds) {
+		((Dataset) ds).decrementReferences();
 	}
 
 	@Override

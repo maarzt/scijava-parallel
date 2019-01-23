@@ -13,9 +13,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -94,10 +91,10 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				() -> new org.json.JSONObject(EntityUtils.toString(response
 					.getEntity())), log, "obtain command info");
 
-			JSONArray inputs = (JSONArray) json.get("inputs");
+			org.json.JSONArray inputs = (org.json.JSONArray) json.get("inputs");
 			Iterator<?> iter = inputs.iterator();
 			while (iter.hasNext()) {
-				JSONObject param = (JSONObject) iter.next();
+				org.json.JSONObject param = (org.json.JSONObject) iter.next();
 				String typeName = ((String) param.get("genericType")).trim();
 				if (typeName.contains(" ")) {
 					typeName = typeName.split(" ")[1];

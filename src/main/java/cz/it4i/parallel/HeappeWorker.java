@@ -1,8 +1,6 @@
 
 package cz.it4i.parallel;
 
-import static org.mockito.Mockito.doAnswer;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,8 +31,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 import org.scijava.Context;
 import org.scijava.plugin.SciJavaPlugin;
 import org.slf4j.Logger;
@@ -47,8 +43,8 @@ public class HeappeWorker implements ParallelWorker {
 	
 	private final String hostName;
 	private final int port;
-	private final Map<Dataset, String> mockedData2id = new HashMap<>();
-	private final Map<String, Dataset> id2mockedData = new HashMap<>();
+	private final Map<org.json.JSONObject, String> mockedData2id = new HashMap<>();
+	private final Map<String, org.json.JSONObject> id2mockedData = new HashMap<>();
 
 	private final static Set<String> supportedImageTypes = Collections
 		.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
@@ -69,12 +65,12 @@ public class HeappeWorker implements ParallelWorker {
 	// -- ParallelWorker methods --
 
 	@Override
-	public Dataset importData(final Path path) {
+	public Object importData(final Path path) {
 
 		final String filePath = path.toAbsolutePath().toString();
 		final String fileName = path.getFileName().toString();
 
-		Dataset result = null;
+		org.json.JSONObject result = null;
 
 		try {
 
@@ -92,14 +88,11 @@ public class HeappeWorker implements ParallelWorker {
 				// TODO check result code properly
 
 				final String json = EntityUtils.toString(response.getEntity());
-				final String obj = new org.json.JSONObject(json).getString("id");
-				result = Mockito.mock(Dataset.class, (Answer<Dataset>) p -> {
-					throw new UnsupportedOperationException();
-				});
-				doAnswer(p -> "Dataset(mocked)[id = " + obj).when(result).toString();
-
-				mockedData2id.put(result, obj);
-				id2mockedData.put(obj, result);
+				result = new org.json.JSONObject(json);  
+				final String objId = result.getString("id");
+				
+				mockedData2id.put(result, objId);
+				id2mockedData.put(objId, result);
 			}
 
 		}
@@ -111,7 +104,7 @@ public class HeappeWorker implements ParallelWorker {
 	}
 
 	@Override
-	public void exportData(final Dataset dataset, final Path p) {
+	public void exportData(final Object dataset, final Path p) {
 
 		final String filePath = p.toString();
 		final String objectId = mockedData2id.get(dataset);
@@ -145,7 +138,7 @@ public class HeappeWorker implements ParallelWorker {
 	}
 
 	@Override
-	public void deleteData(final Dataset dataset) {
+	public void deleteData(final Object dataset) {
 
 		final String objectId = mockedData2id.get(dataset);
 
@@ -291,8 +284,7 @@ public class HeappeWorker implements ParallelWorker {
 	// type?
 	private Object wrapValue(Object value) {
 		if (value instanceof Dataset) {
-			final Dataset ds = (Dataset) value;
-			final Object id = mockedData2id.get(ds);
+			final Object id = mockedData2id.get(value);
 			if (id != null) {
 				value = id;
 			}
@@ -303,7 +295,7 @@ public class HeappeWorker implements ParallelWorker {
 	// TODO: Should not we return null if it is not instance of any supported
 	// type?
 	private Object unwrapValue(Object value) {
-		final Dataset obj = id2mockedData.get(value);
+		final org.json.JSONObject obj = id2mockedData.get(value);
 		if (obj != null) {
 			value = obj;
 		}

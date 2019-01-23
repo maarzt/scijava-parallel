@@ -50,7 +50,8 @@ public class TestParameterProcessor extends ParameterProcessor {
 		@Override
 		public Object convertOutput(Object input) {
 			Path result = Routines.supplyWithExceptionHandling(() -> Files.createTempFile("", suffix), log, "output conversion");
-			pw.exportData((Dataset) input, result);
+			pw.exportData(input, result);
+			pw.deleteData(input);
 			return result;
 		}
 		
