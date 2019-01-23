@@ -12,10 +12,10 @@ import java.util.concurrent.ExecutionException;
 import net.imagej.Dataset;
 
 import org.scijava.Context;
-import org.scijava.command.Command;
 import org.scijava.command.CommandService;
-import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LocalMultithreadedPluginWorker implements ParallelWorker {
 
@@ -25,8 +25,8 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 	@Parameter
 	private DatasetIOService datasetIOService;
 
-	@Parameter
-	private LogService logService;
+	private final static Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.LocalMultithreadedPluginWorker.class);
 
 	@Parameter
 	private Context context;
@@ -62,7 +62,7 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 
 	@Override
 	public Map<String, Object> executeCommand(
-		final Class<? extends Command> commandType, final Map<String, ?> map)
+		final String commandTypeName, final Map<String, ?> map)
 	{
 
 		// Create a new Object-typed input map
@@ -71,10 +71,10 @@ public class LocalMultithreadedPluginWorker implements ParallelWorker {
 
 		// Execute command and return outputs
 		try {
-			return commandService.run(commandType, true, inputMap).get().getOutputs();
+			return commandService.run(commandTypeName, true, inputMap).get().getOutputs();
 		}
 		catch (InterruptedException | ExecutionException e) {
-			logService.error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 
 		return null;

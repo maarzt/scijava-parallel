@@ -36,7 +36,6 @@ import org.json.simple.JSONObject;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.scijava.Context;
-import org.scijava.command.Command;
 import org.scijava.plugin.SciJavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,7 +176,7 @@ public class HeappeWorker implements ParallelWorker {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> executeCommand(
-		final Class<? extends Command> commandType, final Map<String, ?> inputs)
+		final String commandTypeName, final Map<String, ?> inputs)
 	{
 
 		final Map<String, Object> wrappedInputs = wrapInputValues(inputs);
@@ -187,7 +186,7 @@ public class HeappeWorker implements ParallelWorker {
 		try {
 
 			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
-				"/modules/" + "command:" + commandType.getCanonicalName();
+				"/modules/" + "command:" + commandTypeName;
 			final HttpPost httpPost = new HttpPost(postUrl);
 
 			final JSONObject inputJson = new JSONObject();

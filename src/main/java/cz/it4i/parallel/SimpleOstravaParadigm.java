@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import net.imagej.Dataset;
 
-import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.parallel.AbstractParallelizationParadigm;
 import org.scijava.parallel.RemoteDataset;
@@ -59,10 +58,10 @@ public abstract class SimpleOstravaParadigm extends
 	}
 	
 	@Override
-	public List<Map<String, ?>> runAll(List<Class<? extends Command>> commands,
+	public List<Map<String, ?>> runAllCommands(List<String> commands,
 		List<Map<String, ?>> parameters)
 	{
-		List<CompletableFuture<Map<String, ?>>> futures = runAllAsync(commands,
+		List<CompletableFuture<Map<String, ?>>> futures = runAllCommandsAsync(commands,
 			parameters);
 			
 		return futures.stream().map(f -> {
@@ -77,13 +76,13 @@ public abstract class SimpleOstravaParadigm extends
 	}
 
 	@Override
-	public List<CompletableFuture<Map<String, ?>>> runAllAsync(
-		List<Class<? extends Command>> commands, List<Map<String, ?>> parameters)
+	public List<CompletableFuture<Map<String, ?>>> runAllCommandsAsync(
+		List<String> commands, List<Map<String, ?>> parameters)
 	{
-		List<CompletableFuture<Map<String, ?>>> futures = Streams.zip(commands.stream(), parameters.stream(), new BiFunction<Class<? extends Command>, Map<String, ?>, CompletableFuture<Map<String, ?>>>() {
+		List<CompletableFuture<Map<String, ?>>> futures = Streams.zip(commands.stream(), parameters.stream(), new BiFunction<String, Map<String, ?>, CompletableFuture<Map<String, ?>>>() {
 
 			@Override
-			public CompletableFuture<Map<String, ?>> apply(Class<? extends Command> commmand,
+			public CompletableFuture<Map<String, ?>> apply(String commmand,
 				Map<String, ?> params)
 			{
 				return CompletableFuture.supplyAsync(new Supplier<Map<String, ?>>() {
