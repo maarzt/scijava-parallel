@@ -95,11 +95,6 @@
 			<artifactId>imagej</artifactId>
 		</dependency>
 		<dependency>
-  			<groupId>net.imagej</groupId>
-  			<artifactId>imagej-server</artifactId>
-  			<version>0.1.2</version>
-		</dependency>
-		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-plugins-commands</artifactId>
 		</dependency>

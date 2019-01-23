@@ -117,7 +117,7 @@ public abstract class SimpleOstravaParadigm extends
 	}
 	
 	@Override
-	public void exportWriteableDatased(WriteableDataset writableDataset, URI uri) {
+	public void exportWriteableDataset(WriteableDataset writableDataset, URI uri) {
 		P_WritableDataset wd = (P_WritableDataset) writableDataset;
 		wd.export(uri);
 	}

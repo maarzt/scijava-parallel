@@ -37,7 +37,8 @@ public class Config {
 		return properties.getProperty("input_directory");
 	}
 
-	public static String getResultFile() {
-		return properties.getProperty("result_file");
+
+	public static String getFijiLocation() {
+		return properties.getProperty("Fiji.location.path");
 	}
 }

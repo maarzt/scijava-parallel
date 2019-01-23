@@ -133,7 +133,7 @@ public class DemonstrateParadigmScriptEval implements Command {
 		List<Class<? extends Command>> commands = new LinkedList<>();
 		List<Map<String,?>> paramsList = new LinkedList<>();
 		for (int i = 0; i < step; i++) {
-			commands.add(net.imagej.server.external.ScriptEval.class);
+			//commands.add(net.imagej.server.external.ScriptEval.class);
 			Map<String, Object> params = new HashMap<>();
 			params.put("language", "ij1");
 			params.put("script", "print('hello from script" + i + "'); getDirectory('home'); exec('whoami');");
