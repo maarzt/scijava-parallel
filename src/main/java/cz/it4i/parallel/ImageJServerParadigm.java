@@ -13,7 +13,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.scijava.io.IOService;
 import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +32,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	
 	private ParameterTypeProvider typeProvider = new P_ParameterTypeProvider(); 
 	
-
+	@Parameter private IOService ioService;
 	// -- ImageJServerParadigm methods --
 
 	public void setPort(final int port) {
@@ -63,7 +65,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
 		String command)
 	{
-		return new TestParameterProcessor(typeProvider, pw, command);
+		return new TestParameterProcessor(ioService, typeProvider, pw, command);
 	}
 	
 	private class P_ParameterTypeProvider implements ParameterTypeProvider {

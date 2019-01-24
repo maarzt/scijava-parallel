@@ -82,7 +82,7 @@ public class DemonstrationExample implements Command {
 		}
 	}
 
-	final protected void initParameters(List<Class<? extends Command>> commands, List<Map<String, Object>> parametersList) {
+	protected void initParameters(List<Class<? extends Command>> commands, List<Map<String, Object>> parametersList) {
 		
 		Path path = getImagetToRotate();
 		for (double angle = step; angle < 360; angle += step) {
@@ -120,7 +120,7 @@ public class DemonstrationExample implements Command {
 		return paradigm;
 	}
 
-	private Path getImagetToRotate() {
+	final protected Path getImagetToRotate() {
 		try(InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
 			Path result = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
 			Files.copy(is, result, StandardCopyOption.REPLACE_EXISTING);
