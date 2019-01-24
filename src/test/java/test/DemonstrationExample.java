@@ -64,8 +64,11 @@ public class DemonstrationExample implements Command {
 				doRotation(paradigm);
 			}
 			
+		} finally {
+			if (imageToRotate != null && Files.exists(imageToRotate)) {
+				Routines.runWithExceptionHandling(()->Files.delete(imageToRotate), log, "delete rotated image");
+			}
 		}
-		Routines.runWithExceptionHandling(()->Files.delete(imageToRotate), log, "delete rotated image");
 	}
 
 	protected void doRotation(final ParallelizationParadigm paradigm)
