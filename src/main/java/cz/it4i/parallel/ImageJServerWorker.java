@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -197,9 +198,9 @@ public class ImageJServerWorker implements ParallelWorker {
 
 		final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
 
-		for (final String key : jsonObj.keySet()) {
-			rawOutputs.put(key, jsonObj.get(key));
-		}
+		jsonObj.keys().forEachRemaining(key ->
+				rawOutputs.put(key, jsonObj.get(key))
+		);
 
 		return unwrapOutputValues(rawOutputs);
 	}
