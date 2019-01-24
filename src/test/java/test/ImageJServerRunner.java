@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.slf4j.Logger;
@@ -47,6 +48,12 @@ public class ImageJServerRunner implements AutoCloseable{
 		boolean running = false;
 		String[] command = IMAGEJ_SERVER_WITH_PARAMETERS.clone();
 		command[0] = Paths.get(Config.getFijiLocation(), command[0]).toString();
+		if (!Files.exists(Paths.get(command[0]))) {
+			throw new IllegalArgumentException("Cannot find ImageJ or Fiji on path " 
+																					+ command[0] + ". Probably, property " 
+																					+ Config.FIJI_LOCATION_PATH 
+																					+ " is not configured properly in 'configuration.properties' file .");
+		}
 		try {
 			ProcessBuilder pb = new ProcessBuilder(command).inheritIO();
 			imageJServerProcess =  pb.start();

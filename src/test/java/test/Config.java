@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 public class Config {
 
+	public static final String FIJI_LOCATION_PATH = "Fiji.location.path";
+
 	public static final String JPG_SUFFIX = ".jpg";
 
 	public static final String PNG_SUFFIX = ".png";
@@ -39,6 +41,6 @@ public class Config {
 
 
 	public static String getFijiLocation() {
-		return properties.getProperty("Fiji.location.path");
+		return properties.getProperty(FIJI_LOCATION_PATH);
 	}
 }
