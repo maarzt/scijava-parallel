@@ -14,15 +14,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.scijava.command.CommandService;
-import org.scijava.parallel.AbstractParallelizationParadigm;
+import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
 import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SimpleOstravaParadigm extends
-	AbstractParallelizationParadigm
-{
+public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 
 	private static final Logger log = LoggerFactory.getLogger(
 		cz.it4i.parallel.SimpleOstravaParadigm.class);
@@ -47,16 +45,17 @@ public abstract class SimpleOstravaParadigm extends
 	public void init() {
 		workerPool = new WorkerPool();
 		initWorkerPool();
-		executorService = Executors.newFixedThreadPool(workerPool.size(), threadService);
+		executorService = Executors.newFixedThreadPool(workerPool.size(),
+			threadService);
 	}
-	
+
 	@Override
 	public List<Map<String, Object>> runAllCommands(List<String> commands,
 		List<Map<String, Object>> parameters)
 	{
-		List<CompletableFuture<Map<String, Object>>> futures = runAllCommandsAsync(commands,
-			parameters);
-			
+		List<CompletableFuture<Map<String, Object>>> futures = runAllCommandsAsync(
+			commands, parameters);
+
 		return futures.stream().map(f -> {
 			try {
 				return f.get();
@@ -107,7 +106,6 @@ public abstract class SimpleOstravaParadigm extends
 	
 	@Override
 	public void close() {
-		super.close();
 		workerPool.close();
 		executorService.shutdown();
 		threadService.dispose();
@@ -116,5 +114,4 @@ public abstract class SimpleOstravaParadigm extends
 	abstract protected ParameterProcessor constructParameterProcessor(
 		ParallelWorker pw, String command);
 
-	
 }
