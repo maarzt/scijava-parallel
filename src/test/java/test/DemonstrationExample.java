@@ -38,7 +38,7 @@ public class DemonstrationExample implements Command {
 
 	private static final String OUTPUT_DIRECTORY = "output";
 
-	private static int step = 30;
+	protected static int step = 30;
 
 	private static List<String> hosts = Arrays.asList("localhost:8080");
 	
@@ -128,14 +128,16 @@ public class DemonstrationExample implements Command {
 	}
 
 	final protected Path getImagetToRotate() {
-		try(InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
-			imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
-			Files.copy(is, imageToRotate, StandardCopyOption.REPLACE_EXISTING);
-			return imageToRotate;
+		if (imageToRotate == null) {
+			try(InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
+				imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
+				Files.copy(is, imageToRotate, StandardCopyOption.REPLACE_EXISTING);
+			}
+			catch (IOException exc) {
+				log.error("download image", exc);
+				throw new RuntimeException(exc);
+			}
 		}
-		catch (IOException exc) {
-			log.error("download image", exc);
-			throw new RuntimeException(exc);
-		}
+		return imageToRotate;
 	}
 }

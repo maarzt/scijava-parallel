@@ -3,12 +3,15 @@ package test;
 import static cz.it4i.parallel.Routines.runWithExceptionHandling;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.command.Command;
 import org.scijava.io.IOService;
@@ -51,7 +54,14 @@ public class DemonstrationExampleDataset extends DemonstrationExample{
 	protected void initParameters(List<Class<? extends Command>> commands,
 		List<Map<String, Object>> parametersList)
 	{
-		super.initParameters(commands, parametersList);
-		parametersList.forEach(m -> m.put("dataset", Routines.supplyWithExceptionHandling(() -> ioService.open(m.get("dataset").toString()), log, "")));
+		Path path = getImagetToRotate();
+		for (double angle = step; angle < 360; angle += step) {
+			commands.add(RotateImageXY.class);
+			Map<String, Object> parameters = new HashMap<>();
+			Dataset dataset = (Dataset) Routines.supplyWithExceptionHandling(() -> ioService.open(path.toString()), log, "load");
+			parameters.put("dataset", dataset);
+			parameters.put("angle", angle);
+			parametersList.add(parameters);
+		}
 	}
 }
