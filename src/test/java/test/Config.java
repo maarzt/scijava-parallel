@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class Config {
 
-	public static final String FIJI_LOCATION_PATH = "Fiji.location.path";
+	public static final String FIJI_EXECUTABLE_PATH = "Fiji.executable.path";
 
 	public static final String JPG_SUFFIX = ".jpg";
 
@@ -39,8 +39,7 @@ public class Config {
 		return properties.getProperty("input_directory");
 	}
 
-
-	public static String getFijiLocation() {
-		return properties.getProperty(FIJI_LOCATION_PATH);
+	public static String getFijiExecutable() {
+		return properties.getProperty(FIJI_EXECUTABLE_PATH);
 	}
 }
