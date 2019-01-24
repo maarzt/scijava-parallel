@@ -49,6 +49,8 @@ public class DemonstrationExample implements Command {
 	@Parameter
 	private ParallelService parallelService;
 
+	private Path imageToRotate;
+
 	public static void main(final String... args) {
 		final ImageJ ij = new ImageJ();
 		ij.command().run(DemonstrationExample.class, true);
@@ -62,6 +64,7 @@ public class DemonstrationExample implements Command {
 			}
 			
 		}
+		Routines.runWithExceptionHandling(()->Files.delete(imageToRotate), log, "delete rotated image");
 	}
 
 	protected void doRotation(final ParallelizationParadigm paradigm)
@@ -122,9 +125,9 @@ public class DemonstrationExample implements Command {
 
 	final protected Path getImagetToRotate() {
 		try(InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
-			Path result = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
-			Files.copy(is, result, StandardCopyOption.REPLACE_EXISTING);
-			return result;
+			imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
+			Files.copy(is, imageToRotate, StandardCopyOption.REPLACE_EXISTING);
+			return imageToRotate;
 		}
 		catch (IOException exc) {
 			log.error("download image", exc);
