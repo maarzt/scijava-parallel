@@ -83,8 +83,8 @@ public class DemonstrationExample implements Command {
 		for(Map<String,?> result: results) {
 			runWithExceptionHandling(
 				() -> Files.move((Path) result.get("dataset")
-												, getResultPath(outputDirectory,(Double) inputIterator.next().get("angle"))
-												, StandardCopyOption.REPLACE_EXISTING)
+                        , getResultPath(outputDirectory,(Double) inputIterator.next().get("angle"))
+                        , StandardCopyOption.REPLACE_EXISTING)
 				,log, "moving file");
 		}
 	}
