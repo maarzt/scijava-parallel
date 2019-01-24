@@ -41,9 +41,10 @@ public class DemonstrationExample implements Command {
 	protected static int step = 30;
 
 	private static List<String> hosts = Arrays.asList("localhost:8080");
-	
-	private static String URL_OF_IMAGE_TO_ROTATE = "https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png";
-	
+
+	private static String URL_OF_IMAGE_TO_ROTATE =
+		"https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png";
+
 	public static final Logger log = LoggerFactory.getLogger(
 		DemonstrationExample.class);
 
@@ -59,58 +60,61 @@ public class DemonstrationExample implements Command {
 
 	@Override
 	public void run() {
-		try(ImageJServerRunner imageJServerRunner = new ImageJServerRunner()) {
-			try( ParallelizationParadigm paradigm = configureParadigm() ) {
+		try (ImageJServerRunner imageJServerRunner = new ImageJServerRunner()) {
+			try (ParallelizationParadigm paradigm = configureParadigm()) {
 				doRotation(paradigm);
 			}
-			
-		} finally {
+
+		}
+		finally {
 			if (imageToRotate != null && Files.exists(imageToRotate)) {
-				Routines.runWithExceptionHandling(()->Files.delete(imageToRotate), log, "delete rotated image");
+				Routines.runWithExceptionHandling(() -> Files.delete(imageToRotate),
+					log, "delete rotated image");
 			}
 		}
 	}
 
-	protected void doRotation(final ParallelizationParadigm paradigm)
-	{
-		Path outputDirectory = prepareoutputDirectory();
-		List<Map<String, Object>> parametersList = new LinkedList<>();
-		List<Class<? extends Command>> commands = new LinkedList<>();
-		initParameters(commands,parametersList);
-		
-		List<Map<String, Object>> results = paradigm.runAll(commands, parametersList);
-		Iterator<Map<String,Object>> inputIterator = parametersList.iterator();
-		for(Map<String,?> result: results) {
-			runWithExceptionHandling(
-				() -> Files.move((Path) result.get("dataset")
-                        , getResultPath(outputDirectory,(Double) inputIterator.next().get("angle"))
-                        , StandardCopyOption.REPLACE_EXISTING)
-				,log, "moving file");
+	protected void doRotation(final ParallelizationParadigm paradigm) {
+		final Path outputDirectory = prepareOutputDirectory();
+		final List<Class<? extends Command>> commands = new LinkedList<>();
+		final List<Map<String, Object>> parametersList = new LinkedList<>();
+		initParameters(commands, parametersList);
+
+		final List<Map<String, Object>> results = paradigm.runAll(commands,
+			parametersList);
+		final Iterator<Map<String, Object>> inputIterator = parametersList
+			.iterator();
+		for (Map<String, ?> result : results) {
+			runWithExceptionHandling(() -> Files.move((Path) result.get("dataset"),
+				getResultPath(outputDirectory, (Double) inputIterator.next().get(
+					"angle")), StandardCopyOption.REPLACE_EXISTING), log, "moving file");
 		}
 	}
 
-	protected void initParameters(List<Class<? extends Command>> commands, List<Map<String, Object>> parametersList) {
-		
-		Path path = getImagetToRotate();
+	protected void initParameters(final List<Class<? extends Command>> commands,
+		final List<Map<String, Object>> parameterList)
+	{
+
+		Path path = getImageToRotate();
 		for (double angle = step; angle < 360; angle += step) {
 			commands.add(RotateImageXY.class);
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put("dataset", path);
 			parameters.put("angle", angle);
-			parametersList.add(parameters);
+			parameterList.add(parameters);
 		}
 	}
 
-	final protected Path getResultPath(Path outputDirectory,Double angle) {
-		return outputDirectory.resolve("result_" + angle + getSuffix(imageToRotate.getFileName().toString()));
+	final protected Path getResultPath(Path outputDirectory, Double angle) {
+		return outputDirectory.resolve("result_" + angle + getSuffix(imageToRotate
+			.getFileName().toString()));
 	}
 
-	final protected Path prepareoutputDirectory() {
+	final protected Path prepareOutputDirectory() {
 		Path outputDirectory = Paths.get(OUTPUT_DIRECTORY);
 		if (!Files.exists(outputDirectory)) {
-			Routines.runWithExceptionHandling(
-				() -> Files.createDirectories(outputDirectory)
-				, log, "create directory");
+			Routines.runWithExceptionHandling(() -> Files.createDirectories(
+				outputDirectory), log, "create directory");
 		}
 		return outputDirectory;
 	}
@@ -120,17 +124,18 @@ public class DemonstrationExample implements Command {
 		parallelService.addProfile(new ParallelizationParadigmProfile(
 			ImageJServerParadigm.class, "lonelyBiologist01"));
 		parallelService.selectProfile("lonelyBiologist01");
-	
+
 		ParallelizationParadigm paradigm = parallelService.getParadigm();
 		((ImageJServerParadigm) paradigm).setHosts(hosts);
 		paradigm.init();
 		return paradigm;
 	}
 
-	final protected Path getImagetToRotate() {
+	final protected Path getImageToRotate() {
 		if (imageToRotate == null) {
-			try(InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
-				imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
+			try (InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
+				imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE
+					.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
 				Files.copy(is, imageToRotate, StandardCopyOption.REPLACE_EXISTING);
 			}
 			catch (IOException exc) {

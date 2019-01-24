@@ -28,7 +28,7 @@ public class DemonstrationExampleAsync extends DemonstrationExample{
 	
 	@Override
 	protected void doRotation(ParallelizationParadigm paradigm) {
-		Path outputDirectory = prepareoutputDirectory();
+		Path outputDirectory = prepareOutputDirectory();
 		
 		List<Map<String,Object>> parametersList = new LinkedList<>();
 		List<Class<? extends Command>> commands = new LinkedList<>();
