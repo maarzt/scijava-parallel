@@ -31,4 +31,8 @@ public class Routines {
 			throw new RuntimeException(exc);
 		}
 	}
+	
+	public static String getSuffix(String filename) {
+		return filename.substring(filename.lastIndexOf('.'), filename.length());
+	}
 }

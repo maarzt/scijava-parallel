@@ -1,5 +1,6 @@
 package test;
 
+import static cz.it4i.parallel.Routines.getSuffix;
 import static cz.it4i.parallel.Routines.runWithExceptionHandling;
 
 import java.io.IOException;
@@ -98,7 +99,7 @@ public class DemonstrationExample implements Command {
 	}
 
 	final protected Path getResultPath(Path outputDirectory,Double angle) {
-		return outputDirectory.resolve("result_" + angle + ".jpg");
+		return outputDirectory.resolve("result_" + angle + getSuffix(imageToRotate.getFileName().toString()));
 	}
 
 	final protected Path prepareoutputDirectory() {

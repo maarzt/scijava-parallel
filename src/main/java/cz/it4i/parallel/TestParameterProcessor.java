@@ -1,5 +1,7 @@
 package cz.it4i.parallel;
 
+import static cz.it4i.parallel.Routines.getSuffix;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -61,9 +63,7 @@ public class TestParameterProcessor extends ParameterProcessor {
 			throw new IllegalArgumentException("cannot convert from " + input.getClass());
 		}
 
-		private String getSuffix(String filename) {
-			return filename.substring(filename.lastIndexOf('.'), filename.length());
-		}
+		
 
 		@Override
 		public Object convertOutput(Object input) {
