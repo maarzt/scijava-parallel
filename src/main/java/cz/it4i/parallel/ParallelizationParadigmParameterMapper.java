@@ -15,5 +15,5 @@ public interface ParallelizationParadigmParameterMapper {
 
 	Object map2Local(Object input);
 
-	ParallelizationParadigmParameterMapper clone();
+	ParallelizationParadigmParameterMapper cloneForWorker(Object worker);
 }

@@ -11,6 +11,8 @@ import java.util.HashSet;
 
 import net.imagej.Dataset;
 
+import org.scijava.io.IOService;
+import org.scijava.plugin.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,11 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 
 	private Path tempFileForWorkingDataSet;
 
+	private ParallelWorker parallelWorker;
+
+	@Parameter
+	private IOService ioService;
+
 	public DatasetImageJServerMapper() {
 		super(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
 			ImageJServerParadigm.class))), Collections.unmodifiableSet(new HashSet<>(
@@ -37,7 +44,7 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 			Path path = (Path) input;
 			String filename = path.getFileName().toString();
 			suffixOfImportedFile = getSuffix(filename);
-			return pw.importData(path);
+			return parallelWorker.importData(path);
 		}
 		else if (input instanceof Dataset) {
 			workingDataSet = (Dataset) input;
@@ -46,7 +53,7 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 				() -> Files.createTempFile("", workingSuffix), log, "convertInput");
 			Routines.runWithExceptionHandling(() -> ioService.save(input,
 				tempFileForWorkingDataSet.toString()), log, "convertInput");
-			return pw.importData(tempFileForWorkingDataSet);
+			return parallelWorker.importData(tempFileForWorkingDataSet);
 		}
 		throw new IllegalArgumentException("cannot convert from " + input
 			.getClass());
@@ -54,8 +61,32 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 
 	@Override
 	public Object map2Local(Object input) {
-		// TODO Auto-generated method stub
-		return null;
+		if (suffixOfImportedFile != null) {
+			Path result = Routines.supplyWithExceptionHandling(() -> Files
+				.createTempFile("", suffixOfImportedFile), log, "output conversion");
+			parallelWorker.exportData(input, result);
+			parallelWorker.deleteData(input);
+			return result;
+		}
+		else if (workingDataSet != null && tempFileForWorkingDataSet != null) {
+			parallelWorker.exportData(input, tempFileForWorkingDataSet);
+			Dataset tempDataset = (Dataset) Routines.supplyWithExceptionHandling(
+				() -> ioService.open(tempFileForWorkingDataSet.toString()), log,
+				"convertOutput");
+			tempDataset.copyDataFrom(workingDataSet);
+			Routines.runWithExceptionHandling(() -> Files.delete(
+				tempFileForWorkingDataSet), log, "");
+			return workingDataSet;
+		}
+		throw new IllegalArgumentException("bad arguments");
+	}
+
+	@Override
+	public ParallelizationParadigmParameterMapper cloneForWorker(Object worker) {
+		DatasetImageJServerMapper result =
+			(DatasetImageJServerMapper) super.cloneForWorker(worker);
+		result.parallelWorker = (ParallelWorker) worker;
+		return result;
 	}
 
 }

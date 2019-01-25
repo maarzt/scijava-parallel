@@ -37,7 +37,7 @@ abstract public class AbstractMapper implements
 	}
 
 	@Override
-	public ParallelizationParadigmParameterMapper clone() {
+	public ParallelizationParadigmParameterMapper cloneForWorker(Object worker) {
 		return (ParallelizationParadigmParameterMapper) Routines
 			.supplyWithExceptionHandling(() -> super.clone(), log, "clone");
 	}
