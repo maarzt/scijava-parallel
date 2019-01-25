@@ -1,15 +1,12 @@
 
 package cz.it4i.parallel;
 
-import com.google.common.collect.Streams;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -32,7 +29,7 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 
 	@Parameter
 	private CommandService commandService;
-	
+
 	private ExecutorService executorService;
 
 	// -- SimpleOstravaParadigm methods --
@@ -50,11 +47,11 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	}
 
 	@Override
-	public List<Map<String, Object>> runAllCommands(List<String> commands,
+	public List<Map<String, Object>> runAll(String commandName,
 		List<Map<String, Object>> parameters)
 	{
-		List<CompletableFuture<Map<String, Object>>> futures = runAllCommandsAsync(
-			commands, parameters);
+		List<CompletableFuture<Map<String, Object>>> futures = runAllAsync(
+			commandName, parameters);
 
 		return futures.stream().map(f -> {
 			try {
@@ -68,42 +65,37 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	}
 
 	@Override
-	public List<CompletableFuture<Map<String, Object>>> runAllCommandsAsync(
-		List<String> commands, List<Map<String, Object>> parameters)
+	public List<CompletableFuture<Map<String, Object>>> runAllAsync(
+		String command, List<Map<String, Object>> listOfparameters)
 	{
-		
-		List<CompletableFuture<Map<String, Object>>> futures = Streams.zip(commands.stream(), parameters.stream(), new BiFunction<String, Map<String, Object>, CompletableFuture<Map<String, Object>>>() {
-		
-			@Override
-			public CompletableFuture<Map<String, Object>> apply(String command,
-				Map<String, Object> params)
-			{
-				return CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
 
-					@Override
-					public Map<String, Object> get() {
+		return listOfparameters.stream().map(parameters -> CompletableFuture
+			.supplyAsync(new Supplier<Map<String, Object>>()
+			{
+
+				@Override
+				public Map<String, Object> get() {
+					try {
+						ParallelWorker pw = workerPool.takeFreeWorker();
 						try {
-							ParallelWorker pw = workerPool.takeFreeWorker();
-							try {
-								ParameterProcessor parameterProcessor = constructParameterProcessor(pw, command);
-										return parameterProcessor.processOutput(pw.executeCommand(
-											command, parameterProcessor.processInputs(params)));
-									} finally {
-								workerPool.addWorker(pw);
-							}
+							ParameterProcessor parameterProcessor =
+								constructParameterProcessor(pw, command);
+							return parameterProcessor.processOutput(pw.executeCommand(command,
+								parameterProcessor.processInputs(parameters)));
 						}
-						catch (InterruptedException exc) {
-							log.error(exc.getMessage(), exc);
-							throw new RuntimeException(exc);
+						finally {
+							workerPool.addWorker(pw);
 						}
 					}
-				}, executorService);
-			}
-		}).collect(Collectors.toList());
-		return futures;
+					catch (InterruptedException exc) {
+						log.error(exc.getMessage(), exc);
+						throw new RuntimeException(exc);
+					}
+				}
+			}, executorService)).collect(Collectors.toList());
+
 	}
-	
-	
+
 	@Override
 	public void close() {
 		workerPool.close();

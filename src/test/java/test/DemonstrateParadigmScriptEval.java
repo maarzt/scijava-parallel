@@ -1,3 +1,4 @@
+
 package test;
 
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import cz.it4i.parallel.LocalMultithreadedParadigm;
 public class DemonstrateParadigmScriptEval implements Command {
 
 	private static int step;
-	
+
 	// ImageJServerParadigm-specific stuff
 	private static List<String> hosts = new LinkedList<>();
 
@@ -104,7 +105,7 @@ public class DemonstrateParadigmScriptEval implements Command {
 
 		// Retrieve the paradigm
 		try (ParallelizationParadigm paradigm = parallelService.getParadigm()) {
-	
+
 			// Init the paradigm and do the tests
 			if (hosts.size() > 0) {
 				((ImageJServerParadigm) paradigm).setHosts(hosts);
@@ -119,27 +120,25 @@ public class DemonstrateParadigmScriptEval implements Command {
 				doTest(paradigm);
 			}
 			else {
-				((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfLocalWorkers);
+				((LocalMultithreadedParadigm) paradigm).setPoolSize(
+					numberOfLocalWorkers);
 				doTest(paradigm);
 			}
 		}
 	}
 
-	
-
-	private void doTest(final ParallelizationParadigm paradigm)
-	{
-		List<Class<? extends Command>> commands = new LinkedList<>();
+	private void doTest(final ParallelizationParadigm paradigm) {
 		List<Map<String, Object>> paramsList = new LinkedList<>();
 		for (int i = 0; i < step; i++) {
-			//commands.add(net.imagej.server.external.ScriptEval.class);
 			Map<String, Object> params = new HashMap<>();
 			params.put("language", "ij1");
-			params.put("script", "print('hello from script" + i + "'); getDirectory('home'); exec('whoami');");
+			params.put("script", "print('hello from script" + i +
+				"'); getDirectory('home'); exec('whoami');");
 			paramsList.add(params);
 		}
-		List<Map<String,Object>> result = paradigm.runAll(commands, paramsList);
+		List<Map<String, Object>> result = paradigm.runAll(
+			"net.imagej.server.external.ScriptEval", paramsList);
 		log.info("result: " + result);
-		
+
 	}
 }
