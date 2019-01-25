@@ -49,7 +49,7 @@ public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 		return new ParameterProcessor((_1,_2) -> null, command) {
 			
 			@Override
-			protected ConversionsProviding getConvertor(String askedCommandName,
+			protected ParallelizationParadigmParameterMapper getConvertor(String askedCommandName,
 				String expectedTypeName)
 			{
 				return null;
