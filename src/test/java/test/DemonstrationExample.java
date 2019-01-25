@@ -1,3 +1,4 @@
+
 package test;
 
 import static cz.it4i.parallel.Routines.getSuffix;
@@ -76,12 +77,11 @@ public class DemonstrationExample implements Command {
 
 	protected void doRotation(final ParallelizationParadigm paradigm) {
 		final Path outputDirectory = prepareOutputDirectory();
-		final List<Class<? extends Command>> commands = new LinkedList<>();
 		final List<Map<String, Object>> parametersList = new LinkedList<>();
-		initParameters(commands, parametersList);
+		initParameters(parametersList);
 
-		final List<Map<String, Object>> results = paradigm.runAll(commands,
-			parametersList);
+		final List<Map<String, Object>> results = paradigm.runAll(
+			RotateImageXY.class, parametersList);
 		final Iterator<Map<String, Object>> inputIterator = parametersList
 			.iterator();
 		for (Map<String, ?> result : results) {
@@ -91,13 +91,10 @@ public class DemonstrationExample implements Command {
 		}
 	}
 
-	protected void initParameters(final List<Class<? extends Command>> commands,
-		final List<Map<String, Object>> parameterList)
-	{
+	protected void initParameters(final List<Map<String, Object>> parameterList) {
 
 		Path path = getImageToRotate();
 		for (double angle = step; angle < 360; angle += step) {
-			commands.add(RotateImageXY.class);
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put("dataset", path);
 			parameters.put("angle", angle);

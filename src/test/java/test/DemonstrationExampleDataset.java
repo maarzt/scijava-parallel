@@ -37,10 +37,9 @@ public class DemonstrationExampleDataset extends DemonstrationExample {
 	protected void doRotation(ParallelizationParadigm paradigm) {
 		Path outputDirectory = prepareOutputDirectory();
 		List<Map<String, Object>> parametersList = new LinkedList<>();
-		List<Class<? extends Command>> commands = new LinkedList<>();
-		initParameters(commands, parametersList);
+		initParameters(parametersList);
 
-		List<Map<String, Object>> results = paradigm.runAll(commands,
+		List<Map<String, Object>> results = paradigm.runAll(RotateImageXY.class,
 			parametersList);
 		Iterator<Map<String, Object>> inputIterator = parametersList.iterator();
 		for (Map<String, ?> result : results) {
@@ -51,12 +50,9 @@ public class DemonstrationExampleDataset extends DemonstrationExample {
 	}
 
 	@Override
-	protected void initParameters(List<Class<? extends Command>> commands,
-		List<Map<String, Object>> parametersList)
-	{
+	protected void initParameters(List<Map<String, Object>> parametersList) {
 		Path path = getImageToRotate();
 		for (double angle = step; angle < 360; angle += step) {
-			commands.add(RotateImageXY.class);
 			Map<String, Object> parameters = new HashMap<>();
 			Dataset dataset = (Dataset) Routines.supplyWithExceptionHandling(
 				() -> ioService.open(path.toString()), log, "load");

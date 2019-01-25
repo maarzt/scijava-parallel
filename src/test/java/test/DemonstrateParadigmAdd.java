@@ -29,7 +29,7 @@ import cz.it4i.parallel.LocalMultithreadedParadigm;
 public class DemonstrateParadigmAdd implements Command {
 
 	private static int step;
-	
+
 	// ImageJServerParadigm-specific stuff
 	private static List<String> hosts = new LinkedList<>();
 
@@ -106,7 +106,7 @@ public class DemonstrateParadigmAdd implements Command {
 
 		// Retrieve the paradigm
 		try (ParallelizationParadigm paradigm = parallelService.getParadigm()) {
-	
+
 			// Init the paradigm and do the tests
 			if (hosts.size() > 0) {
 				((ImageJServerParadigm) paradigm).setHosts(hosts);
@@ -121,32 +121,25 @@ public class DemonstrateParadigmAdd implements Command {
 				doTest(paradigm);
 			}
 			else {
-				((LocalMultithreadedParadigm) paradigm).setPoolSize(numberOfLocalWorkers);
+				((LocalMultithreadedParadigm) paradigm).setPoolSize(
+					numberOfLocalWorkers);
 				doTest(paradigm);
 			}
 		}
 	}
 
-	
-
-	private void doTest(final ParallelizationParadigm paradigm)
-	{
-		List<Class<? extends Command>> commands = new LinkedList<>();
-		List<Map<String,Object>> paramsList = new LinkedList<>();
+	private void doTest(final ParallelizationParadigm paradigm) {
+		List<Map<String, Object>> paramsList = new LinkedList<>();
 		for (double angle = step; angle < 360; angle += step) {
-			commands.add(PrimitiveMath.DoubleMultiply.class);
 			Map<String, Object> params = new HashMap<>();
 			params.put("a", angle);
 			params.put("b", angle + 2);
 			paramsList.add(params);
 		}
-		List<Map<String, Object>> result = paradigm.runAll(commands, paramsList);
+		List<Map<String, Object>> result = paradigm.runAll(
+			PrimitiveMath.DoubleMultiply.class, paramsList);
 		log.info("result: " + result);
-		
+
 	}
-
-	
-
-
 
 }
