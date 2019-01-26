@@ -21,9 +21,13 @@ public class TestingCommand extends AbstractOp {
 	@Parameter(type = ItemIO.OUTPUT)
 	private Integer b;
 
+	@Parameter(type = ItemIO.OUTPUT)
+	private Interval output;
+
 	@Override
 	public void run() {
 		b = a * a;
+		output = interval;
 	}
 
 }
