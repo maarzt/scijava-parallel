@@ -14,11 +14,14 @@ public abstract class ParameterProcessor {
 
 	private ParameterTypeProvider typeProvider;
 
+	private Object worker;
+
 	public ParameterProcessor(ParameterTypeProvider typeProvider,
-		String commandName)
+		String commandName, Object worker)
 	{
 		this.commandName = commandName;
 		this.typeProvider = typeProvider;
+		this.worker = worker;
 
 	}
 
@@ -43,7 +46,7 @@ public abstract class ParameterProcessor {
 	}
 
 	abstract protected ParallelizationParadigmParameterMapper construcMapper(
-		String expectedTypeName);
+		String expectedTypeName, Object servingWorker);
 
 	private String getParameterTypeName(String parameter) {
 		return typeProvider.provideParameterTypeName(commandName, parameter);
@@ -51,7 +54,7 @@ public abstract class ParameterProcessor {
 
 	private Object doInputConversion(Entry<String, Object> parameter) {
 		ParallelizationParadigmParameterMapper convertor = construcMapper(
-			getParameterTypeName(parameter.getKey()));
+			getParameterTypeName(parameter.getKey()), worker);
 		Object value = parameter.getValue();
 		if (convertor != null) {
 			appliedConversions.put(parameter.getKey(), convertor);

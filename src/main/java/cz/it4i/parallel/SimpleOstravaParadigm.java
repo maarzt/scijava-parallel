@@ -1,6 +1,7 @@
 
 package cz.it4i.parallel;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +30,11 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 
 	@Parameter
 	private CommandService commandService;
+
+	@Parameter
+	private ParameterMapperService parameterMapperService;
+
+	private Map<String, ParallelizationParadigmParameterMapper> mappers;
 
 	private ExecutorService executorService;
 
@@ -103,7 +109,44 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 		threadService.dispose();
 	}
 
-	abstract protected ParameterProcessor constructParameterProcessor(
-		ParallelWorker pw, String command);
+	protected abstract ParameterTypeProvider getTypeProvider();
+
+	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
+		String command)
+	{
+		return new DefaultParameterProcessor(getTypeProvider(), command, pw,
+			getMappers());
+	}
+
+	synchronized private Map<String, ParallelizationParadigmParameterMapper>
+		getMappers()
+	{
+		if (mappers == null) {
+			mappers = new HashMap<>();
+			initMappers();
+		}
+		return mappers;
+	}
+
+	private void initMappers() {
+		parameterMapperService.getInstances().stream().filter(
+			m -> isParadigmSupportedBy(m)).forEach(m -> m
+				.getSupportedParameterTypeNames().stream().forEach(name -> mappers.put(
+					name, m)));
+
+	}
+
+	private boolean isParadigmSupportedBy(
+		ParallelizationParadigmParameterMapper m)
+	{
+		for (Class<? extends ParallelizationParadigm> clazz : m
+			.getSupportedParadigms())
+		{
+			if (clazz.isAssignableFrom(this.getClass())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

@@ -13,9 +13,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.scijava.io.IOService;
 import org.scijava.parallel.ParallelizationParadigm;
-import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +27,9 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 	private int port;
 
 	private final Collection<String> hosts = new LinkedList<>();
-	
-	private ParameterTypeProvider typeProvider = new P_ParameterTypeProvider(); 
-	
-	@Parameter private IOService ioService;
+
+	private ParameterTypeProvider typeProvider = new P_ParameterTypeProvider();
+
 	// -- ImageJServerParadigm methods --
 
 	public void setPort(final int port) {
@@ -60,24 +57,21 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 		return new ImageJServerWorker(host, port);
 	}
 
-	
 	@Override
-	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
-		String command)
-	{
-		return new TestParameterProcessor(ioService, typeProvider, pw, command);
+	protected ParameterTypeProvider getTypeProvider() {
+		return typeProvider;
 	}
-	
+
 	private class P_ParameterTypeProvider implements ParameterTypeProvider {
 
-		private Map<String,Map<String,String>> mappedTypes = new HashMap<>();
-		
-		
+		private Map<String, Map<String, String>> mappedTypes = new HashMap<>();
+
 		@Override
 		public String provideParameterTypeName(String commandName,
 			String parameterName)
 		{
-			Map<String,String> paramToClass = mappedTypes.computeIfAbsent(commandName, c -> obtainCommandInfo(c));
+			Map<String, String> paramToClass = mappedTypes.computeIfAbsent(
+				commandName, c -> obtainCommandInfo(c));
 			return paramToClass.get(parameterName);
 		}
 
@@ -105,6 +99,6 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 			}
 			return result;
 		}
-		
+
 	}
 }

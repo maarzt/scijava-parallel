@@ -4,8 +4,11 @@ package cz.it4i.parallel;
 import java.util.Set;
 
 import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.plugin.SingletonPlugin;
 
-public interface ParallelizationParadigmParameterMapper {
+public interface ParallelizationParadigmParameterMapper extends
+	SingletonPlugin
+{
 
 	Set<Class<? extends ParallelizationParadigm>> getSupportedParadigms();
 

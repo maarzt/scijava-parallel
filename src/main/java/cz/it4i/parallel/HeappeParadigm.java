@@ -29,8 +29,6 @@ import cz.it4i.fiji.haas_java_client.UploadingFileData;
 @Plugin(type = ParallelizationParadigm.class)
 public class HeappeParadigm extends SimpleOstravaParadigm {
 
-	
-
 	private static final int TIMEOUT_BETWEEN_JOB_STATE_QUERY = 1000;
 
 	private static final Logger log = LoggerFactory.getLogger(
@@ -80,7 +78,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		if (log.isDebugEnabled()) {
 			log.debug("submitJob");
 		}
-		try(HaaSFileTransfer hft = haasClient.startFileTransfer(jobId)) {
+		try (HaaSFileTransfer hft = haasClient.startFileTransfer(jobId)) {
 			hft.upload(new UploadingFileData(Constants.HEAppE.RUN_IJS));
 		}
 		catch (InterruptedIOException exc) {
@@ -117,8 +115,10 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 							continue;
 						}
 						tunnels.add(tunnel);
-						return new HeappeWorker(tunnel.getLocalHost(), tunnel.getLocalPort());
-					} while(true);
+						return new HeappeWorker(tunnel.getLocalHost(), tunnel
+							.getLocalPort());
+					}
+					while (true);
 				}
 				catch (IOException exc1) {
 					throw new RuntimeException(exc1);
@@ -131,9 +131,12 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		}
 	}
 
-	private boolean checkTunnel2ImageJServer(CloseableHttpClient client, TunnelToNode tunnel) {
-		HttpGet httpGet = new HttpGet("http://"+tunnel.getLocalHost() + ":" + tunnel.getLocalPort() + "/modules");
-		
+	private boolean checkTunnel2ImageJServer(CloseableHttpClient client,
+		TunnelToNode tunnel)
+	{
+		HttpGet httpGet = new HttpGet("http://" + tunnel.getLocalHost() + ":" +
+			tunnel.getLocalPort() + "/modules");
+
 		HttpResponse response;
 		try {
 			response = client.execute(httpGet);
@@ -145,7 +148,7 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 		catch (IOException exc) {
 			log.debug("modules", exc);
 		}
-	
+
 		return false;
 	}
 
@@ -173,9 +176,11 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	private void deleteJob() {
 		if (jobId != null) {
 			if (haasClient.obtainJobInfo(jobId).getState() == JobState.Running) {
-				runAndLogIfThrowsException("Cancel job " + jobId, () -> haasClient.cancelJob(jobId));
+				runAndLogIfThrowsException("Cancel job " + jobId, () -> haasClient
+					.cancelJob(jobId));
 			}
-			runAndLogIfThrowsException("Delete job " + jobId, () -> haasClient.deleteJob(jobId)); 
+			runAndLogIfThrowsException("Delete job " + jobId, () -> haasClient
+				.deleteJob(jobId));
 		}
 		jobId = null;
 	}
@@ -183,10 +188,11 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	private void runAndLogIfThrowsException(String message, P_Runnable runnable) {
 		try {
 			runnable.run();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(message, e);
 		}
-		
+
 	}
 
 	private void closeTunnels() {
@@ -201,14 +207,19 @@ public class HeappeParadigm extends SimpleOstravaParadigm {
 	}
 
 	private interface P_Runnable {
-		void run () throws Exception;
+
+		void run() throws Exception;
 	}
 
 	@Override
 	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
 		String command)
 	{
-		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected ParameterTypeProvider getTypeProvider() {
 		return null;
 	}
 }

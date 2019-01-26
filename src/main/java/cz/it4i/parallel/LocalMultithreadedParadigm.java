@@ -22,8 +22,6 @@ public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 
 	// -- SimpleOstravaParadigm methods --
 
-	
-
 	// -- ParallelizationParadigm methods --
 
 	@Override
@@ -35,27 +33,33 @@ public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 	}
 
 	// -- SimpleOstravaParadigm methods --
-	
+
 	@Override
 	protected void initWorkerPool() {
 		for (int i = 0; i < poolSize; i++) {
 			workerPool.addWorker(new LocalMultithreadedPluginWorker());
 		}
 	}
-	
+
 	@Override
-	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw, String command)
+	protected ParameterProcessor constructParameterProcessor(ParallelWorker pw,
+		String command)
 	{
-		return new ParameterProcessor((_1,_2) -> null, command) {
-			
+		return new ParameterProcessor((_1, _2) -> null, command, pw) {
+
 			@Override
-			protected ParallelizationParadigmParameterMapper getConvertor(String askedCommandName,
-				String expectedTypeName)
+			protected ParallelizationParadigmParameterMapper construcMapper(
+				String expectedTypeName, Object worker)
 			{
 				return null;
 			}
+
 		};
 	}
-	
 
+	@Override
+	protected ParameterTypeProvider getTypeProvider() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -13,9 +13,11 @@ import net.imagej.Dataset;
 
 import org.scijava.io.IOService;
 import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Plugin(type = ParallelizationParadigmParameterMapper.class)
 public class DatasetImageJServerMapper extends AbstractMapper {
 
 	private final static Logger log = LoggerFactory.getLogger(
