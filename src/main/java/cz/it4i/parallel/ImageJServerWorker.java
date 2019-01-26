@@ -5,6 +5,9 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
@@ -13,17 +16,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.AbstractContentBody;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
@@ -36,16 +45,18 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	private final static Logger log = LoggerFactory.getLogger(
 		cz.it4i.parallel.ImageJServerWorker.class);
-	
+
 	private final String hostName;
 	private final int port;
-	
+
 	private final static Set<String> supportedImageTypes = Collections
 		.unmodifiableSet(new HashSet<>(Arrays.asList("png", "jpg")));
 
-	private final Map<org.json.JSONObject, String> importedData2id = new HashMap<>();
-	private final Map<String, org.json.JSONObject> id2importedData = new HashMap<>();
-	
+	private final Map<org.json.JSONObject, String> importedData2id =
+		new HashMap<>();
+	private final Map<String, org.json.JSONObject> id2importedData =
+		new HashMap<>();
+
 	ImageJServerWorker(final String hostName, final int port) {
 		this.hostName = hostName;
 		this.port = port;
@@ -66,73 +77,95 @@ public class ImageJServerWorker implements ParallelWorker {
 
 		final String filePath = path.toAbsolutePath().toString();
 		final String fileName = path.getFileName().toString();
+		return importData(new FileBody(new File(filePath), ContentType.create(
+			getContentType(filePath)), fileName));
+	}
 
-		
-		return Routines.supplyWithExceptionHandling(() -> {
+	public org.json.JSONObject importData(final String fileName, long length,
+		Consumer<OutputStream> osConsumer)
+	{
 
-			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
-				"/objects/upload";
-			final HttpPost httpPost = new HttpPost(postUrl);
+		return importData(new AbstractContentBody(ContentType.create(getContentType(
+			fileName)))
+		{
 
-			final HttpEntity entity = MultipartEntityBuilder.create().addBinaryBody(
-				"file", new File(filePath), ContentType.create(getContentType(
-					filePath)), fileName).build();
-			httpPost.setEntity(entity);
+			@Override
+			public String getTransferEncoding() {
+				return MIME.ENC_BINARY;
+			}
 
-			final HttpResponse response = HttpClientBuilder.create().build().execute(
-				httpPost);
+			@Override
+			public long getContentLength() {
+				return length;
+			}
 
-			// TODO check result code properly
+			@Override
+			public void writeTo(OutputStream out) throws IOException {
+				osConsumer.accept(out);
+			}
 
-			final String json = EntityUtils.toString(response.getEntity());
-			org.json.JSONObject result = new org.json.JSONObject(json);  
-			final String objId = result.getString("id");
-			
-			importedData2id.put(result, objId);
-			id2importedData.put(objId, result);
-			return result;
-		},log,"importData");
-
+			@Override
+			public String getFilename() {
+				return fileName;
+			}
+		});
 	}
 
 	@Override
 	public void exportData(final Object dataset, final Path p) {
 
 		final String filePath = p.toString();
-		final String objectId = ((org.json.JSONObject)dataset).getString("id");
+		final String fileName = p.getFileName().toString();
+		try (OutputStream os = new BufferedOutputStream(new FileOutputStream(
+			new File(filePath))))
+		{
+			exportData(dataset, fileName, new Consumer<InputStream>() {
 
-		try {
-
-			final String getUrl = "http://" + hostName + ":" + String.valueOf(port) +
-				"/objects/" + objectId + "/" + getImageType(filePath);
-			final HttpGet httpGet = new HttpGet(getUrl);
-
-			final HttpEntity entity = HttpClientBuilder.create().build().execute(
-				httpGet).getEntity();
-
-			if (entity != null) {
-
-				try (BufferedInputStream bis = new BufferedInputStream(entity
-					.getContent());
-						BufferedOutputStream bos = new BufferedOutputStream(
-							new FileOutputStream(new File(filePath))))
-				{
+				@Override
+				public void accept(InputStream t) {
 					int inByte;
-					while ((inByte = bis.read()) != -1) {
-						bos.write(inByte);
+					try {
+						while ((inByte = t.read()) != -1) {
+							os.write(inByte);
+						}
+					}
+					catch (IOException exc) {
+						log.error("", exc);
 					}
 				}
-			}
+			});
 		}
 		catch (final Exception e) {
-			e.printStackTrace();
+			log.error("", e);
+		}
+	}
+
+	public void exportData(final Object dataset, final String filePath,
+		Consumer<InputStream> isConsumer) throws IOException,
+		ClientProtocolException
+	{
+		final String objectId = ((org.json.JSONObject) dataset).getString("id");
+		final String getUrl = "http://" + hostName + ":" + String.valueOf(port) +
+			"/objects/" + objectId + "/" + getImageType(filePath);
+		final HttpGet httpGet = new HttpGet(getUrl);
+
+		final HttpEntity entity = HttpClientBuilder.create().build().execute(
+			httpGet).getEntity();
+
+		if (entity != null) {
+
+			try (BufferedInputStream bis = new BufferedInputStream(entity
+				.getContent()))
+			{
+				isConsumer.accept(bis);
+			}
 		}
 	}
 
 	@Override
 	public void deleteData(final Object dataset) {
 
-		final String objectId = ((org.json.JSONObject)dataset).getString("id");
+		final String objectId = ((org.json.JSONObject) dataset).getString("id");
 
 		@SuppressWarnings("unused")
 		String json = null;
@@ -158,8 +191,8 @@ public class ImageJServerWorker implements ParallelWorker {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> executeCommand(
-		final String commandTypeName, final Map<String, ?> inputs)
+	public Map<String, Object> executeCommand(final String commandTypeName,
+		final Map<String, ?> inputs)
 	{
 
 		final Map<String, ?> wrappedInputs = wrapInputValues(inputs);
@@ -205,6 +238,32 @@ public class ImageJServerWorker implements ParallelWorker {
 	}
 
 	// -- Helper methods --
+
+	private org.json.JSONObject importData(ContentBody contentBody) {
+		return Routines.supplyWithExceptionHandling(() -> {
+
+			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
+				"/objects/upload";
+			final HttpPost httpPost = new HttpPost(postUrl);
+
+			final HttpEntity entity = MultipartEntityBuilder.create().addPart("file",
+				contentBody).build();
+			httpPost.setEntity(entity);
+
+			final HttpResponse response = HttpClientBuilder.create().build().execute(
+				httpPost);
+
+			// TODO check result code properly
+
+			final String json = EntityUtils.toString(response.getEntity());
+			org.json.JSONObject result = new org.json.JSONObject(json);
+			final String objId = result.getString("id");
+
+			importedData2id.put(result, objId);
+			id2importedData.put(objId, result);
+			return result;
+		}, log, "importData");
+	}
 
 	// TODO: support another types
 	private String getContentType(final String path) {

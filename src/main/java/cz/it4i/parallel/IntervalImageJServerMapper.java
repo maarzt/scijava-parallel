@@ -11,14 +11,9 @@ import java.util.stream.IntStream;
 import net.imglib2.Interval;
 
 import org.scijava.plugin.Plugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Plugin(type = ParallelizationParadigmParameterMapper.class)
 public class IntervalImageJServerMapper extends AbstractMapper {
-
-	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.IntervalImageJServerMapper.class);
 
 	private Interval workingInterval;
 
