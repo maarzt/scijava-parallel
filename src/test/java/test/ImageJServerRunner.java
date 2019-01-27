@@ -47,7 +47,7 @@ public class ImageJServerRunner implements AutoCloseable {
 	private void startImageJServer() {
 		boolean running = false;
 		String[] command = IMAGEJ_SERVER_WITH_PARAMETERS.clone();
-		if (command[0]==null || !Files.exists(Paths.get(command[0]))) {
+		if (command[0] == null || !Files.exists(Paths.get(command[0]))) {
 			throw new IllegalArgumentException(
 				"Cannot find the specified ImageJ or Fiji executable (" + command[0] +
 					"). The property 'Fiji.executable.path' may not be configured properly in the 'configuration.properties' file.");
