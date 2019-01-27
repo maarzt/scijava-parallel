@@ -14,8 +14,7 @@ public abstract class ParameterProcessor {
 	private final static Logger log = LoggerFactory.getLogger(
 		cz.it4i.parallel.ParameterProcessor.class);
 
-	private Map<String, Converter<Object, ?>> appliedConversions =
-		new HashMap<>();
+	private Map<String, P_AppliedConversion> appliedConversions = new HashMap<>();
 
 	private String commandName;
 
@@ -66,7 +65,8 @@ public abstract class ParameterProcessor {
 				"class load"), worker);
 		Object value = parameter.getValue();
 		if (convertor != null) {
-			appliedConversions.put(parameter.getKey(), convertor);
+			appliedConversions.put(parameter.getKey(), new P_AppliedConversion(value
+				.getClass(), convertor));
 			value = convertor.convert(value, Object.class);
 
 		}
@@ -75,11 +75,27 @@ public abstract class ParameterProcessor {
 
 	private Object doOutputConversion(Entry<String, Object> parameter) {
 		Object value = parameter.getValue();
-		Converter<Object, ?> convertor = appliedConversions.get(parameter.getKey());
-		if (convertor != null) {
-			value = convertor.convert(value, convertor.getOutputType());
+		P_AppliedConversion appliedConversion = appliedConversions.get(parameter
+			.getKey());
+		if (appliedConversion != null) {
+			value = appliedConversion.conversion.convert(value,
+				appliedConversion.srcType);
 		}
 		return value;
 	}
 
+	private class P_AppliedConversion {
+
+		final private Class<?> srcType;
+		final private Converter<Object, ?> conversion;
+
+		public P_AppliedConversion(Class<?> srctype,
+			Converter<Object, ?> conversion)
+		{
+			super();
+			this.srcType = srctype;
+			this.conversion = conversion;
+		}
+
+	}
 }

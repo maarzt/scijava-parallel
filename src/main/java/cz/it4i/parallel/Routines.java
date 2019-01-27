@@ -1,6 +1,8 @@
 
 package cz.it4i.parallel;
 
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 
 public class Routines {
@@ -28,15 +30,21 @@ public class Routines {
 	}
 
 	public static <T> T supplyWithExceptionHandling(
-		SupplierWithException<T> supplier, Logger log, String action)
+		SupplierWithException<T> supplier, Logger log, Supplier<String> action)
 	{
 		try {
 			return supplier.supply();
 		}
 		catch (Exception exc) {
-			log.error(action, exc);
+			log.error(action.get(), exc);
 			throw new RuntimeException(exc);
 		}
+	}
+
+	public static <T> T supplyWithExceptionHandling(
+		SupplierWithException<T> supplier, Logger log, String action)
+	{
+		return supplyWithExceptionHandling(supplier, log, () -> action);
 	}
 
 	public static String getSuffix(String filename) {

@@ -7,8 +7,8 @@ import org.scijava.parallel.ParallelizationParadigm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class AbstractParallelizationParadigmConverterFactory<O> implements
-	ParallelizationParadigmConverterFactory<O>
+abstract public class AbstractParallelizationParadigmConverterFactory<O>
+	implements ParallelizationParadigmConverterFactory<O>
 {
 
 	private final static Logger log = LoggerFactory.getLogger(
