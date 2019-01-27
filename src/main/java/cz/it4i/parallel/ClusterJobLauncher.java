@@ -107,10 +107,10 @@ public class ClusterJobLauncher implements Closeable {
 			keyPassword);
 	}
 
-	public Job submit(String directory, String command, long usedNodes,
-		long ncpus)
+	public Job submit(String directory, String command, String parameters,
+		long usedNodes, long ncpus)
 	{
-		String jobId = runJob(directory, command, usedNodes, ncpus);
+		String jobId = runJob(directory, command, parameters, usedNodes, ncpus);
 		return new Job(jobId);
 	}
 
@@ -123,18 +123,18 @@ public class ClusterJobLauncher implements Closeable {
 		this.client.close();
 	}
 
-	private String runJob(String directory, String command, long nodes,
-		long ncpus)
+	private String runJob(String directory, String command, String parameters,
+		long nodes, long ncpus)
 	{
 		String jobname = new Instant().getMillis() + "";
 		String fileName = jobname + ".sh";
 // @formatter:off
 		String result = client.executeCommand(
-			"echo \"" + 
+			"echo '" + 
 			"#!/usr/bin/env bash\n" +
 			"cd "+directory+"\n" +
-			"./"+command+"\n" +
-			"/usr/bin/tail -f /dev/null\" > " + fileName + " && " +
+			"pbsdsh -- `readlink -f "+command+"` " + parameters + "\n" +
+			"/usr/bin/tail -f /dev/null' > " + fileName + " && " +
 			"chmod +x " + fileName +" &&" + 
 			"qsub  -q qexp -l select=" + nodes + ":ncpus=" + ncpus + " `readlink -f " + fileName + "`").get(0);
 // @formatter:on

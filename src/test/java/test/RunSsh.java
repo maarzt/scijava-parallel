@@ -57,11 +57,12 @@ public class RunSsh implements Command {
 	private String keyFilePassword;
 
 	// for salomon /scratch/work/project/dd-18-42/apps/fiji-with-server
-	@Parameter(style = TextWidget.FIELD_STYLE, label = "Remote directory")
+	@Parameter(style = TextWidget.FIELD_STYLE,
+		label = "Remote directory with Fiji")
 	private String remoteDirectory;
 
-	@Parameter(style = TextWidget.FIELD_STYLE, label = "Remote command")
-	private String command = "run-workers.sh";
+	@Parameter(style = TextWidget.FIELD_STYLE, label = "Remote ImageJ command")
+	private String command = "ImageJ-linux64";
 
 	// for salomon run-workers.sh
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Number of nodes")
@@ -79,7 +80,9 @@ public class RunSsh implements Command {
 			try (ClusterJobLauncher launcher = new ClusterJobLauncher(host, userName,
 				keyFile.toString(), keyFilePassword))
 			{
-				Job job = launcher.submit(remoteDirectory, command, nodes, ncpus);
+				Job job = launcher.submit(remoteDirectory, command,
+					"-Dimagej.legacy.modernOnlyCommands=true -- --ij2 --headless --server",
+					nodes, ncpus);
 				JDialog dialog = new JOptionPane().createDialog("Waiting");
 				dialog.getContentPane().removeAll();
 				JPanel panel = new JPanel(new BorderLayout());
