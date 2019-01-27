@@ -75,6 +75,21 @@ public class ClusterJobLauncher implements Closeable {
 					"exec_host=", "").replaceAll("/[^+]+", "").split("\\+"))));
 		}
 
+		public List<Integer> createTunnels(int startPort, int remotePort) {
+			List<Integer> result = new LinkedList<>();
+			for (String host : getNodes()) {
+				boolean opened;
+				do {
+					opened = client.setPortForwarding(startPort, host, remotePort);
+					if (opened) {
+						result.add(startPort);
+					}
+					startPort++;
+				}
+				while (!opened);
+			}
+			return result;
+		}
 	}
 
 	private SshCommandClient client;
