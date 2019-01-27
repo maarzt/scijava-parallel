@@ -5,6 +5,7 @@ import static cz.it4i.parallel.Routines.castTo;
 
 import java.lang.reflect.Type;
 
+import net.imagej.Dataset;
 import net.imagej.Extents;
 import net.imglib2.Interval;
 
@@ -12,10 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.scijava.convert.AbstractConverter;
-import org.scijava.convert.Converter;
-import org.scijava.plugin.Plugin;
 
-@Plugin(type = Converter.class)
 public class IntervalConverter extends AbstractConverter<String, Interval> {
 
 	@Override
@@ -53,6 +51,9 @@ public class IntervalConverter extends AbstractConverter<String, Interval> {
 	}
 
 	private boolean checkFormat(Object src) {
+		if (src instanceof Dataset) {
+			return false;
+		}
 		try {
 			new JSONObject(src.toString());
 		}
