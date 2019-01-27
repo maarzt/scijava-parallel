@@ -87,14 +87,17 @@ public class RunSsh implements Command {
 				dialog.getContentPane().removeAll();
 				JPanel panel = new JPanel(new BorderLayout());
 				dialog.getContentPane().add(panel);
-				JLabel label = new JLabel("Waiting for job schedule");
+				JLabel label = new JLabel("Waiting for job schedule.");
 
 				panel.add(label, BorderLayout.CENTER);
 				dialog.setModal(false);
-				dialog.pack();
 				dialog.setVisible(true);
 				job.waitForRunning();
 				List<Integer> ports = job.createTunnels(8080, 8080);
+				dialog.setVisible(false);
+				label.setText("Waiting for a ImageJ server start.");
+				dialog.setVisible(true);
+
 				boolean running;
 				do {
 					running = checkImageJServerRunning(ports.get(0));
@@ -104,9 +107,8 @@ public class RunSsh implements Command {
 				dialog.setVisible(false);
 
 				uiService.showDialog("Tunnels opened on " + ports +
-					". Confirm to close");
-				label.setText("Waiting for stop");
-				dialog.pack();
+					". Confirm to close.");
+				label.setText("Waiting for stop.");
 				dialog.setVisible(true);
 				job.stop();
 				dialog.setVisible(false);
