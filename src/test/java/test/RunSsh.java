@@ -14,6 +14,7 @@ import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import net.imagej.ImageJ;
 
@@ -62,6 +63,7 @@ public class RunSsh implements Command {
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Remote command")
 	private String command = "run-workers.sh";
 
+	// for salomon run-workers.sh
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Number of nodes")
 	private int nodes;
 
@@ -80,21 +82,31 @@ public class RunSsh implements Command {
 				Job job = launcher.submit(remoteDirectory, command, nodes, ncpus);
 				JDialog dialog = new JOptionPane().createDialog("Waiting");
 				dialog.getContentPane().removeAll();
-				dialog.getContentPane().setLayout(new BorderLayout());
+				JPanel panel = new JPanel(new BorderLayout());
+				dialog.getContentPane().add(panel);
 				JLabel label = new JLabel("Waiting for job schedule");
 
-				dialog.getContentPane().add(label, BorderLayout.CENTER);
+				panel.add(label, BorderLayout.CENTER);
 				dialog.setModal(false);
+				dialog.pack();
 				dialog.setVisible(true);
 				job.waitForRunning();
 				List<Integer> ports = job.createTunnels(8080, 8080);
-
-				checkImageJServerRunning(ports.get(0));
+				boolean running;
+				do {
+					running = checkImageJServerRunning(ports.get(0));
+					Thread.sleep(1000);
+				}
+				while (!running);
 				dialog.setVisible(false);
 
 				uiService.showDialog("Tunnels opened on " + ports +
 					". Confirm to close");
+				label.setText("Waiting for stop");
+				dialog.pack();
+				dialog.setVisible(true);
 				job.stop();
+				dialog.setVisible(false);
 				System.exit(0);
 			}
 		}, log, "");
@@ -123,7 +135,7 @@ public class RunSsh implements Command {
 		MalformedURLException, ProtocolException
 	{
 		HttpURLConnection hc;
-		hc = (HttpURLConnection) new URL("http://localhost:" + port + "/")
+		hc = (HttpURLConnection) new URL("http://localhost:" + port + "/modules")
 			.openConnection();
 		hc.setRequestMethod("GET");
 		hc.connect();
