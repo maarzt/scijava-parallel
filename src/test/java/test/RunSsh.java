@@ -15,6 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import net.imagej.ImageJ;
 
@@ -84,10 +85,10 @@ public class RunSsh implements Command {
 					"-Dimagej.legacy.modernOnlyCommands=true -- --ij2 --headless --server",
 					nodes, ncpus);
 				JDialog dialog = new JOptionPane().createDialog("Waiting");
-				dialog.getContentPane().removeAll();
 				JPanel panel = new JPanel(new BorderLayout());
-				dialog.getContentPane().add(panel);
+				dialog.setContentPane(panel);
 				JLabel label = new JLabel("Waiting for job schedule.");
+				label.setHorizontalAlignment(SwingConstants.CENTER);
 
 				panel.add(label, BorderLayout.CENTER);
 				dialog.setModal(false);
