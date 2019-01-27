@@ -3,26 +3,29 @@ package cz.it4i.parallel;
 
 import java.util.Map;
 
+import org.scijava.convert.Converter;
+
 public class DefaultParameterProcessor extends ParameterProcessor {
 
-	private Map<String, ParallelizationParadigmParameterMapper> mappers;
+	private Map<Class<?>, ParallelizationParadigmConverterFactory<?>> mappers;
 
 	public DefaultParameterProcessor(ParameterTypeProvider typeProvider,
 		String commandName, Object servingWorker,
-		Map<String, ParallelizationParadigmParameterMapper> mappers)
+		Map<Class<?>, ParallelizationParadigmConverterFactory<?>> mappers)
 	{
 		super(typeProvider, commandName, servingWorker);
 		this.mappers = mappers;
 	}
 
 	@Override
-	protected ParallelizationParadigmParameterMapper construcMapper(
-		String expectedTypeName, Object servingWorker)
+	protected <T> Converter<Object, T> construcConverter(Class<T> expectedType,
+		Object servingWorker)
 	{
-		ParallelizationParadigmParameterMapper result = mappers.get(
-			expectedTypeName);
+		@SuppressWarnings("unchecked")
+		ParallelizationParadigmConverterFactory<T> result =
+			(ParallelizationParadigmConverterFactory<T>) mappers.get(expectedType);
 		if (result != null) {
-			return result.cloneForWorker(servingWorker);
+			return result.createConverterForWorker(servingWorker);
 		}
 		return null;
 	}

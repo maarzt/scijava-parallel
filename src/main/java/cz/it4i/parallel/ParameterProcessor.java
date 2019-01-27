@@ -5,9 +5,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.scijava.convert.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class ParameterProcessor {
 
-	private Map<String, ParallelizationParadigmParameterMapper> appliedConversions =
+	private final static Logger log = LoggerFactory.getLogger(
+		cz.it4i.parallel.ParameterProcessor.class);
+
+	private Map<String, Converter<Object, ?>> appliedConversions =
 		new HashMap<>();
 
 	private String commandName;
@@ -45,20 +52,22 @@ public abstract class ParameterProcessor {
 		return commandName;
 	}
 
-	abstract protected ParallelizationParadigmParameterMapper construcMapper(
-		String expectedTypeName, Object servingWorker);
+	abstract protected <T> Converter<Object, T> construcConverter(
+		Class<T> expectedType, Object servingWorker);
 
 	private String getParameterTypeName(String parameter) {
 		return typeProvider.provideParameterTypeName(commandName, parameter);
 	}
 
 	private Object doInputConversion(Entry<String, Object> parameter) {
-		ParallelizationParadigmParameterMapper convertor = construcMapper(
-			getParameterTypeName(parameter.getKey()), worker);
+		String typeName = getParameterTypeName(parameter.getKey());
+		Converter<Object, ?> convertor = construcConverter(Routines
+			.supplyWithExceptionHandling(() -> Class.forName(typeName), log,
+				"class load"), worker);
 		Object value = parameter.getValue();
 		if (convertor != null) {
 			appliedConversions.put(parameter.getKey(), convertor);
-			value = convertor.map2Paradigm(parameter.getValue());
+			value = convertor.convert(value, Object.class);
 
 		}
 		return value;
@@ -66,10 +75,9 @@ public abstract class ParameterProcessor {
 
 	private Object doOutputConversion(Entry<String, Object> parameter) {
 		Object value = parameter.getValue();
-		ParallelizationParadigmParameterMapper convertor = appliedConversions.get(
-			parameter.getKey());
+		Converter<Object, ?> convertor = appliedConversions.get(parameter.getKey());
 		if (convertor != null) {
-			value = convertor.map2Local(value);
+			value = convertor.convert(value, convertor.getOutputType());
 		}
 		return value;
 	}

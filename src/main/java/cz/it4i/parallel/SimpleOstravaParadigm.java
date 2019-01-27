@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.scijava.command.CommandService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
+import org.scijava.plugin.PluginService;
 import org.scijava.thread.ThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +33,9 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	private CommandService commandService;
 
 	@Parameter
-	private ParameterMapperService parameterMapperService;
+	private PluginService pluginService;
 
-	private Map<String, ParallelizationParadigmParameterMapper> mappers;
+	private Map<Class<?>, ParallelizationParadigmConverterFactory<?>> mappers;
 
 	private ExecutorService executorService;
 
@@ -118,8 +119,8 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 			getMappers());
 	}
 
-	synchronized private Map<String, ParallelizationParadigmParameterMapper>
-		getMappers()
+	synchronized private
+		Map<Class<?>, ParallelizationParadigmConverterFactory<?>> getMappers()
 	{
 		if (mappers == null) {
 			mappers = new HashMap<>();
@@ -129,15 +130,15 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	}
 
 	private void initMappers() {
-		parameterMapperService.getInstances().stream().filter(
-			m -> isParadigmSupportedBy(m)).forEach(m -> m
-				.getSupportedParameterTypeNames().stream().forEach(name -> mappers.put(
-					name, m)));
+		pluginService.createInstancesOfType(
+			ParallelizationParadigmConverterFactory.class).stream().filter(
+				m -> isParadigmSupportedBy(m)).forEach(m -> mappers.put(m
+					.getSupportedParameterType(), m));
 
 	}
 
 	private boolean isParadigmSupportedBy(
-		ParallelizationParadigmParameterMapper m)
+		ParallelizationParadigmConverterFactory<?> m)
 	{
 		for (Class<? extends ParallelizationParadigm> clazz : m
 			.getSupportedParadigms())
