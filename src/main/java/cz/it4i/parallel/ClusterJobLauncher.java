@@ -31,6 +31,7 @@ public class ClusterJobLauncher implements Closeable {
 		}
 
 		public void waitForRunning() {
+
 			if (jobId == null) {
 				throw new IllegalStateException("jobId not initialized");
 			}
@@ -90,6 +91,10 @@ public class ClusterJobLauncher implements Closeable {
 			}
 			return result;
 		}
+
+		public void stop() {
+			client.executeCommand("qdel " + jobId);
+		}
 	}
 
 	private SshCommandClient client;
@@ -124,7 +129,7 @@ public class ClusterJobLauncher implements Closeable {
 		String jobname = new Instant().getMillis() + "";
 		String fileName = jobname + ".sh";
 // @formatter:off
-		return client.executeCommand(
+		String result = client.executeCommand(
 			"echo \"" + 
 			"#!/usr/bin/env bash\n" +
 			"cd "+directory+"\n" +
@@ -133,6 +138,8 @@ public class ClusterJobLauncher implements Closeable {
 			"chmod +x " + fileName +" &&" + 
 			"qsub  -q qexp -l select=" + nodes + ":ncpus=" + ncpus + " `readlink -f " + fileName + "`").get(0);
 // @formatter:on
+		client.executeCommand("rm " + fileName);
+		return result;
 	}
 
 }

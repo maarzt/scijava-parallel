@@ -1,15 +1,26 @@
 
 package test;
 
+import java.awt.BorderLayout;
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.SocketException;
+import java.net.URL;
 import java.util.List;
-import java.util.Scanner;
+
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import net.imagej.ImageJ;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 import org.scijava.widget.FileWidget;
 import org.scijava.widget.TextWidget;
 import org.slf4j.Logger;
@@ -27,6 +38,7 @@ public class RunSsh implements Command {
 	public static void main(String[] args) {
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
+		ij.ui().showUI();
 		ij.command().run(RunSsh.class, true);
 	}
 
@@ -43,11 +55,21 @@ public class RunSsh implements Command {
 		persist = false)
 	private String keyFilePassword;
 
+	// for salomon /scratch/work/project/dd-18-42/apps/fiji-with-server
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Remote directory")
 	private String remoteDirectory;
 
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Remote command")
-	private String command;
+	private String command = "run-workers.sh";
+
+	@Parameter(style = TextWidget.FIELD_STYLE, label = "Number of nodes")
+	private int nodes;
+
+	@Parameter(style = TextWidget.FIELD_STYLE, label = "Number of cpus per node")
+	private int ncpus;
+
+	@Parameter
+	private UIService uiService;
 
 	@Override
 	public void run() {
@@ -55,14 +77,58 @@ public class RunSsh implements Command {
 			try (ClusterJobLauncher launcher = new ClusterJobLauncher(host, userName,
 				keyFile.toString(), keyFilePassword))
 			{
-				Job job = launcher.submit(remoteDirectory, command, 8, 12);
+				Job job = launcher.submit(remoteDirectory, command, nodes, ncpus);
+				JDialog dialog = new JOptionPane().createDialog("Waiting");
+				dialog.getContentPane().removeAll();
+				dialog.getContentPane().setLayout(new BorderLayout());
+				JLabel label = new JLabel("Waiting for job schedule");
+
+				dialog.getContentPane().add(label, BorderLayout.CENTER);
+				dialog.setModal(false);
+				dialog.setVisible(true);
 				job.waitForRunning();
-				List<Integer> nodes = job.createTunnels(8080, 8080);
-				log.info("nodes: " + nodes);
-				new Scanner(System.in).nextLine();
+				List<Integer> ports = job.createTunnels(8080, 8080);
+
+				checkImageJServerRunning(ports.get(0));
+				dialog.setVisible(false);
+
+				uiService.showDialog("Tunnels opened on " + ports +
+					". Confirm to close");
+				job.stop();
+				System.exit(0);
 			}
 		}, log, "");
 
+	}
+
+	private boolean checkImageJServerRunning(int port) {
+		boolean running = true;
+		try {
+			if (checkModulesURL(port) != 200) {
+				throw new IllegalStateException(
+					"Different server than ImageJServer is running on localhost:" + port);
+			}
+		}
+		catch (SocketException exc) {
+			running = false;
+		}
+		catch (IOException exc) {
+			log.error("connect ot ImageJServer", exc);
+			throw new RuntimeException(exc);
+		}
+		return running;
+	}
+
+	private int checkModulesURL(int port) throws IOException,
+		MalformedURLException, ProtocolException
+	{
+		HttpURLConnection hc;
+		hc = (HttpURLConnection) new URL("http://localhost:" + port + "/")
+			.openConnection();
+		hc.setRequestMethod("GET");
+		hc.connect();
+		hc.disconnect();
+		return hc.getResponseCode();
 	}
 
 }
