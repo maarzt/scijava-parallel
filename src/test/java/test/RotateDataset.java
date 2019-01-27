@@ -19,22 +19,27 @@ import org.scijava.io.IOService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.Routines;
 
 @Plugin(type = Command.class, headless = true)
-public class DemonstrationExampleDataset extends DemonstrationExample {
+public class RotateDataset extends RotateFile {
+
+	private final static Logger log = LoggerFactory.getLogger(
+		RotateDataset.class);
 
 	@Parameter
 	private IOService ioService;
 
 	public static void main(String[] args) {
 		final ImageJ ij = new ImageJ();
-		ij.command().run(DemonstrationExampleDataset.class, true);
+		ij.command().run(RotateDataset.class, true);
 	}
 
 	@Override
-	protected void doRotation(ParallelizationParadigm paradigm) {
+	protected void callRemotePlugin(ParallelizationParadigm paradigm) {
 		Path outputDirectory = prepareOutputDirectory();
 		List<Map<String, Object>> parametersList = new LinkedList<>();
 		initParameters(parametersList);

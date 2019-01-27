@@ -2,7 +2,6 @@
 package test;
 
 import static cz.it4i.parallel.Routines.getSuffix;
-import static cz.it4i.parallel.Routines.runWithExceptionHandling;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,14 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import net.imagej.ImageJ;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
@@ -35,19 +29,17 @@ import cz.it4i.parallel.Routines;
 
 @Plugin(type = Command.class, headless = true,
 	menuPath = "Plugins>DemonstrateOstravaParadigm")
-public class DemonstrationExample implements Command {
+abstract public class AbstractBaseDemonstrationExample implements Command {
 
 	private static final String OUTPUT_DIRECTORY = "output";
-
-	protected static int step = 30;
 
 	private static List<String> hosts = Arrays.asList("localhost:8080");
 
 	private static String URL_OF_IMAGE_TO_ROTATE =
 		"https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png";
 
-	public static final Logger log = LoggerFactory.getLogger(
-		DemonstrationExample.class);
+	private static final Logger log = LoggerFactory.getLogger(
+		AbstractBaseDemonstrationExample.class);
 
 	@Parameter
 	private ParallelService parallelService;
@@ -56,14 +48,14 @@ public class DemonstrationExample implements Command {
 
 	public static void main(final String... args) {
 		final ImageJ ij = new ImageJ();
-		ij.command().run(DemonstrationExample.class, true);
+		ij.command().run(AbstractBaseDemonstrationExample.class, true);
 	}
 
 	@Override
 	public void run() {
 		try (ImageJServerRunner imageJServerRunner = new ImageJServerRunner()) {
 			try (ParallelizationParadigm paradigm = configureParadigm()) {
-				doRotation(paradigm);
+				callRemotePlugin(paradigm);
 			}
 
 		}
@@ -75,32 +67,8 @@ public class DemonstrationExample implements Command {
 		}
 	}
 
-	protected void doRotation(final ParallelizationParadigm paradigm) {
-		final Path outputDirectory = prepareOutputDirectory();
-		final List<Map<String, Object>> parametersList = new LinkedList<>();
-		initParameters(parametersList);
-
-		final List<Map<String, Object>> results = paradigm.runAll(
-			RotateImageXY.class, parametersList);
-		final Iterator<Map<String, Object>> inputIterator = parametersList
-			.iterator();
-		for (Map<String, ?> result : results) {
-			runWithExceptionHandling(() -> Files.move((Path) result.get("dataset"),
-				getResultPath(outputDirectory, (Double) inputIterator.next().get(
-					"angle")), StandardCopyOption.REPLACE_EXISTING), log, "moving file");
-		}
-	}
-
-	protected void initParameters(final List<Map<String, Object>> parameterList) {
-
-		Path path = getImageToRotate();
-		for (double angle = step; angle < 360; angle += step) {
-			Map<String, Object> parameters = new HashMap<>();
-			parameters.put("dataset", path);
-			parameters.put("angle", angle);
-			parameterList.add(parameters);
-		}
-	}
+	abstract protected void callRemotePlugin(
+		final ParallelizationParadigm paradigm);
 
 	final protected Path getResultPath(Path outputDirectory, Double angle) {
 		return outputDirectory.resolve("result_" + angle + getSuffix(imageToRotate

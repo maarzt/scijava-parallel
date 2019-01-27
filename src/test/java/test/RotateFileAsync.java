@@ -19,17 +19,22 @@ import net.imagej.plugins.commands.imglib.RotateImageXY;
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Plugin(type = Command.class, headless = true)
-public class DemonstrationExampleAsync extends DemonstrationExample {
+public class RotateFileAsync extends RotateFile {
+
+	private final static Logger log = LoggerFactory.getLogger(
+		RotateFileAsync.class);
 
 	public static void main(String[] args) {
 		final ImageJ ij = new ImageJ();
-		ij.command().run(DemonstrationExampleAsync.class, true);
+		ij.command().run(RotateFileAsync.class, true);
 	}
 
 	@Override
-	protected void doRotation(ParallelizationParadigm paradigm) {
+	protected void callRemotePlugin(ParallelizationParadigm paradigm) {
 		Path outputDirectory = prepareOutputDirectory();
 
 		List<Map<String, Object>> parametersList = new LinkedList<>();

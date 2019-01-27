@@ -18,21 +18,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Plugin(type = Command.class, headless = true)
-public class DemonstrationExampleTest extends DemonstrationExample {
+public class TestingCommandWithInterval extends
+	AbstractBaseDemonstrationExample
+{
 
 	private final static Logger log = LoggerFactory.getLogger(
-		test.DemonstrationExampleTest.class);
+		TestingCommandWithInterval.class);
 
 	@Parameter
 	private IOService ioService;
 
 	public static void main(String[] args) {
 		final ImageJ ij = new ImageJ();
-		ij.command().run(DemonstrationExampleTest.class, true);
+		ij.command().run(TestingCommandWithInterval.class, true);
 	}
 
 	@Override
-	protected void doRotation(ParallelizationParadigm paradigm) {
+	protected void callRemotePlugin(ParallelizationParadigm paradigm) {
 		List<Map<String, Object>> parametersList = new LinkedList<>();
 		initParameters(parametersList);
 
@@ -41,8 +43,7 @@ public class DemonstrationExampleTest extends DemonstrationExample {
 		log.info("result: " + results);
 	}
 
-	@Override
-	protected void initParameters(List<Map<String, Object>> parametersList) {
+	private void initParameters(List<Map<String, Object>> parametersList) {
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("a", 11);
 		parameters.put("interval", new Extents(new long[] { 10 }, new long[] {

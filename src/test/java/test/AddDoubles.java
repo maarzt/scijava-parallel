@@ -26,7 +26,7 @@ import cz.it4i.parallel.LocalMultithreadedParadigm;
 
 @Plugin(type = Command.class, headless = true,
 	menuPath = "Plugins>DemonstrateOstravaParadigm")
-public class DemonstrateParadigmAdd implements Command {
+public class AddDoubles implements Command {
 
 	private static int step;
 
@@ -41,7 +41,7 @@ public class DemonstrateParadigmAdd implements Command {
 	private static int numberOfNodes;
 
 	public static final Logger log = LoggerFactory.getLogger(
-		DemonstrateParadigmAdd.class);
+		AddDoubles.class);
 
 	@Parameter
 	private ParallelService parallelService;
@@ -71,7 +71,7 @@ public class DemonstrateParadigmAdd implements Command {
 
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
-		ij.command().run(DemonstrateParadigmAdd.class, true);
+		ij.command().run(AddDoubles.class, true);
 	}
 
 	@Override
