@@ -1,6 +1,8 @@
 
 package net.imagej.server;
 
+import static cz.it4i.parallel.Routines.castTo;
+
 import java.lang.reflect.Type;
 
 import net.imagej.Extents;
@@ -37,7 +39,7 @@ public class IntervalConverter extends AbstractConverter<String, Interval> {
 			obj -> ((Number) obj).longValue()).mapToLong(l -> l.longValue())
 			.toArray();
 
-		return (T) new Extents(min, max);
+		return castTo(new Extents(min, max));
 	}
 
 	@Override
@@ -51,7 +53,6 @@ public class IntervalConverter extends AbstractConverter<String, Interval> {
 	}
 
 	private boolean checkFormat(Object src) {
-		// TODO Auto-generated method stub
 		try {
 			new JSONObject(src.toString());
 		}

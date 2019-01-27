@@ -1,6 +1,7 @@
 
 package cz.it4i.parallel;
 
+import static cz.it4i.parallel.Routines.castTo;
 import static cz.it4i.parallel.Routines.getSuffix;
 
 import java.nio.file.Files;
@@ -17,11 +18,13 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Plugin(type = ParallelizationParadigmParameterMapper.class)
-public class DatasetImageJServerMapper extends AbstractMapper {
+@Plugin(type = ParallelizationParadigmConverter.class)
+public class DatasetImageJServerConverter extends
+	AbstractParallelizationParadigmConverter<Dataset>
+{
 
 	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.DatasetImageJServerMapper.class);
+		cz.it4i.parallel.DatasetImageJServerConverter.class);
 
 	private String suffixOfImportedFile;
 
@@ -34,14 +37,30 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 	@Parameter
 	private IOService ioService;
 
-	public DatasetImageJServerMapper() {
+	public DatasetImageJServerConverter() {
 		super(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-			ImageJServerParadigm.class))), Collections.unmodifiableSet(new HashSet<>(
-				Arrays.asList("net.imagej.Dataset"))));
+			ImageJServerParadigm.class))), Dataset.class);
 	}
 
 	@Override
-	public Object map2Paradigm(Object input) {
+	public ParallelizationParadigmConverter<Dataset> cloneForWorker(
+		Object worker)
+	{
+		DatasetImageJServerConverter result =
+			(DatasetImageJServerConverter) super.cloneForWorker(worker);
+		result.parallelWorker = (ParallelWorker) worker;
+		return result;
+	}
+
+	@Override
+	public <T> T convert(Object src, Class<T> dest) {
+		if (dest == Object.class) {
+			return castTo(convert2Paradigm(src));
+		}
+		return castTo(convert2Local(src));
+	}
+
+	private Object convert2Paradigm(Object input) {
 		if (input instanceof Path) {
 			Path path = (Path) input;
 			String filename = path.getFileName().toString();
@@ -61,8 +80,7 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 			.getClass());
 	}
 
-	@Override
-	public Object map2Local(Object input) {
+	private Object convert2Local(Object input) {
 		if (suffixOfImportedFile != null) {
 			Path result = Routines.supplyWithExceptionHandling(() -> Files
 				.createTempFile("", suffixOfImportedFile), log, "output conversion");
@@ -75,20 +93,12 @@ public class DatasetImageJServerMapper extends AbstractMapper {
 			Dataset tempDataset = (Dataset) Routines.supplyWithExceptionHandling(
 				() -> ioService.open(tempFileForWorkingDataSet.toString()), log,
 				"convertOutput");
-			tempDataset.copyDataFrom(workingDataSet);
+			tempDataset.copyInto(workingDataSet);
 			Routines.runWithExceptionHandling(() -> Files.delete(
 				tempFileForWorkingDataSet), log, "");
 			return workingDataSet;
 		}
 		throw new IllegalArgumentException("bad arguments");
-	}
-
-	@Override
-	public ParallelizationParadigmParameterMapper cloneForWorker(Object worker) {
-		DatasetImageJServerMapper result =
-			(DatasetImageJServerMapper) super.cloneForWorker(worker);
-		result.parallelWorker = (ParallelWorker) worker;
-		return result;
 	}
 
 }

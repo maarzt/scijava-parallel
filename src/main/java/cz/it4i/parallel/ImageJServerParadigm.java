@@ -95,6 +95,12 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				if (typeName.contains(" ")) {
 					typeName = typeName.split(" ")[1];
 				}
+				if (Character.isLowerCase(typeName.charAt(0)) && !typeName.contains(
+					"."))
+				{
+					typeName = "java.lang." + Character.toUpperCase(typeName.charAt(0)) +
+						typeName.substring(1);
+				}
 				result.put((String) param.get("name"), typeName);
 			}
 			return result;
