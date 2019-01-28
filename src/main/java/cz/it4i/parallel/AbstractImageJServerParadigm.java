@@ -12,12 +12,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.scijava.parallel.ParallelizationParadigm;
-import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Plugin(type = ParallelizationParadigm.class)
 public abstract class AbstractImageJServerParadigm extends
 	SimpleOstravaParadigm
 {
