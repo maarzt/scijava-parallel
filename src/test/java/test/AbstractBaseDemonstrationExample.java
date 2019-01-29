@@ -15,20 +15,19 @@ import java.util.List;
 
 import net.imagej.ImageJ;
 
+import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.parallel.ParallelizationParadigmProfile;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.parallel.AbstractImageJServerRunner;
 import cz.it4i.parallel.ImageJServerParadigm;
 import cz.it4i.parallel.Routines;
 
-@Plugin(type = Command.class, headless = true,
-	menuPath = "Plugins>DemonstrateOstravaParadigm")
 abstract public class AbstractBaseDemonstrationExample implements Command {
 
 	private static final String OUTPUT_DIRECTORY = "output";
@@ -44,6 +43,9 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 	@Parameter
 	private ParallelService parallelService;
 
+	@Parameter
+	private Context context;
+
 	private Path imageToRotate;
 
 	public static void main(final String... args) {
@@ -53,7 +55,10 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 
 	@Override
 	public void run() {
-		try (ImageJServerRunner imageJServerRunner = new ImageJServerRunner()) {
+		try (AbstractImageJServerRunner imageJServerRunner =
+			constructImageJServerRunner())
+		{
+			imageJServerRunner.startIfNecessary();
 			try (ParallelizationParadigm paradigm = configureParadigm()) {
 				callRemotePlugin(paradigm);
 			}
@@ -65,6 +70,10 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 					log, "delete rotated image");
 			}
 		}
+	}
+
+	protected AbstractImageJServerRunner constructImageJServerRunner() {
+		return new ImageJServerRunner();
 	}
 
 	abstract protected void callRemotePlugin(

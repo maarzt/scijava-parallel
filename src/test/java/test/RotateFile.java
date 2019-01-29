@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.parallel.ParallelizationParadigm;
@@ -23,6 +24,11 @@ public class RotateFile extends AbstractBaseDemonstrationExample {
 	private final static Logger log = LoggerFactory.getLogger(RotateFile.class);
 
 	protected static int step = 30;
+
+	public static void main(String[] args) {
+		final ImageJ ij = new ImageJ();
+		ij.command().run(RotateFile.class, true);
+	}
 
 	@Override
 	protected void callRemotePlugin(final ParallelizationParadigm paradigm) {
