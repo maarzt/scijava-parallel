@@ -13,7 +13,6 @@ import javax.swing.SwingConstants;
 import net.imagej.ImageJ;
 
 import org.scijava.command.Command;
-import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.widget.FileWidget;
@@ -60,12 +59,6 @@ public class RotateFileOnHPC extends RotateFile {
 	private int ncpus;
 
 	@Override
-	protected void callRemotePlugin(ParallelizationParadigm paradigm) {
-		super.callRemotePlugin(paradigm);
-		System.exit(0);
-	}
-
-	@Override
 	protected AbstractImageJServerRunner constructImageJServerRunner() {
 		return new P_Runner(host, userName, keyFile, keyFilePassword,
 			remoteDirectory, command, nodes, ncpus);
@@ -102,7 +95,7 @@ public class RotateFileOnHPC extends RotateFile {
 		@Override
 		protected void imageJServerStarted() {
 			dialog.setVisible(false);
-			this.label = new JLabel("Waiting for a ImageJ server start.");
+			this.label.setText("Waiting for a ImageJ server start.");
 			dialog.setVisible(true);
 		}
 
