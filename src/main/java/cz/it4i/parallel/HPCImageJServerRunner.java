@@ -55,7 +55,9 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 
 	@Override
 	public void close() {
-		job.stop();
+		if (job != null) {
+			job.stop();
+		}
 		launcher.close();
 	}
 

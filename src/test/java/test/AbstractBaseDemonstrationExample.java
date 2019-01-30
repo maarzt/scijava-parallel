@@ -55,20 +55,28 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 
 	@Override
 	public void run() {
-		try (AbstractImageJServerRunner imageJServerRunner =
-			constructImageJServerRunner())
-		{
-			imageJServerRunner.startIfNecessary();
-			try (ParallelizationParadigm paradigm = configureParadigm()) {
-				callRemotePlugin(paradigm);
-			}
+		try {
+			try (AbstractImageJServerRunner imageJServerRunner =
+				constructImageJServerRunner())
+			{
+				imageJServerRunner.startIfNecessary();
+				try (ParallelizationParadigm paradigm = configureParadigm()) {
+					callRemotePlugin(paradigm);
+				}
 
+			}
+			finally {
+				if (imageToRotate != null && Files.exists(imageToRotate)) {
+					Routines.runWithExceptionHandling(() -> Files.delete(imageToRotate),
+						log, "delete rotated image");
+				}
+			}
+		}
+		catch (Throwable e) {
+			log.error(e.getMessage(), e);
 		}
 		finally {
-			if (imageToRotate != null && Files.exists(imageToRotate)) {
-				Routines.runWithExceptionHandling(() -> Files.delete(imageToRotate),
-					log, "delete rotated image");
-			}
+			System.exit(0);
 		}
 	}
 
