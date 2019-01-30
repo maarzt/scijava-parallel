@@ -5,7 +5,7 @@ import com.jcraft.jsch.JSchException;
 
 import java.io.Closeable;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +22,10 @@ public class ClusterJobLauncher implements Closeable {
 		ClusterJobLauncher.class);
 
 	public class Job {
+
+		/*
+		 * stdout accesible ssh <> ssh <node> tail -f -n +1 /var/spool/PBS/spool/<job id>.OU 
+		 */
 
 		private String jobId;
 
@@ -71,9 +75,9 @@ public class ClusterJobLauncher implements Closeable {
 					}
 				}
 			}
-			return new LinkedList<>(new HashSet<>(Arrays.asList(hostLines.stream()
-				.collect(Collectors.joining("")).replaceAll(" +", "").replaceAll(
-					"exec_host=", "").replaceAll("/[^+]+", "").split("\\+"))));
+			return new LinkedList<>(new LinkedHashSet<>(Arrays.asList(hostLines
+				.stream().collect(Collectors.joining("")).replaceAll(" +", "")
+				.replaceAll("exec_host=", "").replaceAll("/[^+]+", "").split("\\+"))));
 		}
 
 		public List<Integer> createTunnels(int startPort, int remotePort) {
@@ -94,6 +98,10 @@ public class ClusterJobLauncher implements Closeable {
 
 		public void stop() {
 			client.executeCommand("qdel " + jobId);
+		}
+
+		public String getID() {
+			return jobId;
 		}
 	}
 

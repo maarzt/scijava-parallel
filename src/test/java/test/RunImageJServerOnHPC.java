@@ -35,7 +35,8 @@ import cz.it4i.parallel.Routines;
 @Plugin(type = Command.class, headless = false, menuPath = "Plugins>RunSsh")
 public class RunImageJServerOnHPC implements Command {
 
-	private final static Logger log = LoggerFactory.getLogger(RunImageJServerOnHPC.class);
+	private final static Logger log = LoggerFactory.getLogger(
+		RunImageJServerOnHPC.class);
 
 	public static void main(String[] args) {
 		// Launch ImageJ as usual
@@ -85,6 +86,7 @@ public class RunImageJServerOnHPC implements Command {
 					"-Dimagej.legacy.modernOnlyCommands=true -- --ij2 --headless --server",
 					nodes, ncpus);
 				JDialog dialog = new JOptionPane().createDialog("Waiting");
+				dialog.setResizable(true);
 				JPanel panel = new JPanel(new BorderLayout());
 				dialog.setContentPane(panel);
 				JLabel label = new JLabel("Waiting for job schedule.");
@@ -96,7 +98,8 @@ public class RunImageJServerOnHPC implements Command {
 				job.waitForRunning();
 				List<Integer> ports = job.createTunnels(8080, 8080);
 				dialog.setVisible(false);
-				label.setText("Waiting for a ImageJ server start.");
+				label.setText("Job ID = " + job.getID() + " started on nodes " + job
+					.getNodes() + ". Waiting for a ImageJ server start.");
 				dialog.setVisible(true);
 
 				boolean running;
@@ -107,7 +110,8 @@ public class RunImageJServerOnHPC implements Command {
 				while (!running);
 				dialog.setVisible(false);
 
-				uiService.showDialog("Tunnels opened on " + ports +
+				uiService.showDialog("Job ID = " + job.getID() +
+					". Tunnels opened on " + ports + " for nodes " + job.getNodes() +
 					". Confirm to close.");
 				label.setText("Waiting for stop.");
 				dialog.setVisible(true);
