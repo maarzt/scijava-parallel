@@ -33,15 +33,15 @@ import cz.it4i.parallel.ClusterJobLauncher.Job;
 import cz.it4i.parallel.Routines;
 
 @Plugin(type = Command.class, headless = false, menuPath = "Plugins>RunSsh")
-public class RunSsh implements Command {
+public class RunImageJServerOnHPC implements Command {
 
-	private final static Logger log = LoggerFactory.getLogger(RunSsh.class);
+	private final static Logger log = LoggerFactory.getLogger(RunImageJServerOnHPC.class);
 
 	public static void main(String[] args) {
 		// Launch ImageJ as usual
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
-		ij.command().run(RunSsh.class, true);
+		ij.command().run(RunImageJServerOnHPC.class, true);
 	}
 
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Host name")
