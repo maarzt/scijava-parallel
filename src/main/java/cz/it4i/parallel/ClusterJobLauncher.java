@@ -4,6 +4,9 @@ package cz.it4i.parallel;
 import com.jcraft.jsch.JSchException;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -15,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.scpclient.SshCommandClient;
+import cz.it4i.fiji.scpclient.SshExecutionSession;
 
 public class ClusterJobLauncher implements Closeable {
 
@@ -54,6 +58,8 @@ public class ClusterJobLauncher implements Closeable {
 				}
 			}
 			while (!(!time.equals("0") && state.equals("R")));
+			new P_OutThread(System.out, "OU").start();
+			new P_OutThread(System.out, "ER").start();
 		}
 
 		public List<String> getNodes() {
@@ -102,6 +108,38 @@ public class ClusterJobLauncher implements Closeable {
 
 		public String getID() {
 			return jobId;
+		}
+
+		private class P_OutThread extends Thread
+
+		{
+
+			private OutputStream outputStream;
+			private String suffix;
+
+			public P_OutThread(OutputStream outputStream, String suffix) {
+				super();
+				this.outputStream = outputStream;
+				this.suffix = suffix;
+			}
+
+			@Override
+			public void run() {
+				try (SshExecutionSession session = client.openSshExecutionSession(
+					"ssh " + getNodes().get(0) + " tail -f -n +1 /var/spool/PBS/spool/" +
+						jobId + "." + suffix))
+				{
+					byte[] buffer = new byte[1024];
+					int readed;
+					InputStream is = session.getStdout();
+					while (-1 != (readed = is.read(buffer))) {
+						outputStream.write(buffer, 0, readed);
+					}
+				}
+				catch (IOException exc) {
+					log.error(exc.getMessage(), exc);
+				}
+			}
 		}
 	}
 
