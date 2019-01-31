@@ -95,7 +95,6 @@ public class RunImageJServerOnHPC implements Command {
 				panel.add(label, BorderLayout.CENTER);
 				dialog.setModal(false);
 				dialog.setVisible(true);
-				job.waitForRunning();
 				List<Integer> ports = job.createTunnels(8080, 8080);
 				dialog.setVisible(false);
 				label.setText("Job ID = " + job.getID() + " started on nodes " + job

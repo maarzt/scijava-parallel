@@ -68,7 +68,6 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 				keyFilePassword), log, "");
 		job = launcher.submit(remoteDirectory, command, commands.subList(1, commands
 			.size()).stream().collect(Collectors.joining(" ")), nodes, ncpus);
-		job.waitForRunning();
 		setPorts(job.createTunnels(8080, 8080));
 	}
 }

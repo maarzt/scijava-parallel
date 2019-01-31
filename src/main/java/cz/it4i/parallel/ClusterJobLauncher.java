@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.joda.time.Instant;
@@ -33,57 +35,25 @@ public class ClusterJobLauncher implements Closeable {
 
 		private String jobId;
 
+		private CompletableFuture<List<String>> nodesFuture;
+
 		public Job(String jobId) {
 			super();
 			this.jobId = jobId;
+			nodesFuture = CompletableFuture.supplyAsync(() -> getNodesFromServer());
 		}
 
-		public void waitForRunning() {
-
-			if (jobId == null) {
-				throw new IllegalStateException("jobId not initialized");
-			}
-			String state;
-			String time;
-			do {
-				String result = client.executeCommand("qstat " + jobId).get(2);
-				String[] tokens = result.split(" +");
-				state = tokens[4];
-				time = tokens[3];
-				try {
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException exc) {
-					log.error("waiting", exc);
-				}
-			}
-			while (!(!time.equals("0") && state.equals("R")));
-			new P_OutThread(System.out, "OU").start();
-			new P_OutThread(System.out, "ER").start();
+		public CompletableFuture<List<String>> getNodesFuture() {
+			return nodesFuture;
 		}
 
 		public List<String> getNodes() {
-			if (jobId == null) {
-				throw new IllegalStateException("jobId not initialized");
+			try {
+				return nodesFuture.get();
 			}
-			List<String> result = client.executeCommand("qstat -f " + jobId);
-			List<String> hostLines = new LinkedList<>();
-			for (String line : result) {
-				if (hostLines.isEmpty() && line.contains("exec_host")) {
-					hostLines.add(line);
-				}
-				else if (!hostLines.isEmpty()) {
-					if (!line.contains("exec_vnode")) {
-						hostLines.add(line);
-					}
-					else {
-						break;
-					}
-				}
+			catch (InterruptedException | ExecutionException exc) {
+				throw new RuntimeException(exc);
 			}
-			return new LinkedList<>(new LinkedHashSet<>(Arrays.asList(hostLines
-				.stream().collect(Collectors.joining("")).replaceAll(" +", "")
-				.replaceAll("exec_host=", "").replaceAll("/[^+]+", "").split("\\+"))));
 		}
 
 		public List<Integer> createTunnels(int startPort, int remotePort) {
@@ -108,6 +78,55 @@ public class ClusterJobLauncher implements Closeable {
 
 		public String getID() {
 			return jobId;
+		}
+
+		private void waitForRunning() {
+
+			if (jobId == null) {
+				throw new IllegalStateException("jobId not initialized");
+			}
+			String state;
+			String time;
+			do {
+				String result = client.executeCommand("qstat " + jobId).get(2);
+				String[] tokens = result.split(" +");
+				state = tokens[4];
+				time = tokens[3];
+				try {
+					Thread.sleep(1000);
+				}
+				catch (InterruptedException exc) {
+					log.error("waiting", exc);
+				}
+			}
+			while (!(!time.equals("0") && state.equals("R")));
+			new P_OutThread(System.out, "OU").start();
+			new P_OutThread(System.out, "ER").start();
+		}
+
+		private List<String> getNodesFromServer() {
+			waitForRunning();
+			if (jobId == null) {
+				throw new IllegalStateException("jobId not initialized");
+			}
+			List<String> result = client.executeCommand("qstat -f " + jobId);
+			List<String> hostLines = new LinkedList<>();
+			for (String line : result) {
+				if (hostLines.isEmpty() && line.contains("exec_host")) {
+					hostLines.add(line);
+				}
+				else if (!hostLines.isEmpty()) {
+					if (!line.contains("exec_vnode")) {
+						hostLines.add(line);
+					}
+					else {
+						break;
+					}
+				}
+			}
+			return new LinkedList<>(new LinkedHashSet<>(Arrays.asList(hostLines
+				.stream().collect(Collectors.joining("")).replaceAll(" +", "")
+				.replaceAll("exec_host=", "").replaceAll("/[^+]+", "").split("\\+"))));
 		}
 
 		private class P_OutThread extends Thread
