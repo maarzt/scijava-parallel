@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import net.imagej.ImageJ;
 
@@ -32,7 +33,7 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 
 	private static final String OUTPUT_DIRECTORY = "output";
 
-	private static List<String> hosts = Arrays.asList("localhost:8080");
+	private List<String> hosts = Arrays.asList("localhost:8080");
 
 	private static String URL_OF_IMAGE_TO_ROTATE =
 		"https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png";
@@ -60,6 +61,8 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 				constructImageJServerRunner())
 			{
 				imageJServerRunner.startIfNecessary();
+				hosts = imageJServerRunner.getPorts().stream().map(
+					port -> "localhost:" + port).collect(Collectors.toList());
 				try (ParallelizationParadigm paradigm = configureParadigm()) {
 					callRemotePlugin(paradigm);
 				}
