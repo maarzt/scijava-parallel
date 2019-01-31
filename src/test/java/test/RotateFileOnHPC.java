@@ -22,7 +22,7 @@ import cz.it4i.parallel.AbstractImageJServerRunner;
 import cz.it4i.parallel.HPCImageJServerRunner;
 
 @Plugin(type = Command.class, headless = false)
-public class RotateFileOnHPC extends RotateFile {
+public class RotateFileOnHPC extends RotateFileAsync {
 
 	public static void main(String[] args) {
 		final ImageJ ij = new ImageJ();

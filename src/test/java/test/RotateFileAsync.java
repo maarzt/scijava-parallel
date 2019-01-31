@@ -46,9 +46,12 @@ public class RotateFileAsync extends RotateFile {
 		Streams.zip(results.stream(), parametersList.stream().map(
 			inputParams -> (Double) inputParams.get("angle")), 
 			(future, angle) -> future.thenAccept(
-				result -> runWithExceptionHandling(
-										() -> Files.move((Path) result.get("dataset")
-										, getResultPath(outputDirectory, angle)), log, "moving file")))
+				result -> {
+					Path src = (Path) result.get("dataset");
+					Path dst = getResultPath(outputDirectory, angle);
+					runWithExceptionHandling(() -> Files.move(src, dst), log, "moving file");
+					log.info("moved: " + src + " -> " + dst);
+					}))
 		.forEach(future -> waitForFuture(future));
 	// @formatter:on
 	}
