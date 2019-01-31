@@ -24,11 +24,10 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 
 	private List<Integer> ports;
 
-	public AbstractImageJServerRunner startIfNecessary() {
+	public void startIfNecessary() {
 		if (!checkImageJServerRunning()) {
 			startImageJServer();
 		}
-		return this;
 	}
 
 	public List<Integer> getPorts() {

@@ -1,4 +1,5 @@
-package test;
+
+package cz.it4i.parallel.ui;
 
 import java.awt.BorderLayout;
 import java.io.File;
@@ -9,7 +10,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import cz.it4i.parallel.AbstractImageJServerRunner;
 import cz.it4i.parallel.HPCImageJServerRunner;
 
 class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
@@ -26,7 +26,7 @@ class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 	}
 
 	@Override
-	public AbstractImageJServerRunner startIfNecessary() {
+	public void startIfNecessary() {
 		this.dialog = new JOptionPane().createDialog("Waiting");
 		JPanel panel = new JPanel(new BorderLayout());
 		dialog.setContentPane(panel);
@@ -37,7 +37,7 @@ class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 		dialog.setModal(false);
 		dialog.setVisible(true);
 
-		return super.startIfNecessary();
+		super.startIfNecessary();
 	}
 
 	@Override

@@ -53,6 +53,10 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 		setPorts(Arrays.asList(8080));
 	}
 
+	public Job getJob() {
+		return job;
+	}
+
 	@Override
 	public void close() {
 		if (job != null) {
