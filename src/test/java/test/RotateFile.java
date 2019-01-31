@@ -16,6 +16,7 @@ import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.plugin.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,8 @@ public class RotateFile extends AbstractBaseDemonstrationExample {
 
 	private final static Logger log = LoggerFactory.getLogger(RotateFile.class);
 
-	protected static int step = 30;
+	@Parameter
+	private int step = 30;
 
 	public static void main(String[] args) {
 		final ImageJ ij = new ImageJ();
@@ -56,5 +58,9 @@ public class RotateFile extends AbstractBaseDemonstrationExample {
 			parameters.put("angle", angle);
 			parameterList.add(parameters);
 		}
+	}
+
+	protected int getStep() {
+		return step;
 	}
 }

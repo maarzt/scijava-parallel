@@ -57,7 +57,7 @@ public class RotateDataset extends RotateFile {
 	@Override
 	protected void initParameters(List<Map<String, Object>> parametersList) {
 		Path path = getImageToRotate();
-		for (double angle = step; angle < 360; angle += step) {
+		for (double angle = getStep(); angle < 360; angle += getStep()) {
 			Map<String, Object> parameters = new HashMap<>();
 			Dataset dataset = (Dataset) Routines.supplyWithExceptionHandling(
 				() -> ioService.open(path.toString()), log, "load");
