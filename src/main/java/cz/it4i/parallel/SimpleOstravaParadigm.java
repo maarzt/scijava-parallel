@@ -75,8 +75,7 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	public List<CompletableFuture<Map<String, Object>>> runAllAsync(
 		String command, List<Map<String, Object>> listOfparameters)
 	{
-
-		return listOfparameters.stream().map(parameters -> CompletableFuture
+		return listOfparameters.parallelStream().map(parameters -> CompletableFuture
 			.supplyAsync(new Supplier<Map<String, Object>>()
 			{
 
@@ -119,8 +118,8 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 			getMappers());
 	}
 
-	synchronized private
-		Map<Class<?>, ParallelizationParadigmConverterFactory<?>> getMappers()
+	synchronized private Map<Class<?>, ParallelizationParadigmConverterFactory<?>>
+		getMappers()
 	{
 		if (mappers == null) {
 			mappers = new HashMap<>();
