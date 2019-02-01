@@ -87,7 +87,16 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				() -> new org.json.JSONObject(EntityUtils.toString(response
 					.getEntity())), log, "obtain command info");
 
-			org.json.JSONArray inputs = (org.json.JSONArray) json.get("inputs");
+			processParamaters(result, json, "inputs");
+			processParamaters(result, json, "outputs");
+
+			return result;
+		}
+
+		private void processParamaters(Map<String, String> result,
+			org.json.JSONObject json, String direction)
+		{
+			org.json.JSONArray inputs = (org.json.JSONArray) json.get(direction);
 			Iterator<?> iter = inputs.iterator();
 			while (iter.hasNext()) {
 				org.json.JSONObject param = (org.json.JSONObject) iter.next();
@@ -103,7 +112,6 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				}
 				result.put((String) param.get("name"), typeName);
 			}
-			return result;
 		}
 
 	}
