@@ -63,7 +63,8 @@ public class IntervalImageJServerConverterFactory extends
 
 		@Override
 		public <T> T convert(Object src, Class<T> dest) {
-			JSONObject json = new JSONObject(src.toString());
+			JSONObject json = src instanceof JSONObject ? (JSONObject) src
+				: new JSONObject(src.toString());
 			long[] min = ((JSONArray) json.get("min")).toList().stream().map(
 				obj -> ((Number) obj).longValue()).mapToLong(l -> l.longValue())
 				.toArray();
@@ -127,7 +128,9 @@ public class IntervalImageJServerConverterFactory extends
 
 		@Override
 		public <T> T convert(Object src, Class<T> dest) {
-			if (src.getClass() == String.class && dest == Interval.class) {
+			if ((src.getClass() == JSONObject.class || src
+				.getClass() == String.class) && dest == Interval.class)
+			{
 				return delegateConverter.convert(src, dest);
 			}
 			if (Interval.class.isAssignableFrom(src.getClass())) {
