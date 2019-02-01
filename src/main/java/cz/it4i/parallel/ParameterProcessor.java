@@ -1,6 +1,8 @@
 
 package cz.it4i.parallel;
 
+import static cz.it4i.parallel.Routines.supplyWithExceptionHandling;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -80,6 +82,15 @@ public abstract class ParameterProcessor {
 		if (appliedConversion != null) {
 			value = appliedConversion.conversion.convert(value,
 				appliedConversion.srcType);
+		}
+		else {
+			String typeName = getParameterTypeName(parameter.getKey());
+			Class<?> type = supplyWithExceptionHandling(() -> Class.forName(typeName),
+				log, "class load");
+			Converter<Object, ?> convertor = construcConverter(type, worker);
+			if (convertor != null) {
+				value = convertor.convert(value, type);
+			}
 		}
 		return value;
 	}
