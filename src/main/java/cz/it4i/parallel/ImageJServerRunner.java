@@ -1,5 +1,5 @@
 
-package test;
+package cz.it4i.parallel;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,14 +8,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.it4i.parallel.AbstractImageJServerRunner;
-
 public class ImageJServerRunner extends AbstractImageJServerRunner {
 
 	private Process imageJServerProcess;
 
-	public ImageJServerRunner() {
+	private String fijiExecutable;
+
+	public ImageJServerRunner(String fiji) {
 		setPorts(Arrays.asList(8080));
+		fijiExecutable = fiji;
 	}
 
 	@Override
@@ -27,7 +28,7 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 
 	@Override
 	protected void doStartImageJServer(List<String> command) throws IOException {
-		String fijiPath = Config.getFijiExecutable();
+		String fijiPath = fijiExecutable;
 		if (fijiPath == null || !Files.exists(Paths.get(fijiPath))) {
 			throw new IllegalArgumentException(
 				"Cannot find the specified ImageJ or Fiji executable (" + fijiPath +

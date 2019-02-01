@@ -24,11 +24,10 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 
 	private List<Integer> ports;
 
-	public AbstractImageJServerRunner startIfNecessary() {
+	public void startIfNecessary() {
 		if (!checkImageJServerRunning()) {
 			startImageJServer();
 		}
-		return this;
 	}
 
 	public List<Integer> getPorts() {
@@ -50,22 +49,24 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 	protected void imageJServerRunning() {}
 
 	private void startImageJServer() {
-		boolean running = false;
 
 		try {
 			doStartImageJServer(Arrays.asList(IMAGEJ_SERVER_WITH_PARAMETERS));
 			imageJServerStarted();
-			do {
-				try {
-					if (checkModulesURL() == 200) {
-						running = true;
+			getPorts().parallelStream().forEach(port -> {
+				boolean running = false;
+				do {
+					try {
+						if (checkModulesURL(port) == 200) {
+							running = true;
+						}
+					}
+					catch (IOException e) {
+						// ignore waiting for start
 					}
 				}
-				catch (IOException e) {
-					// ignore waiting for start
-				}
-			}
-			while (!running);
+				while (!running);
+			});
 			imageJServerRunning();
 		}
 		catch (IOException exc) {
@@ -75,36 +76,37 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 	}
 
 	private boolean checkImageJServerRunning() {
-		boolean running = true;
-		try {
-			if (checkModulesURL() != 200) {
-				throw new IllegalStateException(
-					"Different server than ImageJServer is running on localhost:8080");
+		return ports.stream().map(port -> {
+			try {
+				if (checkModulesURL(port) != 200) {
+					throw new IllegalStateException(
+						"Different server than ImageJServer is running on localhost:8080");
+				}
+				return true;
 			}
-		}
-		catch (ConnectException exc) {
-			running = false;
-		}
-		catch (IOException exc) {
-			log.error("connect ot ImageJServer", exc);
-			throw new RuntimeException(exc);
-		}
-		return running;
+			catch (ConnectException exc) {
+				return false;
+			}
+			catch (IOException exc) {
+				log.error("connect ot ImageJServer", exc);
+				throw new RuntimeException(exc);
+			}
+		}).allMatch(result -> result);
 	}
 
-	private int checkModulesURL() throws IOException, MalformedURLException,
-		ProtocolException
+	private int checkModulesURL(Integer port) throws IOException,
+		MalformedURLException, ProtocolException
 	{
 		HttpURLConnection hc;
-		hc = (HttpURLConnection) new URL(getModulesURL()).openConnection();
+		hc = (HttpURLConnection) new URL(getModulesURL(port)).openConnection();
 		hc.setRequestMethod("GET");
 		hc.connect();
 		hc.disconnect();
 		return hc.getResponseCode();
 	}
 
-	private String getModulesURL() {
-		return "http://localhost:" + getPorts().get(0) + "/modules";
+	private String getModulesURL(Integer port) {
+		return "http://localhost:" + port + "/modules";
 	}
 
 }
