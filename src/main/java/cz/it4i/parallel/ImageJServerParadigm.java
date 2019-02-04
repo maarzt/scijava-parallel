@@ -101,9 +101,7 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 			while (iter.hasNext()) {
 				org.json.JSONObject param = (org.json.JSONObject) iter.next();
 				String typeName = ((String) param.get("genericType")).trim();
-				if (typeName.contains(" ")) {
-					typeName = typeName.split(" ")[1];
-				}
+				typeName = clearTypeName(typeName);
 				if (Character.isLowerCase(typeName.charAt(0)) && !typeName.contains(
 					"."))
 				{
@@ -112,6 +110,17 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				}
 				result.put((String) param.get("name"), typeName);
 			}
+		}
+
+		private String clearTypeName(String typeName) {
+			String[] prefixes = { "class", "interface" };
+			for (String prefix : prefixes) {
+				if (typeName.startsWith(prefix)) {
+					typeName = typeName.substring(prefix.length()).trim();
+				}
+			}
+			typeName = typeName.replaceAll("<[^>]*>", "");
+			return typeName;
 		}
 
 	}

@@ -24,7 +24,8 @@ import cz.it4i.parallel.ui.RunImageJServerOnHPCCommand;
 	menuPath = "Plugins>DemonstrateOstravaParadigm")
 public class ScriptEvalRemotelyOnHPC extends AbstractBaseDemonstrationExample {
 
-	private static final Logger log = LoggerFactory.getLogger(AddDoubles.class);
+	private static final Logger log = LoggerFactory.getLogger(
+		ScriptEvalRemotelyOnHPC.class);
 
 	@Parameter
 	private int step = 30;
