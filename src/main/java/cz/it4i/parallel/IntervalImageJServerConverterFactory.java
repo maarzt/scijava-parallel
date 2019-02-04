@@ -15,9 +15,9 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import net.imagej.Dataset;
-import net.imagej.Extents;
 import net.imagej.server.mixins.Mixins.ObjectMapperModificator;
 import net.imagej.server.mixins.Mixins.SerializerModificator;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 
 import org.json.JSONArray;
@@ -72,7 +72,7 @@ public class IntervalImageJServerConverterFactory extends
 				obj -> ((Number) obj).longValue()).mapToLong(l -> l.longValue())
 				.toArray();
 
-			return castTo(new Extents(min, max));
+			return castTo(new FinalInterval(min, max));
 
 		}
 
