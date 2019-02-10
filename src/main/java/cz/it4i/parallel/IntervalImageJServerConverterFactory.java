@@ -109,8 +109,8 @@ public class IntervalImageJServerConverterFactory extends
 	{
 
 		public IntervalSerializerModificator() {
-			super(Arrays.asList(Interval.class), Arrays.asList(Dataset.class),
-				new P_Serializer(), Interval.class);
+			super(Interval.class, Arrays.asList(Dataset.class), new P_Serializer(),
+				Interval.class);
 		}
 
 	}
