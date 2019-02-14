@@ -15,8 +15,8 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import net.imagej.Dataset;
-import net.imagej.server.mixins.Mixins.ObjectMapperModificator;
-import net.imagej.server.mixins.Mixins.SerializerModificator;
+import net.imagej.server.modifiers.ObjectMapperModifier;
+import net.imagej.server.modifiers.SerializerModifier;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 
@@ -103,14 +103,13 @@ public class IntervalImageJServerConverterFactory extends
 
 	}
 
-	@Plugin(type = ObjectMapperModificator.class)
-	public static class IntervalSerializerModificator extends
-		SerializerModificator<Interval>
+	@Plugin(type = ObjectMapperModifier.class)
+	public static class IntervalSerializerModifier extends
+		SerializerModifier<Interval>
 	{
 
-		public IntervalSerializerModificator() {
-			super(Interval.class, Arrays.asList(Dataset.class), new P_Serializer(),
-				Interval.class);
+		public IntervalSerializerModifier() {
+			super(Interval.class, Arrays.asList(Dataset.class), new P_Serializer());
 		}
 
 	}
@@ -123,7 +122,7 @@ public class IntervalImageJServerConverterFactory extends
 
 		public P_Converter() {
 			mapper = new ObjectMapper();
-			new IntervalSerializerModificator().accept(mapper);
+			new IntervalSerializerModifier().accept(mapper);
 		}
 
 		@Override
