@@ -4,6 +4,7 @@ package cz.it4i.parallel;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,8 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 
 	private final static Logger log = LoggerFactory.getLogger(
 		HPCImageJServerRunner.class);
+
+	private List< Integer > ports;
 
 	private String host;
 
@@ -50,7 +53,7 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 		this.command = command;
 		this.nodes = nodes;
 		this.ncpus = ncpus;
-		setPorts(Arrays.asList(8080));
+		this.ports = Collections.emptyList();
 	}
 
 	public Job getJob() {
@@ -72,6 +75,12 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 				keyFilePassword), log, "");
 		job = launcher.submit(remoteDirectory, command, commands.subList(1, commands
 			.size()).stream().collect(Collectors.joining(" ")), nodes, ncpus);
-		setPorts(job.createTunnels(8080, 8080));
+		ports = job.createTunnels(8080, 8080);
+	}
+
+	@Override
+	public List< Integer > getPorts()
+	{
+		return ports;
 	}
 }

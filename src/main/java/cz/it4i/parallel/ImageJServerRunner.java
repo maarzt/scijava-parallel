@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ImageJServerRunner extends AbstractImageJServerRunner {
@@ -15,8 +16,13 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 	private String fijiExecutable;
 
 	public ImageJServerRunner(String fiji) {
-		setPorts(Arrays.asList(8080));
 		fijiExecutable = fiji;
+	}
+
+	@Override
+	public List< Integer > getPorts()
+	{
+		return Collections.singletonList( 8080 );
 	}
 
 	@Override

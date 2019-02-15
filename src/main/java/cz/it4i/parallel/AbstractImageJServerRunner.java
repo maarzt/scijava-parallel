@@ -19,8 +19,6 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 		"-Dimagej.legacy.modernOnlyCommands=true", "--", "--ij2", "--headless",
 		"--server" };
 
-	private List<Integer> ports;
-
 	public void start() {
 
 		try {
@@ -35,13 +33,7 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 		}
 	}
 
-	public List<Integer> getPorts() {
-		return ports;
-	}
-
-	protected void setPorts(List<Integer> ports) {
-		this.ports = ports;
-	}
+	public abstract List<Integer> getPorts();
 
 	@Override
 	abstract public void close();
