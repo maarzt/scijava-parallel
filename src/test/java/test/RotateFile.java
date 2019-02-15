@@ -4,6 +4,7 @@ package test;
 import static cz.it4i.parallel.Routines.getSuffix;
 import static cz.it4i.parallel.Routines.runWithExceptionHandling;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -16,10 +17,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import cz.it4i.parallel.TestParadigm;
-import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.Context;
@@ -40,8 +39,6 @@ public class RotateFile {
 
 	private final static int step = 30;
 
-	private static Path imageToRotate;
-
 	public static void main(String[] args) {
 		final Context context = new Context();
 		try ( ParallelizationParadigm paradigm = TestParadigm.localImageJServer( Config.getFijiExecutable(), context ) ) {
@@ -50,33 +47,25 @@ public class RotateFile {
 	}
 
 	private static void callRemotePlugin(final ParallelizationParadigm paradigm) {
-		try {
-			final Path outputDirectory = prepareOutputDirectory();
-			final List< Map< String, Object > > parametersList = initParameters();
+		final Path outputDirectory = prepareOutputDirectory();
+		final List< Map< String, Object > > parametersList = initParameters();
 
-			final List<Map<String, Object>> results = paradigm.runAll(
+		final List<Map<String, Object>> results = paradigm.runAll(
 				RotateImageXY.class, parametersList);
-			final Iterator<Map<String, Object>> inputIterator = parametersList
+		final Iterator<Map<String, Object>> inputIterator = parametersList
 				.iterator();
-			for (Map<String, ?> result : results) {
-				runWithExceptionHandling(() -> Files.move((Path) result.get("dataset"),
+		for (Map<String, ?> result : results) {
+			runWithExceptionHandling(() -> Files.move((Path) result.get("dataset"),
 					getResultPath(outputDirectory, (Double) inputIterator.next().get(
-						"angle")), StandardCopyOption.REPLACE_EXISTING), log,
+							"angle")), StandardCopyOption.REPLACE_EXISTING), log,
 					"moving file");
-			}
-		}
-		finally {
-			if (imageToRotate != null && Files.exists(imageToRotate)) {
-				Routines.runWithExceptionHandling(() -> Files.delete(imageToRotate),
-					log, "delete rotated image");
-			}
 		}
 	}
 
 	private static List< Map< String, Object > > initParameters()
 	{
 		final List<Map<String, Object>> parametersList = new LinkedList<>();
-		Path path = getImageToRotate();
+		Path path = downloadToTmpFile( URL_OF_IMAGE_TO_ROTATE );
 		for (double angle = step; angle < 360; angle += step) {
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put("dataset", path);
@@ -86,24 +75,21 @@ public class RotateFile {
 		return parametersList;
 	}
 
-	private static Path getImageToRotate() {
-		if (imageToRotate == null) {
-			try (InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
-				imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE
-					.substring(URL_OF_IMAGE_TO_ROTATE.lastIndexOf('.')));
-				Files.copy(is, imageToRotate, StandardCopyOption.REPLACE_EXISTING);
-			}
-			catch (IOException exc) {
-				log.error("download image", exc);
-				throw new RuntimeException(exc);
-			}
+	private static Path downloadToTmpFile(String url) {
+		try (InputStream is = new URL(url).openStream()) {
+			final File tempFile = File.createTempFile( "", getSuffix(url) );
+			tempFile.deleteOnExit();
+			Files.copy(is, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			return tempFile.toPath();
 		}
-		return imageToRotate;
+		catch (IOException exc) {
+			log.error("download image", exc);
+			throw new RuntimeException(exc);
+		}
 	}
 
 	private static Path getResultPath(Path outputDirectory, Double angle) {
-		return outputDirectory.resolve("result_" + angle + getSuffix(imageToRotate
-			.getFileName().toString()));
+		return outputDirectory.resolve("result_" + angle + ".tif");
 	}
 
 	private static Path prepareOutputDirectory() {
