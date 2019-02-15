@@ -1,17 +1,14 @@
 
 package cz.it4i.parallel;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import cz.it4i.parallel.ClusterJobLauncher.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.it4i.parallel.ClusterJobLauncher.Job;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 
@@ -20,39 +17,16 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 
 	private List< Integer > ports;
 
-	private String host;
-
-	private String userName;
-
-	private File keyFile;
-
-	private String keyFilePassword;
-
-	private String remoteDirectory;
-
-	private String command = "ImageJ-linux64";
-
-	private int nodes;
-
-	private int ncpus;
+	private final HPCSettings settings;
 
 	private Job job;
 
 	private ClusterJobLauncher launcher;
 
-	public HPCImageJServerRunner(String host, String userName, File keyFile,
-		String keyFilePassword, String remoteDirectory, String command, int nodes,
-		int ncpus)
+	public HPCImageJServerRunner( HPCSettings settings )
 	{
 		super();
-		this.host = host;
-		this.userName = userName;
-		this.keyFile = keyFile;
-		this.keyFilePassword = keyFilePassword;
-		this.remoteDirectory = remoteDirectory;
-		this.command = command;
-		this.nodes = nodes;
-		this.ncpus = ncpus;
+		this.settings = settings;
 		this.ports = Collections.emptyList();
 	}
 
@@ -71,10 +45,10 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 	@Override
 	protected void doStartImageJServer(List<String> commands) throws IOException {
 		launcher = Routines.supplyWithExceptionHandling(
-			() -> new ClusterJobLauncher(host, userName, keyFile.toString(),
-				keyFilePassword), log, "");
-		job = launcher.submit(remoteDirectory, command, commands.subList(1, commands
-			.size()).stream().collect(Collectors.joining(" ")), nodes, ncpus);
+			() -> new ClusterJobLauncher(settings.getHost(), settings.getUserName(), settings.getKeyFile().toString(),
+				settings.getKeyFilePassword()), log, "");
+		job = launcher.submit(settings.getRemoteDirectory(), settings.getCommand(), commands.subList(1, commands
+			.size()).stream().collect(Collectors.joining(" ")), settings.getNodes(), settings.getNcpus());
 		ports = job.createTunnels(8080, 8080);
 	}
 

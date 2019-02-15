@@ -4,6 +4,7 @@ package cz.it4i.parallel.ui;
 import java.io.File;
 import java.util.function.Consumer;
 
+import cz.it4i.parallel.HPCSettings;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -58,8 +59,8 @@ public class RunImageJServerOnHPCCommand implements Command {
 
 	@Override
 	public void run() {
-		runner = new HPCImageJServerRunnerWithUI(host, userName, keyFile,
-			keyFilePassword, remoteDirectory, command, nodes, ncpus);
+		HPCSettings settings = new HPCSettings( host, userName, keyFile, keyFilePassword, remoteDirectory, command, nodes, ncpus );
+		runner = new HPCImageJServerRunnerWithUI(settings);
 		if (runnerConsumer != null) {
 			try (HPCImageJServerRunner localRunner = runner) {
 				runnerConsumer.accept(runner);

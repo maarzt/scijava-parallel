@@ -11,18 +11,16 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import cz.it4i.parallel.HPCImageJServerRunner;
+import cz.it4i.parallel.HPCSettings;
 
 class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 
 	private JDialog dialog;
 	private JLabel label;
 
-	public HPCImageJServerRunnerWithUI(String host, String userName, File keyFile,
-		String keyFilePassword, String remoteDirectory, String command, int nodes,
-		int ncpus)
+	public HPCImageJServerRunnerWithUI(HPCSettings settings)
 	{
-		super(host, userName, keyFile, keyFilePassword, remoteDirectory, command,
-			nodes, ncpus);
+		super(settings);
 	}
 
 	@Override
