@@ -16,18 +16,20 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import cz.it4i.parallel.TestParadigm;
 import net.imagej.ImageJ;
 import net.imagej.plugins.commands.imglib.RotateImageXY;
 
+import org.scijava.Context;
 import org.scijava.parallel.ParallelizationParadigm;
-import org.scijava.plugin.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.Routines;
 
-public class RotateFile extends AbstractBaseDemonstrationExample {
+public class RotateFile {
 
 	private static final String OUTPUT_DIRECTORY = "output";
 
@@ -36,22 +38,21 @@ public class RotateFile extends AbstractBaseDemonstrationExample {
 
 	private final static Logger log = LoggerFactory.getLogger(RotateFile.class);
 
-	@Parameter
-	private int step = 30;
+	private final static int step = 30;
 
-	private Path imageToRotate;
+	private static Path imageToRotate;
 
 	public static void main(String[] args) {
-		final ImageJ ij = new ImageJ();
-		ij.command().run(RotateFile.class, true);
+		final Context context = new Context();
+		try ( ParallelizationParadigm paradigm = TestParadigm.localImageJServer( Config.getFijiExecutable(), context ) ) {
+			callRemotePlugin(paradigm);
+		}
 	}
 
-	@Override
-	protected void callRemotePlugin(final ParallelizationParadigm paradigm) {
+	private static void callRemotePlugin(final ParallelizationParadigm paradigm) {
 		try {
 			final Path outputDirectory = prepareOutputDirectory();
-			final List<Map<String, Object>> parametersList = new LinkedList<>();
-			initParameters(parametersList);
+			final List< Map< String, Object > > parametersList = initParameters();
 
 			final List<Map<String, Object>> results = paradigm.runAll(
 				RotateImageXY.class, parametersList);
@@ -72,22 +73,20 @@ public class RotateFile extends AbstractBaseDemonstrationExample {
 		}
 	}
 
-	protected void initParameters(final List<Map<String, Object>> parameterList) {
-
+	private static List< Map< String, Object > > initParameters()
+	{
+		final List<Map<String, Object>> parametersList = new LinkedList<>();
 		Path path = getImageToRotate();
 		for (double angle = step; angle < 360; angle += step) {
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put("dataset", path);
 			parameters.put("angle", angle);
-			parameterList.add(parameters);
+			parametersList.add(parameters);
 		}
+		return parametersList;
 	}
 
-	protected int getStep() {
-		return step;
-	}
-
-	final protected Path getImageToRotate() {
+	private static Path getImageToRotate() {
 		if (imageToRotate == null) {
 			try (InputStream is = new URL(URL_OF_IMAGE_TO_ROTATE).openStream()) {
 				imageToRotate = Files.createTempFile("", URL_OF_IMAGE_TO_ROTATE
@@ -102,12 +101,12 @@ public class RotateFile extends AbstractBaseDemonstrationExample {
 		return imageToRotate;
 	}
 
-	final protected Path getResultPath(Path outputDirectory, Double angle) {
+	private static Path getResultPath(Path outputDirectory, Double angle) {
 		return outputDirectory.resolve("result_" + angle + getSuffix(imageToRotate
 			.getFileName().toString()));
 	}
 
-	final protected Path prepareOutputDirectory() {
+	private static Path prepareOutputDirectory() {
 		Path outputDirectory = Paths.get(OUTPUT_DIRECTORY);
 		if (!Files.exists(outputDirectory)) {
 			Routines.runWithExceptionHandling(() -> Files.createDirectories(
