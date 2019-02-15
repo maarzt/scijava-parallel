@@ -47,19 +47,10 @@ public class RotateFile {
 	}
 
 	private static void callRemotePlugin(final ParallelizationParadigm paradigm) {
-		final Path outputDirectory = prepareOutputDirectory();
 		final List< Map< String, Object > > parametersList = initParameters();
-
 		final List<Map<String, Object>> results = paradigm.runAll(
 				RotateImageXY.class, parametersList);
-		final Iterator<Map<String, Object>> inputIterator = parametersList
-				.iterator();
-		for (Map<String, ?> result : results) {
-			runWithExceptionHandling(() -> Files.move((Path) result.get("dataset"),
-					getResultPath(outputDirectory, (Double) inputIterator.next().get(
-							"angle")), StandardCopyOption.REPLACE_EXISTING), log,
-					"moving file");
-		}
+		saveOutputs( parametersList, results );
 	}
 
 	private static List< Map< String, Object > > initParameters()
@@ -87,6 +78,20 @@ public class RotateFile {
 			throw new RuntimeException(exc);
 		}
 	}
+
+	private static void saveOutputs( List< Map< String, Object > > parametersList, List< Map< String, Object > > results )
+	{
+		final Path outputDirectory = prepareOutputDirectory();
+		final Iterator<Map<String, Object>> inputIterator = parametersList
+				.iterator();
+		for (Map<String, ?> result : results) {
+			runWithExceptionHandling(() -> Files.move((Path) result.get("dataset"),
+					getResultPath(outputDirectory, (Double) inputIterator.next().get(
+							"angle")), StandardCopyOption.REPLACE_EXISTING), log,
+					"moving file");
+		}
+	}
+
 
 	private static Path getResultPath(Path outputDirectory, Double angle) {
 		return outputDirectory.resolve("result_" + angle + ".tif");
