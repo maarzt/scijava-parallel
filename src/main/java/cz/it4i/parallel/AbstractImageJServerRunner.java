@@ -51,25 +51,25 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 		try {
 			doStartImageJServer(Arrays.asList(IMAGEJ_SERVER_WITH_PARAMETERS));
 			imageJServerStarted();
-			getPorts().parallelStream().forEach(port -> {
-				boolean running = false;
-				do {
-					try {
-						if (checkModulesURL(port) == 200) {
-							running = true;
-						}
-					}
-					catch (IOException e) {
-						// ignore waiting for start
-					}
-				}
-				while (!running);
-			});
+			getPorts().parallelStream().forEach( this::waitForImageJServer );
 			imageJServerRunning();
 		}
 		catch (IOException exc) {
 			log.error("start imageJServer", exc);
 			throw new RuntimeException(exc);
+		}
+	}
+
+	private void waitForImageJServer( Integer port )
+	{
+		boolean running = false;
+		while (!running) {
+			try {
+				running = checkModulesURL(port) == 200;
+			}
+			catch (IOException e) {
+				// ignore waiting for start
+			}
 		}
 	}
 
