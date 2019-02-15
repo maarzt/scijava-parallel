@@ -2,6 +2,7 @@
 package test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -23,8 +24,11 @@ public class Config {
 	static {
 		properties = new Properties();
 		try {
-			properties.load(Config.class.getClassLoader().getResourceAsStream(
-				CONFIG_FILE_NAME));
+			final InputStream resource = Config.class.getClassLoader().getResourceAsStream(
+					CONFIG_FILE_NAME );
+			if( resource == null )
+				throw new RuntimeException( "Configuration file " + CONFIG_FILE_NAME + "needs to be set up correctly." );
+			properties.load( resource );
 		}
 		catch (final IOException e) {
 			log.error(e.getMessage(), e);
