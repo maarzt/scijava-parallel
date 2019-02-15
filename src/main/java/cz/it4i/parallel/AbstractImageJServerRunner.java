@@ -2,10 +2,7 @@
 package cz.it4i.parallel;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +62,7 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 		boolean running = false;
 		while (!running) {
 			try {
-				running = checkModulesURL(port) == 200;
+				running = checkModulesURL(port);
 			}
 			catch (IOException e) {
 				// ignore waiting for start
@@ -73,14 +70,14 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 		}
 	}
 
-	private int checkModulesURL(Integer port) throws IOException
+	private boolean checkModulesURL(Integer port) throws IOException
 	{
 		HttpURLConnection hc;
 		hc = (HttpURLConnection) new URL(getModulesURL(port)).openConnection();
 		hc.setRequestMethod("GET");
 		hc.connect();
 		hc.disconnect();
-		return hc.getResponseCode();
+		return hc.getResponseCode() == 200;
 	}
 
 	private String getModulesURL(Integer port) {
