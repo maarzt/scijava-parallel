@@ -94,8 +94,7 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 		}).allMatch(result -> result);
 	}
 
-	private int checkModulesURL(Integer port) throws IOException,
-		MalformedURLException, ProtocolException
+	private int checkModulesURL(Integer port) throws IOException
 	{
 		HttpURLConnection hc;
 		hc = (HttpURLConnection) new URL(getModulesURL(port)).openConnection();
