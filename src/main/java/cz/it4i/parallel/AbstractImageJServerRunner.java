@@ -23,9 +23,7 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 
 		try {
 			doStartImageJServer(Arrays.asList(IMAGEJ_SERVER_WITH_PARAMETERS));
-			imageJServerStarted();
 			getPorts().parallelStream().forEach( this::waitForImageJServer );
-			imageJServerRunning();
 		}
 		catch (IOException exc) {
 			log.error("start imageJServer", exc);
@@ -40,10 +38,6 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 
 	protected abstract void doStartImageJServer(List<String> command)
 		throws IOException;
-
-	protected void imageJServerStarted() {}
-
-	protected void imageJServerRunning() {}
 
 	private void waitForImageJServer( Integer port )
 	{

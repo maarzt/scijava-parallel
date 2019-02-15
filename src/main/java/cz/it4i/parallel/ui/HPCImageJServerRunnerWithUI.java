@@ -37,18 +37,18 @@ class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 		dialog.setModal(false);
 		dialog.setVisible(true);
 
+		imageJServerStarted();
 		super.start();
+		imageJServerRunning();
 	}
 
-	@Override
-	protected void imageJServerStarted() {
+	private void imageJServerStarted() {
 		dialog.setVisible(false);
 		this.label.setText("Waiting for a ImageJ server start.");
 		dialog.setVisible(true);
 	}
 
-	@Override
-	protected void imageJServerRunning() {
+	private void imageJServerRunning() {
 		dialog.setVisible(false);
 	}
 
