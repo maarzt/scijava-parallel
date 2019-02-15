@@ -76,22 +76,25 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 	}
 
 	private boolean checkImageJServerRunning() {
-		return ports.stream().map(port -> {
-			try {
-				if (checkModulesURL(port) != 200) {
-					throw new IllegalStateException(
-						"Different server than ImageJServer is running on localhost:8080");
-				}
-				return true;
+		return ports.stream().allMatch( this::checkImageJServerRunning );
+	}
+
+	private Boolean checkImageJServerRunning( Integer port )
+	{
+		try {
+			if (checkModulesURL(port) != 200) {
+				throw new IllegalStateException(
+					"Different server than ImageJServer is running on localhost:8080");
 			}
-			catch (ConnectException exc) {
-				return false;
-			}
-			catch (IOException exc) {
-				log.error("connect ot ImageJServer", exc);
-				throw new RuntimeException(exc);
-			}
-		}).allMatch(result -> result);
+			return true;
+		}
+		catch (ConnectException exc) {
+			return false;
+		}
+		catch (IOException exc) {
+			log.error("connect ot ImageJServer", exc);
+			throw new RuntimeException(exc);
+		}
 	}
 
 	private int checkModulesURL(Integer port) throws IOException
