@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ImageJServerRunner extends AbstractImageJServerRunner {
 
@@ -33,7 +34,7 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 	}
 
 	@Override
-	protected void doStartImageJServer(List<String> command) throws IOException {
+	protected void doStartImageJServer() throws IOException {
 		String fijiPath = fijiExecutable;
 		if (fijiPath == null || !Files.exists(Paths.get(fijiPath))) {
 			throw new IllegalArgumentException(
@@ -41,8 +42,8 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 					"). The property 'Fiji.executable.path' may not be configured properly in the 'configuration.properties' file.");
 		}
 
-		command = new ArrayList<>(command);
-		command.set(0, fijiPath);
+		List< String > command = Stream.concat( Stream.of( fijiPath ), AbstractImageJServerRunner.IMAGEJ_SERVER_PARAMETERS.stream() )
+				.collect( Collectors.toList() );
 
 		final ProcessBuilder pb = new ProcessBuilder(command).inheritIO();
 		imageJServerProcess = pb.start();

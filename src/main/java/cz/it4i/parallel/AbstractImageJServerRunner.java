@@ -15,14 +15,14 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 	private final static Logger log = LoggerFactory.getLogger(
 		cz.it4i.parallel.AbstractImageJServerRunner.class);
 
-	private static String[] IMAGEJ_SERVER_WITH_PARAMETERS = { "ImageJ-linux64",
+	public final static List<String> IMAGEJ_SERVER_PARAMETERS = Arrays.asList(
 		"-Dimagej.legacy.modernOnlyCommands=true", "--", "--ij2", "--headless",
-		"--server" };
+		"--server" );
 
 	public void start() {
 
 		try {
-			doStartImageJServer(Arrays.asList(IMAGEJ_SERVER_WITH_PARAMETERS));
+			doStartImageJServer();
 			getPorts().parallelStream().forEach( this::waitForImageJServer );
 		}
 		catch (IOException exc) {
@@ -36,7 +36,7 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 	@Override
 	abstract public void close();
 
-	protected abstract void doStartImageJServer(List<String> command)
+	protected abstract void doStartImageJServer()
 		throws IOException;
 
 	private void waitForImageJServer( Integer port )
