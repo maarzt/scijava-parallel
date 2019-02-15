@@ -44,7 +44,7 @@ abstract public class AbstractBaseDemonstrationExample implements Command {
 			try (AbstractImageJServerRunner imageJServerRunner =
 				constructImageJServerRunner())
 			{
-				imageJServerRunner.startIfNecessary();
+				imageJServerRunner.start();
 				hosts = imageJServerRunner.getPorts().stream().map(
 					port -> "localhost:" + port).collect(Collectors.toList());
 				try (ParallelizationParadigm paradigm = configureParadigm()) {

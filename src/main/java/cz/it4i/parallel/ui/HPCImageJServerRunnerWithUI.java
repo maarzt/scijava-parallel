@@ -26,7 +26,7 @@ class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 	}
 
 	@Override
-	public void startIfNecessary() {
+	public void start() {
 		this.dialog = new JOptionPane().createDialog("Waiting");
 		JPanel panel = new JPanel(new BorderLayout());
 		dialog.setContentPane(panel);
@@ -37,7 +37,7 @@ class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 		dialog.setModal(false);
 		dialog.setVisible(true);
 
-		super.startIfNecessary();
+		super.start();
 	}
 
 	@Override

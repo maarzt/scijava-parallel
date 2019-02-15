@@ -38,7 +38,7 @@ public class RunImageJServerOnHPC implements Command {
 	public void run() {
 		Map<String, Object> params = new HashMap<>();
 		params.put("runnerConsumer", (Consumer<HPCImageJServerRunner>) runner -> {
-			runner.startIfNecessary();
+			runner.start();
 			Job job = runner.getJob();
 			uiService.showDialog("Job ID = " + job.getID() + ". Tunnels opened on " +
 				runner.getPorts() + " for nodes " + job.getNodes() +
