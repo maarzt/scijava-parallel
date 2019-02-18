@@ -3,9 +3,8 @@ package test;
 
 import cz.it4i.parallel.AbstractImageJServerRunner;
 import cz.it4i.parallel.TestParadigm;
-import cz.it4i.parallel.ui.RunImageJServerOnHPCCommand;
+import cz.it4i.parallel.ui.HPCImageJServerRunnerWithUI;
 import net.imagej.ImageJ;
-import org.scijava.command.CommandService;
 import org.scijava.parallel.ParallelizationParadigm;
 
 import java.util.concurrent.ExecutionException;
@@ -16,10 +15,8 @@ public class RotateFileOnHPC {
 	{
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
-		final CommandService commandService = ij.command();
 
-		AbstractImageJServerRunner runner = ( AbstractImageJServerRunner ) commandService.run(
-			RunImageJServerOnHPCCommand.class, true).get().getOutputs().get( "runner" );
+		AbstractImageJServerRunner runner = HPCImageJServerRunnerWithUI.gui( ij.context() );
 
 		try(ParallelizationParadigm paradigm = new TestParadigm( runner, ij.context() )) {
 			RotateFile.callRemotePlugin(paradigm);

@@ -25,9 +25,6 @@ public class TestingCommandWithInterval extends
 	private final static Logger log = LoggerFactory.getLogger(
 		TestingCommandWithInterval.class);
 
-	@Parameter
-	private IOService ioService;
-
 	public static void main(String[] args) {
 		final ImageJ ij = new ImageJ();
 		ij.command().run(TestingCommandWithInterval.class, true);

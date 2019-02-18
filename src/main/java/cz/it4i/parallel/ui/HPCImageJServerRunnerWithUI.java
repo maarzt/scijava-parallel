@@ -12,8 +12,9 @@ import javax.swing.SwingConstants;
 
 import cz.it4i.parallel.HPCImageJServerRunner;
 import cz.it4i.parallel.HPCSettings;
+import org.scijava.Context;
 
-class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
+public class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 
 	private JDialog dialog;
 	private JLabel label;
@@ -56,5 +57,9 @@ class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 		dialog.setVisible(true);
 		super.close();
 		dialog.setVisible(false);
+	}
+
+	public static HPCImageJServerRunner gui( Context context ) {
+		return new HPCImageJServerRunnerWithUI( HPCSettingsGui.showDialog( context ) );
 	}
 }

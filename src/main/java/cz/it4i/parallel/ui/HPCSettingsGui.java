@@ -2,11 +2,14 @@
 package cz.it4i.parallel.ui;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import cz.it4i.parallel.HPCSettings;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.widget.FileWidget;
@@ -15,7 +18,7 @@ import org.scijava.widget.TextWidget;
 import cz.it4i.parallel.HPCImageJServerRunner;
 
 @Plugin(type = Command.class, headless = false)
-public class RunImageJServerOnHPCCommand implements Command {
+public class HPCSettingsGui implements Command {
 
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Host name")
 	private String host;
@@ -45,28 +48,23 @@ public class RunImageJServerOnHPCCommand implements Command {
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Number of cpus per node")
 	private int ncpus;
 
-	@Parameter(required = false)
-	private Consumer<HPCImageJServerRunner> runnerConsumer;
-
 	@Parameter(type = ItemIO.OUTPUT)
-	private HPCImageJServerRunner runner;
-
-	public void setRunnerConsumer(
-		Consumer<HPCImageJServerRunner> runnerConsumer)
-	{
-		this.runnerConsumer = runnerConsumer;
-	}
+	private HPCSettings settings;
 
 	@Override
 	public void run() {
 		HPCSettings settings = new HPCSettings( host, userName, keyFile, keyFilePassword, remoteDirectory, command, nodes, ncpus );
-		runner = new HPCImageJServerRunnerWithUI(settings);
-		if (runnerConsumer != null) {
-			try (HPCImageJServerRunner localRunner = runner) {
-				runnerConsumer.accept(runner);
-				runner = null;
-			}
-		}
 	}
 
+	public static HPCSettings showDialog(Context context) {
+		CommandService command = context.service( CommandService.class );
+		try
+		{
+			return ( HPCSettings ) command.run( HPCSettingsGui.class, true ).get().getOutput( "settings" );
+		}
+		catch ( InterruptedException | ExecutionException e )
+		{
+			throw new RuntimeException( e );
+		}
+	}
 }
