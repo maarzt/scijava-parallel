@@ -1,42 +1,28 @@
 
 package test;
 
-import java.util.Map;
+import cz.it4i.parallel.AbstractImageJServerRunner;
+import cz.it4i.parallel.TestParadigm;
+import cz.it4i.parallel.ui.RunImageJServerOnHPCCommand;
+import net.imagej.ImageJ;
+import org.scijava.command.CommandService;
+import org.scijava.parallel.ParallelizationParadigm;
+
 import java.util.concurrent.ExecutionException;
 
-import net.imagej.ImageJ;
+public class RotateFileOnHPC {
 
-import org.scijava.command.Command;
-import org.scijava.command.CommandService;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-
-import cz.it4i.parallel.AbstractImageJServerRunner;
-import cz.it4i.parallel.ui.RunImageJServerOnHPCCommand;
-
-@Plugin(type = Command.class, headless = false)
-public class RotateFileOnHPC extends RotateFileAsync {
-
-	@Parameter
-	private CommandService commandService;
-
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ExecutionException, InterruptedException
+	{
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
-		ij.command().run(RotateFileOnHPC.class, true);
-	}
+		final CommandService commandService = ij.command();
 
-	@Override
-	protected AbstractImageJServerRunner constructImageJServerRunner() {
-		try {
-			Map<String, Object> result = commandService.run(
-				RunImageJServerOnHPCCommand.class, true).get().getOutputs();
-			return (AbstractImageJServerRunner) result.get("runner");
+		AbstractImageJServerRunner runner = ( AbstractImageJServerRunner ) commandService.run(
+			RunImageJServerOnHPCCommand.class, true).get().getOutputs().get( "runner" );
+
+		try(ParallelizationParadigm paradigm = new TestParadigm( runner, ij.context() )) {
+			RotateFile.callRemotePlugin(paradigm);
 		}
-		catch (InterruptedException | ExecutionException exc) {
-			throw new RuntimeException(exc);
-		}
-
 	}
-
 }
