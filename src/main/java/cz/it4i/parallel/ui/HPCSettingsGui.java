@@ -53,7 +53,8 @@ public class HPCSettingsGui implements Command {
 
 	@Override
 	public void run() {
-		HPCSettings settings = new HPCSettings( host, userName, keyFile, keyFilePassword, remoteDirectory, command, nodes, ncpus );
+		settings = new HPCSettings(host, userName, keyFile, keyFilePassword,
+			remoteDirectory, command, nodes, ncpus);
 	}
 
 	public static HPCSettings showDialog(Context context) {
