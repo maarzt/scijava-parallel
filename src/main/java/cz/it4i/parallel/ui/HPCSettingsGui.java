@@ -3,9 +3,7 @@ package cz.it4i.parallel.ui;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
-import cz.it4i.parallel.HPCSettings;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -15,7 +13,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.widget.FileWidget;
 import org.scijava.widget.TextWidget;
 
-import cz.it4i.parallel.HPCImageJServerRunner;
+import cz.it4i.parallel.HPCSettings;
 
 @Plugin(type = Command.class, headless = false)
 public class HPCSettingsGui implements Command {
@@ -58,14 +56,13 @@ public class HPCSettingsGui implements Command {
 	}
 
 	public static HPCSettings showDialog(Context context) {
-		CommandService command = context.service( CommandService.class );
-		try
-		{
-			return ( HPCSettings ) command.run( HPCSettingsGui.class, true ).get().getOutput( "settings" );
+		CommandService command = context.service(CommandService.class);
+		try {
+			return (HPCSettings) command.run(HPCSettingsGui.class, true).get()
+				.getOutput("settings");
 		}
-		catch ( InterruptedException | ExecutionException e )
-		{
-			throw new RuntimeException( e );
+		catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }

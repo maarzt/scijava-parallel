@@ -2,7 +2,6 @@
 package cz.it4i.parallel.ui;
 
 import java.awt.BorderLayout;
-import java.io.File;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -10,17 +9,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.scijava.Context;
+
 import cz.it4i.parallel.HPCImageJServerRunner;
 import cz.it4i.parallel.HPCSettings;
-import org.scijava.Context;
 
 public class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 
 	private JDialog dialog;
 	private JLabel label;
 
-	public HPCImageJServerRunnerWithUI(HPCSettings settings)
-	{
+	public HPCImageJServerRunnerWithUI(HPCSettings settings) {
 		super(settings);
 	}
 
@@ -59,7 +58,7 @@ public class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 		dialog.setVisible(false);
 	}
 
-	public static HPCImageJServerRunner gui( Context context ) {
-		return new HPCImageJServerRunnerWithUI( HPCSettingsGui.showDialog( context ) );
+	public static HPCImageJServerRunner gui(Context context) {
+		return new HPCImageJServerRunnerWithUI(HPCSettingsGui.showDialog(context));
 	}
 }

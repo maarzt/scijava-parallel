@@ -4,7 +4,6 @@ package cz.it4i.parallel;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,9 +20,8 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 	}
 
 	@Override
-	public List< Integer > getPorts()
-	{
-		return Collections.singletonList( 8080 );
+	public List<Integer> getPorts() {
+		return Collections.singletonList(8080);
 	}
 
 	@Override
@@ -42,8 +40,9 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 					"). The property 'Fiji.executable.path' may not be configured properly in the 'configuration.properties' file.");
 		}
 
-		List< String > command = Stream.concat( Stream.of( fijiPath ), AbstractImageJServerRunner.IMAGEJ_SERVER_PARAMETERS.stream() )
-				.collect( Collectors.toList() );
+		List<String> command = Stream.concat(Stream.of(fijiPath),
+			AbstractImageJServerRunner.IMAGEJ_SERVER_PARAMETERS.stream()).collect(
+				Collectors.toList());
 
 		final ProcessBuilder pb = new ProcessBuilder(command).inheritIO();
 		imageJServerProcess = pb.start();
