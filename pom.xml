@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>24.1.0</version>
+		<relativePath />
+	</parent>
+	<artifactId>scijava-parallel</artifactId>
+	<version>0.1.1-SNAPSHOT</version>
+	<name>SciJava Parallel</name>
+	<description>Parallelization framework for SciJava applications.</description>
+	<url>https://</url>
+	<inceptionYear>2018</inceptionYear>
+	<organization>
+		<name>SciJava</name>
+		<url>https://scijava.org/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>None</id>
+		</developer>
+	</developers>
+	<contributors>
+		<!-- NB: Need at least one element to override the parent. See: https://issues.apache.org/jira/browse/MNG-5220 -->
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/imagej/imagej-server</connection>
+		<developerConnection>scm:git:git@github.com:imagej/imagej-server</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/imagej/imagej-server</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>http://github.com/imagej/imagej-server</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/imagej/imagej-server</url>
+	</ciManagement>
+
+	<!-- Add usual stuff as per SciJava projects -->
+
+	<properties>
+		<package-name>org.scijava.parallel</package-name>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>SciJava developers.</license.copyrightOwners>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<releaseProfiles>deploy-to-imagej</releaseProfiles>
+
+		<!-- TODO: Find out what is this for -->
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>cz.it4i.fiji</groupId>
+			<artifactId>haas-java-client</artifactId>
+			<version>0.0.8-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-plugins-commands</artifactId>
+		</dependency>
+		<!-- SciJava dependencies -->
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>1.7.25</version>
+		</dependency>
+		
+	</dependencies>
+	<distributionManagement>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+		<snapshotRepository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</snapshotRepository>
+	</distributionManagement>
+	
+</project>
