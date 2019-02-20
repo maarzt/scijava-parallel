@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,7 +190,7 @@ public class ClusterJobLauncher implements Closeable {
 	private String runJob(String directory, String command, String parameters,
 		long nodes, long ncpus)
 	{
-		String jobname = new Instant().getMillis() + "";
+		String jobname = java.time.Instant.now().toEpochMilli() + "";
 		String fileName = jobname + ".sh";
 // @formatter:off
 		String result = client.executeCommand(
