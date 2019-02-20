@@ -6,15 +6,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import cz.it4i.parallel.TestParadigm;
 import net.imagej.ImageJ;
 
-import org.scijava.command.Command;
 import org.scijava.parallel.ParallelizationParadigm;
-import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import cz.it4i.parallel.TestParadigm;
 
 public class ScriptEvalRemotely {
 
@@ -31,8 +27,7 @@ public class ScriptEvalRemotely {
 						"'); getDirectory('home'); exec('whoami');");
 				paramsList.add(params);
 			}
-			List<Map<String, Object>> result = paradigm.runAll(
-					"net.imagej.server.external.ScriptEval", paramsList);
+			paradigm.runAll("net.imagej.server.external.ScriptEval", paramsList);
 		}
 	}
 }

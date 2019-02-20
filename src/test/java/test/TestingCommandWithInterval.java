@@ -3,19 +3,17 @@ package test;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import cz.it4i.parallel.TestParadigm;
 import net.imagej.Extents;
 import net.imagej.ImageJ;
 
 import org.scijava.command.Command;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import cz.it4i.parallel.TestParadigm;
 
 @Plugin(type = Command.class, headless = true)
 public class TestingCommandWithInterval

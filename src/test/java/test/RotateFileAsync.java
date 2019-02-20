@@ -1,13 +1,9 @@
 
 package test;
 
+import static cz.it4i.parallel.Routines.runWithExceptionHandling;
+
 import com.google.common.collect.Streams;
-import cz.it4i.parallel.TestParadigm;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
-import org.scijava.Context;
-import org.scijava.parallel.ParallelizationParadigm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,15 +13,21 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static cz.it4i.parallel.Routines.runWithExceptionHandling;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
+import org.scijava.Context;
+import org.scijava.parallel.ParallelizationParadigm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.it4i.parallel.TestParadigm;
 
 public class RotateFileAsync {
 
 	private final static Logger log = LoggerFactory.getLogger(
 		RotateFileAsync.class);
 
-	public static void main(String[] args) throws ExecutionException
-	{
+	public static void main(String[] args) {
 		Context context = new Context();
 		try ( ParallelizationParadigm paradigm = TestParadigm.localImageJServer( Config.getFijiExecutable(), context ) )
 		{
