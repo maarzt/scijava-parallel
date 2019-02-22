@@ -41,6 +41,8 @@ import org.scijava.plugin.SciJavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Response;
+
 public class ImageJServerWorker implements ParallelWorker {
 
 	private final static Logger log = LoggerFactory.getLogger(
@@ -189,6 +191,9 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 	}
 
+	/**
+	 * @throws RuntimeException if response from the ImageJ server is not successful, or json cannot be parsed properly.
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> executeCommand(final String commandTypeName,
@@ -196,8 +201,6 @@ public class ImageJServerWorker implements ParallelWorker {
 	{
 
 		final Map<String, ?> wrappedInputs = wrapInputValues(inputs);
-
-		String json = null;
 
 		try {
 
@@ -217,24 +220,28 @@ public class ImageJServerWorker implements ParallelWorker {
 			final HttpResponse response = HttpClientBuilder.create().build().execute(
 				httpPost);
 
-			// TODO check result code properly
+			int statusCode = response.getStatusLine().getStatusCode();
+			boolean success = Response.Status.fromStatusCode(statusCode).getFamily() == Response.Status.Family.SUCCESSFUL;
+			if ( !success ) {
+				throw new RuntimeException( "Command cannot be executed" + response.getStatusLine() + " " + response.getEntity() );
+			}
 
-			json = EntityUtils.toString(response.getEntity());
+			String json = EntityUtils.toString( response.getEntity() );
 
+			final Map<String, Object> rawOutputs = new HashMap<>();
+
+			final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
+
+			for (final String key : jsonObj.keySet()) {
+				rawOutputs.put(key, jsonObj.get(key));
+			}
+
+			return unwrapOutputValues(rawOutputs);
 		}
-		catch (final Exception e) {
-			e.printStackTrace();
+		catch ( IOException e )
+		{
+			throw new RuntimeException( e );
 		}
-
-		final Map<String, Object> rawOutputs = new HashMap<>();
-
-		final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
-
-		for (final String key : jsonObj.keySet()) {
-			rawOutputs.put(key, jsonObj.get(key));
-		}
-
-		return unwrapOutputValues(rawOutputs);
 	}
 
 	// -- Helper methods --
