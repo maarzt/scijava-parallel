@@ -19,15 +19,20 @@ public class ScriptEvalRemotely {
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 		try( ParallelizationParadigm paradigm = TestParadigm.localImageJServer( Config.getFijiExecutable(), ij.context() )) {
-			List<Map<String, Object>> paramsList = new LinkedList<>();
-			for (int i = 0; i < 10; i++) {
-				Map<String, Object> params = new HashMap<>();
-				params.put("language", "ij1");
-				params.put("script", "print('hello from script" + i +
-						"'); getDirectory('home'); exec('whoami');");
-				paramsList.add(params);
-			}
-			paradigm.runAll("net.imagej.server.external.ScriptEval", paramsList);
+			run( paradigm );
 		}
+	}
+
+	static void run( ParallelizationParadigm paradigm )
+	{
+		List<Map<String, Object>> paramsList = new LinkedList<>();
+		for (int i = 0; i < 10; i++) {
+			Map<String, Object> params = new HashMap<>();
+			params.put("language", "ij1");
+			params.put("script", "print('hello from script" + i +
+					"'); getDirectory('home'); exec('whoami');");
+			paramsList.add(params);
+		}
+		paradigm.runAll("net.imagej.server.external.ScriptEval", paramsList);
 	}
 }
