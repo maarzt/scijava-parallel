@@ -165,7 +165,11 @@
 			</exclusion>
 			</exclusions>
 		</dependency>
-		
+		<dependency>
+			<groupId>cz.it4i.fiji</groupId>
+			<artifactId>java-scpclient</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<distributionManagement>
 		<repository>
