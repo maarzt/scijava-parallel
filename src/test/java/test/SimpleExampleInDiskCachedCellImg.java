@@ -1,32 +1,37 @@
 package test;
 
-import bdv.util.BdvFunctions;
-import cz.it4i.parallel.TestParadigm;
 import io.scif.services.DatasetIOService;
+
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.DiskCachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+
 import org.scijava.Context;
 import org.scijava.parallel.ParallelizationParadigm;
 
+import bdv.util.BdvFunctions;
+import cz.it4i.parallel.TestParadigm;
+
 public class SimpleExampleInDiskCachedCellImg
 {
-	public static void main( String... args ) throws InterruptedException
+
+	public static void main(String... args) 
 	{
 
 		Context context = new Context();
 		DatasetIOService ioService = context.service( DatasetIOService.class );
-		try (ParallelizationParadigm paradigm = TestParadigm.localImageJServer( Config.getFijiExecutable(), context ))
-		{
-			final CellLoader< UnsignedByteType > loader = cell -> {
-				RotateSingleDataset.rotateSingleDataset( ioService, paradigm ); // failing
-				//ScriptEvalRemotely.run(paradigm); // working
-			};
-			DiskCachedCellImg< UnsignedByteType, ? > img = createCellImage( loader );
-			BdvFunctions.show( img, "title" ).setDisplayRange( 0, 1 );
-		}
+		ParallelizationParadigm paradigm = TestParadigm.localImageJServer(Config
+			.getFijiExecutable(), context);
+
+		final CellLoader<UnsignedByteType> loader = cell -> {
+			RotateSingleDataset.rotateSingleDataset(ioService, paradigm); // failing
+			// ScriptEvalRemotely.run(paradigm); // working
+		};
+		DiskCachedCellImg<UnsignedByteType, ?> img = createCellImage(loader);
+		BdvFunctions.show(img, "title").setDisplayRange(0, 1);
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> paradigm.close()));
 	}
 
 	private static DiskCachedCellImg< UnsignedByteType, ? > createCellImage( CellLoader< UnsignedByteType > loader )

@@ -1,13 +1,7 @@
 
 package test;
 
-import cz.it4i.parallel.TestParadigm;
 import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
-import org.scijava.Context;
-import org.scijava.parallel.ParallelizationParadigm;
-import org.scijava.ui.UIService;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -15,10 +9,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.imagej.Dataset;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
+import org.scijava.Context;
+import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.ui.UIService;
+
+import cz.it4i.parallel.TestParadigm;
+
 public class RotateSingleDataset
 {
 
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args)
 	{
 		Context context = new Context();
 		DatasetIOService ioService = context.service( DatasetIOService.class );
