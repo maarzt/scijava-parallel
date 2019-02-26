@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -40,8 +42,6 @@ import org.scijava.Context;
 import org.scijava.plugin.SciJavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.Response;
 
 public class ImageJServerWorker implements ParallelWorker {
 
@@ -232,9 +232,8 @@ public class ImageJServerWorker implements ParallelWorker {
 
 			final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
 
-			for (final String key : jsonObj.keySet()) {
-				rawOutputs.put(key, jsonObj.get(key));
-			}
+			jsonObj.keys().forEachRemaining(key -> rawOutputs.put(key, jsonObj.get(
+				key)));
 
 			return unwrapOutputValues(rawOutputs);
 		}
