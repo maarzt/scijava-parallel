@@ -7,13 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class ParameterProcessor {
-
-	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.ParameterProcessor.class);
 
 	private Map<String, P_AppliedConversion> appliedConversions = new HashMap<>();
 
@@ -62,8 +56,7 @@ public abstract class ParameterProcessor {
 	private Object doInputConversion(Entry<String, Object> parameter) {
 		String typeName = getParameterTypeName(parameter.getKey());
 		ParallelizationParadigmConverter<?> convertor = construcConverter(Routines
-			.supplyWithExceptionHandling(() -> Class.forName(typeName), log,
-				"class load"), worker);
+			.supplyWithExceptionHandling(() -> Class.forName(typeName)), worker);
 		Object value = parameter.getValue();
 		if (convertor != null) {
 			appliedConversions.put(parameter.getKey(), new P_AppliedConversion(value
@@ -84,8 +77,8 @@ public abstract class ParameterProcessor {
 		}
 		else {
 			String typeName = getParameterTypeName(parameter.getKey());
-			Class<?> type = supplyWithExceptionHandling(() -> Class.forName(typeName),
-				log, "class load");
+			Class<?> type = supplyWithExceptionHandling(() -> Class.forName(
+				typeName));
 			ParallelizationParadigmConverter<?> convertor = construcConverter(type,
 				worker);
 			if (convertor != null) {

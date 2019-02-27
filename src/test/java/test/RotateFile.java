@@ -17,8 +17,6 @@ import net.imagej.plugins.commands.imglib.RotateImageXY;
 
 import org.scijava.Context;
 import org.scijava.parallel.ParallelizationParadigm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.Routines;
 import cz.it4i.parallel.TestParadigm;
@@ -26,8 +24,6 @@ import cz.it4i.parallel.TestParadigm;
 public class RotateFile {
 
 	private static final String OUTPUT_DIRECTORY = "output";
-
-	private final static Logger log = LoggerFactory.getLogger(RotateFile.class);
 
 	private final static int step = 30;
 
@@ -68,8 +64,7 @@ public class RotateFile {
 			final Path outputFile = outputDirectory.resolve("result_" + angle +
 				".png");
 			runWithExceptionHandling( () -> Files.move( ( Path ) result.get( "dataset" ),
-					outputFile, StandardCopyOption.REPLACE_EXISTING ), log,
-					"moving file");
+				outputFile, StandardCopyOption.REPLACE_EXISTING));
 		}
 	}
 
@@ -77,7 +72,7 @@ public class RotateFile {
 		Path outputDirectory = Paths.get(OUTPUT_DIRECTORY);
 		if (!Files.exists(outputDirectory)) {
 			Routines.runWithExceptionHandling(() -> Files.createDirectories(
-				outputDirectory), log, "create directory");
+				outputDirectory));
 		}
 		return outputDirectory;
 	}

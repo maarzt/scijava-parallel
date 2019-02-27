@@ -76,11 +76,10 @@ public abstract class AbstractImageJServerParadigm extends
 				"/modules/" + "command:" + commandTypeName;
 			final HttpGet httpGet = new HttpGet(getUrl);
 			final HttpResponse response = supplyWithExceptionHandling(
-				() -> HttpClientBuilder.create().build().execute(httpGet), log,
-				"get response");
+				() -> HttpClientBuilder.create().build().execute(httpGet));
 			org.json.JSONObject json = supplyWithExceptionHandling(
 				() -> new org.json.JSONObject(EntityUtils.toString(response
-					.getEntity())), log, "obtain command info");
+					.getEntity())));
 
 			org.json.JSONArray inputs = (org.json.JSONArray) json.get("inputs");
 			Iterator<?> iter = inputs.iterator();

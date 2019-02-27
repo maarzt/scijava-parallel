@@ -1,19 +1,14 @@
 
 package cz.it4i.parallel;
 
-import cz.it4i.parallel.ClusterJobLauncher.Job;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HPCImageJServerRunner extends AbstractImageJServerRunner {
+import cz.it4i.parallel.ClusterJobLauncher.Job;
 
-	private final static Logger log = LoggerFactory.getLogger(
-		HPCImageJServerRunner.class);
+public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 
 	private List< Integer > ports;
 
@@ -46,7 +41,7 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 	protected void doStartImageJServer() throws IOException {
 		launcher = Routines.supplyWithExceptionHandling(
 			() -> new ClusterJobLauncher(settings.getHost(), settings.getUserName(), settings.getKeyFile().toString(),
-				settings.getKeyFilePassword()), log, "");
+				settings.getKeyFilePassword()));
 		final String arguments = AbstractImageJServerRunner.IMAGEJ_SERVER_PARAMETERS
 				.stream().collect( Collectors.joining( " " ) );
 		job = launcher.submit(settings.getRemoteDirectory(), settings.getCommand(), arguments,

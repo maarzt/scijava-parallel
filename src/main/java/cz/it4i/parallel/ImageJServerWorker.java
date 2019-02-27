@@ -268,7 +268,7 @@ public class ImageJServerWorker implements ParallelWorker {
 			importedData2id.put(result, objId);
 			id2importedData.put(objId, result);
 			return result;
-		}, log, "importData");
+		});
 	}
 
 	// TODO: support another types

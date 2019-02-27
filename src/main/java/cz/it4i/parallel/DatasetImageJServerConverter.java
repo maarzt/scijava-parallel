@@ -15,16 +15,11 @@ import net.imagej.Dataset;
 import org.scijava.io.IOService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Plugin(type = ParallelizationParadigmConverter.class)
 public class DatasetImageJServerConverter extends
 	AbstractParallelizationParadigmConverter<Dataset>
 {
-
-	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.DatasetImageJServerConverter.class);
 
 	@Parameter
 	private IOService ioService;
@@ -76,9 +71,9 @@ public class DatasetImageJServerConverter extends
 				workingDataSet = (Dataset) input;
 				String workingSuffix = getSuffix(workingDataSet.getName());
 				tempFileForWorkingDataSet = Routines.supplyWithExceptionHandling(
-					() -> Files.createTempFile("", workingSuffix), log, "convertInput");
+				() -> Files.createTempFile("", workingSuffix));
 				Routines.runWithExceptionHandling(() -> ioService.save(input,
-					tempFileForWorkingDataSet.toString()), log, "convertInput");
+				tempFileForWorkingDataSet.toString()));
 				return parallelWorker.importData(tempFileForWorkingDataSet);
 			}
 			throw new IllegalArgumentException("cannot convert from " + input
@@ -88,7 +83,7 @@ public class DatasetImageJServerConverter extends
 		private Object convert2Local(Object input) {
 			if (suffixOfImportedFile != null) {
 				Path result = Routines.supplyWithExceptionHandling(() -> Files
-					.createTempFile("", suffixOfImportedFile), log, "output conversion");
+				.createTempFile("", suffixOfImportedFile));
 				parallelWorker.exportData(input, result);
 				parallelWorker.deleteData(input);
 				return result;
@@ -96,11 +91,10 @@ public class DatasetImageJServerConverter extends
 			else if (workingDataSet != null && tempFileForWorkingDataSet != null) {
 				parallelWorker.exportData(input, tempFileForWorkingDataSet);
 				Dataset tempDataset = (Dataset) Routines.supplyWithExceptionHandling(
-					() -> ioService.open(tempFileForWorkingDataSet.toString()), log,
-					"convertOutput");
+				() -> ioService.open(tempFileForWorkingDataSet.toString()));
 				tempDataset.copyInto(workingDataSet);
 				Routines.runWithExceptionHandling(() -> Files.delete(
-					tempFileForWorkingDataSet), log, "");
+				tempFileForWorkingDataSet));
 				return workingDataSet;
 			}
 			throw new IllegalArgumentException("bad arguments");

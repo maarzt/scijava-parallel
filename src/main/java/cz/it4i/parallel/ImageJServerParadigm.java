@@ -81,11 +81,10 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 				.valueOf(port) + "/modules/" + "command:" + commandTypeName;
 			final HttpGet httpGet = new HttpGet(getUrl);
 			final HttpResponse response = supplyWithExceptionHandling(
-				() -> HttpClientBuilder.create().build().execute(httpGet), log,
-				"get response");
+				() -> HttpClientBuilder.create().build().execute(httpGet));
 			org.json.JSONObject json = supplyWithExceptionHandling(
 				() -> new org.json.JSONObject(EntityUtils.toString(response
-					.getEntity())), log, "obtain command info");
+					.getEntity())));
 
 			processParamaters(result, json, "inputs");
 			processParamaters(result, json, "outputs");

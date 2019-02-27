@@ -1,10 +1,6 @@
 
 package cz.it4i.parallel;
 
-import java.util.function.Supplier;
-
-import org.slf4j.Logger;
-
 public class Routines {
 
 	public interface RunnableWithException {
@@ -17,34 +13,25 @@ public class Routines {
 		public T supply() throws Exception;
 	}
 
-	public static void runWithExceptionHandling(RunnableWithException runnable,
-		Logger log, String action)
+	public static void runWithExceptionHandling(RunnableWithException runnable)
 	{
 		try {
 			runnable.run();
 		}
 		catch (Exception exc) {
-			log.error(action, exc);
 			throw new RuntimeException(exc);
 		}
 	}
 
 	public static <T> T supplyWithExceptionHandling(
-		SupplierWithException<T> supplier, Logger log, Supplier<String> action)
+		SupplierWithException<T> supplier)
 	{
 		try {
 			return supplier.supply();
 		}
 		catch (Exception exc) {
-			log.error(action.get(), exc);
 			throw new RuntimeException(exc);
 		}
-	}
-
-	public static <T> T supplyWithExceptionHandling(
-		SupplierWithException<T> supplier, Logger log, String action)
-	{
-		return supplyWithExceptionHandling(supplier, log, () -> action);
 	}
 
 	public static String getSuffix(String filename) {

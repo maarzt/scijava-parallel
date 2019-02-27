@@ -23,16 +23,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.scijava.convert.Converter;
 import org.scijava.plugin.Plugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Plugin(type = ParallelizationParadigmConverter.class)
 public class IntervalImageJServerConverter extends
 	AbstractParallelizationParadigmConverter<Interval>
 {
-
-	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.IntervalImageJServerConverter.class);
 
 	private IntervalConverter delegateConverter = new IntervalConverter();
 
@@ -63,7 +58,7 @@ public class IntervalImageJServerConverter extends
 		if (Interval.class.isAssignableFrom(src.getClass())) {
 			if (dest == Object.class) {
 				return Routines.castTo(Routines.supplyWithExceptionHandling(() -> mapper
-					.writeValueAsString(src), log, ""));
+					.writeValueAsString(src)));
 			}
 			else if (dest == Interval.class) {
 				return Routines.<T> castTo(src);

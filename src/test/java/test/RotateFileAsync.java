@@ -48,7 +48,7 @@ public class RotateFileAsync {
 				result -> {
 					Path src = (Path) result.get("dataset");
 					Path dst = outputDirectory.resolve("result_" + angle + ".tif");
-					runWithExceptionHandling(() -> Files.move(src, dst, StandardCopyOption.REPLACE_EXISTING), log, "moving file");
+					runWithExceptionHandling(() -> Files.move(src, dst, StandardCopyOption.REPLACE_EXISTING));
 					log.info("moved: " + src + " -> " + dst);
 					}))
 		.forEach(future -> waitForFuture(future));
