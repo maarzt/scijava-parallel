@@ -1,13 +1,7 @@
 
 package test;
 
-import cz.it4i.parallel.Routines;
-import cz.it4i.parallel.TestParadigm;
-import net.imagej.plugins.commands.imglib.RotateImageXY;
-import org.scijava.Context;
-import org.scijava.parallel.ParallelizationParadigm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static cz.it4i.parallel.Routines.runWithExceptionHandling;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +13,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static cz.it4i.parallel.Routines.runWithExceptionHandling;
+import net.imagej.plugins.commands.imglib.RotateImageXY;
+
+import org.scijava.Context;
+import org.scijava.parallel.ParallelizationParadigm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.it4i.parallel.Routines;
+import cz.it4i.parallel.TestParadigm;
 
 public class RotateFile {
 
@@ -63,7 +65,8 @@ public class RotateFile {
 				.iterator();
 		for (Map<String, ?> result : results) {
 			final Double angle = ( Double ) inputIterator.next().get( "angle" );
-			final Path outputFile = outputDirectory.resolve( "result_" + angle + ".tif" );
+			final Path outputFile = outputDirectory.resolve("result_" + angle +
+				".png");
 			runWithExceptionHandling( () -> Files.move( ( Path ) result.get( "dataset" ),
 					outputFile, StandardCopyOption.REPLACE_EXISTING ), log,
 					"moving file");
