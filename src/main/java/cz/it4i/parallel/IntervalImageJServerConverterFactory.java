@@ -6,7 +6,6 @@ import static cz.it4i.parallel.Routines.castTo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -15,8 +14,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import net.imagej.Dataset;
-import net.imagej.server.modifiers.ObjectMapperModifier;
-import net.imagej.server.modifiers.SerializerModifier;
+import net.imagej.server.json.SciJavaJsonSerializer;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 
@@ -103,13 +101,41 @@ public class IntervalImageJServerConverterFactory extends
 
 	}
 
-	@Plugin(type = ObjectMapperModifier.class)
-	public static class IntervalSerializerModifier extends
-		SerializerModifier<Interval>
+	@Plugin(type = SciJavaJsonSerializer.class)
+	public static class IntervalJSONSerializer implements
+		SciJavaJsonSerializer<Interval>
 	{
 
-		public IntervalSerializerModifier() {
-			super(Interval.class, Arrays.asList(Dataset.class), new P_Serializer());
+		@Override
+		public boolean isSupportedBy(Class<?> desiredClass) {
+			return SciJavaJsonSerializer.super.isSupportedBy(desiredClass) &&
+				!Dataset.class.isAssignableFrom(desiredClass);
+		}
+
+		@Override
+		public void serialize(Interval interval, JsonGenerator gen,
+			SerializerProvider serializers) throws IOException
+		{
+
+			gen.writeStartObject();
+			gen.writeArrayFieldStart("min");
+			for (int i = 0; i < interval.numDimensions(); i++) {
+				gen.writeNumber(interval.min(i));
+			}
+			gen.writeEndArray();
+			gen.writeArrayFieldStart("max");
+			for (int i = 0; i < interval.numDimensions(); i++) {
+				gen.writeNumber(interval.max(i));
+			}
+			gen.writeEndArray();
+			gen.writeEndObject();
+
+		}
+
+
+		@Override
+		public Class<Interval> handleType() {
+			return Interval.class;
 		}
 
 	}
@@ -122,7 +148,8 @@ public class IntervalImageJServerConverterFactory extends
 
 		public P_Converter() {
 			mapper = new ObjectMapper();
-			new IntervalSerializerModifier().accept(mapper);
+			IntervalJSONSerializer serializer = new IntervalJSONSerializer();
+			serializer.register(mapper);
 		}
 
 		@Override
@@ -147,35 +174,6 @@ public class IntervalImageJServerConverterFactory extends
 
 	}
 
-	private static class P_Serializer extends StdSerializer<Interval> {
 
-		protected P_Serializer(Class<Interval> t) {
-			super(t);
-		}
-
-		public P_Serializer() {
-			this(null);
-		}
-
-		@Override
-		public void serialize(Interval value, JsonGenerator gen,
-			SerializerProvider provider) throws IOException
-		{
-
-			gen.writeStartObject();
-			gen.writeArrayFieldStart("min");
-			for (int i = 0; i < value.numDimensions(); i++) {
-				gen.writeNumber(value.min(i));
-			}
-			gen.writeEndArray();
-			gen.writeArrayFieldStart("max");
-			for (int i = 0; i < value.numDimensions(); i++) {
-				gen.writeNumber(value.max(i));
-			}
-			gen.writeEndArray();
-			gen.writeEndObject();
-		}
-
-	}
 
 }

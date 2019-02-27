@@ -23,8 +23,8 @@ public class TestingCommandWithInterval
 		try( ParallelizationParadigm paradigm = TestParadigm.localImageJServer( Config.getFijiExecutable(), ij.context() )) {
 			Map<String, Object> parameters = new HashMap<>();
 			parameters.put("a", 11);
-			parameters.put("interval", new Extents(new long[] { 10 }, new long[] {
-				10 }));
+			parameters.put("interval", new Extents(new long[] { 1, 2 }, new long[] {
+				10, 20 }));
 
 			List<Map<String, Object>> results = paradigm.runAll(
 					"net.imagej.server.TestingCommand", Collections.singletonList(parameters));
