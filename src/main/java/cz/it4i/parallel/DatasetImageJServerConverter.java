@@ -19,28 +19,32 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Plugin(type = ParallelizationParadigmConverterFactory.class)
-public class DatasetImageJServerConverterFactory extends
-	AbstractParallelizationParadigmConverterFactory<Dataset>
+@Plugin(type = ParallelizationParadigmConverter.class)
+public class DatasetImageJServerConverter extends
+	AbstractParallelizationParadigmConverter<Dataset>
 {
 
 	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.DatasetImageJServerConverterFactory.class);
+		cz.it4i.parallel.DatasetImageJServerConverter.class);
 
 	@Parameter
 	private IOService ioService;
 
-	public DatasetImageJServerConverterFactory() {
+	public DatasetImageJServerConverter() {
 		super(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
 			ImageJServerParadigm.class))), Dataset.class);
 	}
 
 	@Override
-	public Converter<Object, Dataset> createConverterForWorker(Object worker) {
-		return new P_Converter(worker);
+	public Converter<Object, Dataset> cloneForWorker(ParallelWorker worker) {
+		DatasetImageJServerConverter result =
+			new DatasetImageJServerConverter();
+		result.ioService = ioService;
+		result.parallelWorker = worker;
+		return result;
 	}
 
-	private class P_Converter extends AbstractConverter {
+
 
 		private ParallelWorker parallelWorker;
 
@@ -50,9 +54,7 @@ public class DatasetImageJServerConverterFactory extends
 
 		private Path tempFileForWorkingDataSet;
 
-		public P_Converter(Object worker) {
-			parallelWorker = (ParallelWorker) worker;
-		}
+
 
 		@Override
 		public <T> T convert(Object src, Class<T> dest) {
@@ -103,5 +105,4 @@ public class DatasetImageJServerConverterFactory extends
 			throw new IllegalArgumentException("bad arguments");
 		}
 
-	}
 }

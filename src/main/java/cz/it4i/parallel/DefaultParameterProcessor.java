@@ -7,25 +7,25 @@ import org.scijava.convert.Converter;
 
 public class DefaultParameterProcessor extends ParameterProcessor {
 
-	private Map<Class<?>, ParallelizationParadigmConverterFactory<?>> mappers;
+	private Map<Class<?>, ParallelizationParadigmConverter<?>> converters;
 
 	public DefaultParameterProcessor(ParameterTypeProvider typeProvider,
-		String commandName, Object servingWorker,
-		Map<Class<?>, ParallelizationParadigmConverterFactory<?>> mappers)
+		String commandName, ParallelWorker servingWorker,
+		Map<Class<?>, ParallelizationParadigmConverter<?>> converters)
 	{
 		super(typeProvider, commandName, servingWorker);
-		this.mappers = mappers;
+		this.converters = converters;
 	}
 
 	@Override
 	protected <T> Converter<Object, T> construcConverter(Class<T> expectedType,
-		Object servingWorker)
+		ParallelWorker servingWorker)
 	{
 		@SuppressWarnings("unchecked")
-		ParallelizationParadigmConverterFactory<T> result =
-			(ParallelizationParadigmConverterFactory<T>) mappers.get(expectedType);
+		ParallelizationParadigmConverter<T> result =
+			(ParallelizationParadigmConverter<T>) converters.get(expectedType);
 		if (result != null) {
-			return result.createConverterForWorker(servingWorker);
+			return result.cloneForWorker(servingWorker);
 		}
 		return null;
 	}

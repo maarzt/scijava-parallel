@@ -50,7 +50,7 @@ public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 
 			@Override
 			protected <T> Converter<Object, T> construcConverter(
-				Class<T> expectedType, Object servingWorker)
+				Class<T> expectedType, ParallelWorker servingWorker)
 			{
 				return null;
 			}

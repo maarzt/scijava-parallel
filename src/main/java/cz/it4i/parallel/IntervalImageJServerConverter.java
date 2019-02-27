@@ -26,23 +26,52 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Plugin(type = ParallelizationParadigmConverterFactory.class)
-public class IntervalImageJServerConverterFactory extends
-	AbstractParallelizationParadigmConverterFactory<Interval>
+@Plugin(type = ParallelizationParadigmConverter.class)
+public class IntervalImageJServerConverter extends
+	AbstractParallelizationParadigmConverter<Interval>
 {
 
 	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.IntervalImageJServerConverterFactory.class);
+		cz.it4i.parallel.IntervalImageJServerConverter.class);
 
-	public IntervalImageJServerConverterFactory() {
+	private IntervalConverter delegateConverter = new IntervalConverter();
+
+	private ObjectMapper mapper;
+
+	public IntervalImageJServerConverter() {
 		super(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
 			ImageJServerParadigm.class))), Interval.class);
+		mapper = new ObjectMapper();
+		IntervalJSONSerializer serializer = new IntervalJSONSerializer();
+		serializer.register(mapper);
 	}
 
 	@Override
-	public Converter<Object, Interval> createConverterForWorker(Object worker) {
-		return new P_Converter();
+	public Converter<Object, Interval> cloneForWorker(ParallelWorker worker) {
+		return this;
 	}
+
+	@Override
+	public <T> T convert(Object src, Class<T> dest) {
+		if ((src.getClass() == JSONObject.class || src
+			.getClass() == String.class) && dest == Interval.class)
+		{
+			return delegateConverter.convert(src, dest);
+		}
+		if (Interval.class.isAssignableFrom(src.getClass())) {
+			if (dest == Object.class) {
+				return Routines.castTo(Routines.supplyWithExceptionHandling(() -> mapper
+					.writeValueAsString(src), log, ""));
+			}
+			else if (dest == Interval.class) {
+				return Routines.<T> castTo(src);
+			}
+		}
+		throw new IllegalArgumentException("cannot convert from " + src + " to " +
+			dest);
+	}
+
+
 
 	@Plugin(type = Converter.class)
 	static public class IntervalConverter extends
@@ -136,40 +165,6 @@ public class IntervalImageJServerConverterFactory extends
 		@Override
 		public Class<Interval> handleType() {
 			return Interval.class;
-		}
-
-	}
-
-	private class P_Converter extends AbstractConverter {
-
-		private IntervalConverter delegateConverter = new IntervalConverter();
-
-		private ObjectMapper mapper;
-
-		public P_Converter() {
-			mapper = new ObjectMapper();
-			IntervalJSONSerializer serializer = new IntervalJSONSerializer();
-			serializer.register(mapper);
-		}
-
-		@Override
-		public <T> T convert(Object src, Class<T> dest) {
-			if ((src.getClass() == JSONObject.class || src
-				.getClass() == String.class) && dest == Interval.class)
-			{
-				return delegateConverter.convert(src, dest);
-			}
-			if (Interval.class.isAssignableFrom(src.getClass())) {
-				if (dest == Object.class) {
-					return Routines.castTo(Routines.supplyWithExceptionHandling(
-						() -> mapper.writeValueAsString(src), log, ""));
-				}
-				else if (dest == Interval.class) {
-					return Routines.<T> castTo(src);
-				}
-			}
-			throw new IllegalArgumentException("cannot convert from " + src + " to " +
-				dest);
 		}
 
 	}

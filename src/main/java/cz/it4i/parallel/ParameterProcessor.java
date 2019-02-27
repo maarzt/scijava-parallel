@@ -22,10 +22,10 @@ public abstract class ParameterProcessor {
 
 	private ParameterTypeProvider typeProvider;
 
-	private Object worker;
+	private ParallelWorker worker;
 
 	public ParameterProcessor(ParameterTypeProvider typeProvider,
-		String commandName, Object worker)
+		String commandName, ParallelWorker worker)
 	{
 		this.commandName = commandName;
 		this.typeProvider = typeProvider;
@@ -54,7 +54,7 @@ public abstract class ParameterProcessor {
 	}
 
 	abstract protected <T> Converter<Object, T> construcConverter(
-		Class<T> expectedType, Object servingWorker);
+		Class<T> expectedType, ParallelWorker servingWorker);
 
 	private String getParameterTypeName(String parameter) {
 		return typeProvider.provideParameterTypeName(commandName, parameter);

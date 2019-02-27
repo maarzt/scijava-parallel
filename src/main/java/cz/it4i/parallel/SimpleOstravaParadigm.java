@@ -35,7 +35,7 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	@Parameter
 	private PluginService pluginService;
 
-	private Map<Class<?>, ParallelizationParadigmConverterFactory<?>> mappers;
+	private Map<Class<?>, ParallelizationParadigmConverter<?>> mappers;
 
 	private ExecutorService executorService;
 
@@ -118,7 +118,7 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 			getMappers());
 	}
 
-	synchronized private Map<Class<?>, ParallelizationParadigmConverterFactory<?>>
+	synchronized private Map<Class<?>, ParallelizationParadigmConverter<?>>
 		getMappers()
 	{
 		if (mappers == null) {
@@ -130,14 +130,14 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 
 	private void initMappers() {
 		pluginService.createInstancesOfType(
-			ParallelizationParadigmConverterFactory.class).stream().filter(
+			ParallelizationParadigmConverter.class).stream().filter(
 				m -> isParadigmSupportedBy(m)).forEach(m -> mappers.put(m
-					.getSupportedParameterType(), m));
+					.getOutputType(), m));
 
 	}
 
 	private boolean isParadigmSupportedBy(
-		ParallelizationParadigmConverterFactory<?> m)
+		ParallelizationParadigmConverter<?> m)
 	{
 		for (Class<? extends ParallelizationParadigm> clazz : m
 			.getSupportedParadigms())
