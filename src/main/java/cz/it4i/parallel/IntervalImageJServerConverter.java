@@ -47,7 +47,9 @@ public class IntervalImageJServerConverter extends
 	}
 
 	@Override
-	public Converter<Object, Interval> cloneForWorker(ParallelWorker worker) {
+	public ParallelizationParadigmConverter<Interval> cloneForWorker(
+		ParallelWorker worker)
+	{
 		return this;
 	}
 

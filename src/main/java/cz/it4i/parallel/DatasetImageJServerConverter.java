@@ -12,7 +12,6 @@ import java.util.HashSet;
 
 import net.imagej.Dataset;
 
-import org.scijava.convert.Converter;
 import org.scijava.io.IOService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -36,7 +35,9 @@ public class DatasetImageJServerConverter extends
 	}
 
 	@Override
-	public Converter<Object, Dataset> cloneForWorker(ParallelWorker worker) {
+	public ParallelizationParadigmConverter<Dataset> cloneForWorker(
+		ParallelWorker worker)
+	{
 		DatasetImageJServerConverter result =
 			new DatasetImageJServerConverter();
 		result.ioService = ioService;

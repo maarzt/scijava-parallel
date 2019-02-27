@@ -3,17 +3,19 @@ package cz.it4i.parallel;
 
 import java.util.Set;
 
-import org.scijava.convert.Converter;
 import org.scijava.parallel.ParallelizationParadigm;
+import org.scijava.plugin.SciJavaPlugin;
 
-public interface ParallelizationParadigmConverter<O> extends
-	Converter<Object, O>
+public interface ParallelizationParadigmConverter<O> extends SciJavaPlugin
 {
+
+	<T> T convert(Object src, Class<T> dest);
+
+	Class<O> getOutputType();
 
 	Set<Class<? extends ParallelizationParadigm>> getSupportedParadigms();
 
+	ParallelizationParadigmConverter<O> cloneForWorker(ParallelWorker worker);
 
-
-	Converter<Object, O> cloneForWorker(ParallelWorker worker);
 
 }

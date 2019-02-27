@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.scijava.convert.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,7 @@ public abstract class ParameterProcessor {
 		return commandName;
 	}
 
-	abstract protected <T> Converter<Object, T> construcConverter(
+	abstract protected <T> ParallelizationParadigmConverter<T> construcConverter(
 		Class<T> expectedType, ParallelWorker servingWorker);
 
 	private String getParameterTypeName(String parameter) {
@@ -62,7 +61,7 @@ public abstract class ParameterProcessor {
 
 	private Object doInputConversion(Entry<String, Object> parameter) {
 		String typeName = getParameterTypeName(parameter.getKey());
-		Converter<Object, ?> convertor = construcConverter(Routines
+		ParallelizationParadigmConverter<?> convertor = construcConverter(Routines
 			.supplyWithExceptionHandling(() -> Class.forName(typeName), log,
 				"class load"), worker);
 		Object value = parameter.getValue();
@@ -87,7 +86,8 @@ public abstract class ParameterProcessor {
 			String typeName = getParameterTypeName(parameter.getKey());
 			Class<?> type = supplyWithExceptionHandling(() -> Class.forName(typeName),
 				log, "class load");
-			Converter<Object, ?> convertor = construcConverter(type, worker);
+			ParallelizationParadigmConverter<?> convertor = construcConverter(type,
+				worker);
 			if (convertor != null) {
 				value = convertor.convert(value, type);
 			}
@@ -98,10 +98,10 @@ public abstract class ParameterProcessor {
 	private class P_AppliedConversion {
 
 		final private Class<?> srcType;
-		final private Converter<Object, ?> conversion;
+		final private ParallelizationParadigmConverter<?> conversion;
 
 		public P_AppliedConversion(Class<?> srctype,
-			Converter<Object, ?> conversion)
+			ParallelizationParadigmConverter<?> conversion)
 		{
 			super();
 			this.srcType = srctype;

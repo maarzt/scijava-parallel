@@ -1,7 +1,6 @@
 
 package cz.it4i.parallel;
 
-import org.scijava.convert.Converter;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -49,7 +48,7 @@ public class LocalMultithreadedParadigm extends SimpleOstravaParadigm {
 		return new ParameterProcessor((_1, _2) -> null, command, pw) {
 
 			@Override
-			protected <T> Converter<Object, T> construcConverter(
+			protected <T> ParallelizationParadigmConverter<T> construcConverter(
 				Class<T> expectedType, ParallelWorker servingWorker)
 			{
 				return null;

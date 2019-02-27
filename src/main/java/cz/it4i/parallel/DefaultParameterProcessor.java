@@ -3,8 +3,6 @@ package cz.it4i.parallel;
 
 import java.util.Map;
 
-import org.scijava.convert.Converter;
-
 public class DefaultParameterProcessor extends ParameterProcessor {
 
 	private Map<Class<?>, ParallelizationParadigmConverter<?>> converters;
@@ -18,7 +16,8 @@ public class DefaultParameterProcessor extends ParameterProcessor {
 	}
 
 	@Override
-	protected <T> Converter<Object, T> construcConverter(Class<T> expectedType,
+	protected <T> ParallelizationParadigmConverter<T> construcConverter(
+		Class<T> expectedType,
 		ParallelWorker servingWorker)
 	{
 		@SuppressWarnings("unchecked")
