@@ -86,6 +86,7 @@ public class DatasetImageJServerConverter extends
 		}
 		else if (workingDataSet != null && tempFileForWorkingDataSet != null) {
 			parallelWorker.exportData(input, tempFileForWorkingDataSet);
+			parallelWorker.deleteData(input);
 			Dataset tempDataset = (Dataset) Routines.supplyWithExceptionHandling(
 				() -> ioService.open(tempFileForWorkingDataSet.toString()));
 			tempDataset.copyInto(workingDataSet);
