@@ -3,11 +3,12 @@ package cz.it4i.parallel;
 
 import static cz.it4i.parallel.Routines.supplyWithExceptionHandling;
 
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public abstract class ParameterProcessor {
+public abstract class ParameterProcessor implements Closeable {
 
 	private Map<String, P_AppliedConversion> appliedConversions = new HashMap<>();
 
@@ -40,6 +41,16 @@ public abstract class ParameterProcessor {
 			result.put(entry.getKey(), doOutputConversion(entry));
 		}
 		return result;
+	}
+
+	@Override
+	public void close() {
+		for (P_AppliedConversion conversion : appliedConversions.values()) {
+			if (conversion.conversion instanceof Closeable) {
+				Closeable closeable = (Closeable) conversion.conversion;
+				Routines.runWithExceptionHandling(() -> closeable.close());
+			}
+		}
 	}
 
 	protected String getCommandName() {

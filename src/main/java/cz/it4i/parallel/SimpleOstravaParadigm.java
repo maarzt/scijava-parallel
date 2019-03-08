@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.scijava.command.CommandService;
@@ -76,30 +75,25 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 		String command, List<Map<String, Object>> listOfparameters)
 	{
 		return listOfparameters.parallelStream().map(parameters -> CompletableFuture
-			.supplyAsync(new Supplier<Map<String, Object>>()
+			.supplyAsync(() -> {
+				try {
+					ParallelWorker pw = workerPool.takeFreeWorker();
+					try (ParameterProcessor parameterProcessor =
+						constructParameterProcessor(pw, command))
 			{
 
-				@Override
-				public Map<String, Object> get() {
-					try {
-						ParallelWorker pw = workerPool.takeFreeWorker();
-						try {
-							ParameterProcessor parameterProcessor =
-								constructParameterProcessor(pw, command);
-							return parameterProcessor.processOutput(pw.executeCommand(command,
-								parameterProcessor.processInputs(parameters)));
-						}
-						finally {
-							workerPool.addWorker(pw);
-						}
+						return parameterProcessor.processOutput(pw.executeCommand(command,
+							parameterProcessor.processInputs(parameters)));
 					}
-					catch (InterruptedException exc) {
-						log.error(exc.getMessage(), exc);
-						throw new RuntimeException(exc);
+					finally {
+						workerPool.addWorker(pw);
 					}
 				}
+				catch (InterruptedException exc) {
+					log.error(exc.getMessage(), exc);
+					throw new RuntimeException(exc);
+				}
 			}, executorService)).collect(Collectors.toList());
-
 	}
 
 	@Override

@@ -4,6 +4,8 @@ package cz.it4i.parallel;
 import static cz.it4i.parallel.Routines.castTo;
 import static cz.it4i.parallel.Routines.getSuffix;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -18,7 +20,7 @@ import org.scijava.plugin.Plugin;
 
 @Plugin(type = ParallelizationParadigmConverter.class)
 public class DatasetImageJServerConverter extends
-	AbstractParallelizationParadigmConverter<Dataset>
+	AbstractParallelizationParadigmConverter<Dataset> implements Closeable
 {
 
 	@Parameter
@@ -54,6 +56,14 @@ public class DatasetImageJServerConverter extends
 			return castTo(convert2Paradigm(src));
 		}
 		return castTo(convert2Local(src));
+	}
+	
+	@Override
+	public void close() throws IOException {
+		if (null != tempFileForWorkingDataSet) {
+			Files.deleteIfExists(tempFileForWorkingDataSet);
+			tempFileForWorkingDataSet = null;
+		}
 	}
 
 	private Object convert2Paradigm(Object input) {
@@ -93,6 +103,7 @@ public class DatasetImageJServerConverter extends
 			tempDataset.copyInto(workingDataSet);
 			Routines.runWithExceptionHandling(() -> Files.delete(
 				tempFileForWorkingDataSet));
+			tempFileForWorkingDataSet = null;
 			return workingDataSet;
 		}
 		throw new IllegalArgumentException("bad arguments");
