@@ -67,7 +67,8 @@ public class DatasetImageJServerConverter extends
 			workingDataSet = (Dataset) input;
 			String workingSuffix = getSuffix(workingDataSet.getName());
 			tempFileForWorkingDataSet = Routines.supplyWithExceptionHandling(
-				() -> Files.createTempFile("", workingSuffix));
+				() -> Files.createTempFile(Thread.currentThread().toString(),
+					workingSuffix));
 			Routines.runWithExceptionHandling(() -> ioService.save(input,
 				tempFileForWorkingDataSet.toString()));
 			return parallelWorker.importData(tempFileForWorkingDataSet);
