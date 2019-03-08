@@ -28,7 +28,7 @@ public class HPCSettingsGui implements Command {
 	private File keyFile;
 
 	@Parameter(style = TextWidget.PASSWORD_STYLE, label = "Key file password",
-		persist = false)
+		persist = false, required = false)
 	private String keyFilePassword;
 
 	// for salomon /scratch/work/project/dd-18-42/apps/fiji-with-server
