@@ -24,6 +24,14 @@ public class DatasetImageJServerConverter extends
 	@Parameter
 	private IOService ioService;
 
+	private ParallelWorker parallelWorker;
+
+	private String suffixOfImportedFile;
+
+	private Dataset workingDataSet;
+
+	private Path tempFileForWorkingDataSet;
+
 	public DatasetImageJServerConverter() {
 		super(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
 			ImageJServerParadigm.class))), Dataset.class);
@@ -40,64 +48,52 @@ public class DatasetImageJServerConverter extends
 		return result;
 	}
 
-
-
-		private ParallelWorker parallelWorker;
-
-		private String suffixOfImportedFile;
-
-		private Dataset workingDataSet;
-
-		private Path tempFileForWorkingDataSet;
-
-
-
-		@Override
-		public <T> T convert(Object src, Class<T> dest) {
-			if (dest == Object.class) {
-				return castTo(convert2Paradigm(src));
-			}
-			return castTo(convert2Local(src));
+	@Override
+	public <T> T convert(Object src, Class<T> dest) {
+		if (dest == Object.class) {
+			return castTo(convert2Paradigm(src));
 		}
+		return castTo(convert2Local(src));
+	}
 
-		private Object convert2Paradigm(Object input) {
-			if (input instanceof Path) {
-				Path path = (Path) input;
-				String filename = path.getFileName().toString();
-				suffixOfImportedFile = getSuffix(filename);
-				return parallelWorker.importData(path);
-			}
-			else if (input instanceof Dataset) {
-				workingDataSet = (Dataset) input;
-				String workingSuffix = getSuffix(workingDataSet.getName());
-				tempFileForWorkingDataSet = Routines.supplyWithExceptionHandling(
+	private Object convert2Paradigm(Object input) {
+		if (input instanceof Path) {
+			Path path = (Path) input;
+			String filename = path.getFileName().toString();
+			suffixOfImportedFile = getSuffix(filename);
+			return parallelWorker.importData(path);
+		}
+		else if (input instanceof Dataset) {
+			workingDataSet = (Dataset) input;
+			String workingSuffix = getSuffix(workingDataSet.getName());
+			tempFileForWorkingDataSet = Routines.supplyWithExceptionHandling(
 				() -> Files.createTempFile("", workingSuffix));
-				Routines.runWithExceptionHandling(() -> ioService.save(input,
+			Routines.runWithExceptionHandling(() -> ioService.save(input,
 				tempFileForWorkingDataSet.toString()));
-				return parallelWorker.importData(tempFileForWorkingDataSet);
-			}
-			throw new IllegalArgumentException("cannot convert from " + input
-				.getClass());
+			return parallelWorker.importData(tempFileForWorkingDataSet);
 		}
+		throw new IllegalArgumentException("cannot convert from " + input
+			.getClass());
+	}
 
-		private Object convert2Local(Object input) {
-			if (suffixOfImportedFile != null) {
-				Path result = Routines.supplyWithExceptionHandling(() -> Files
+	private Object convert2Local(Object input) {
+		if (suffixOfImportedFile != null) {
+			Path result = Routines.supplyWithExceptionHandling(() -> Files
 				.createTempFile("", suffixOfImportedFile));
-				parallelWorker.exportData(input, result);
-				parallelWorker.deleteData(input);
-				return result;
-			}
-			else if (workingDataSet != null && tempFileForWorkingDataSet != null) {
-				parallelWorker.exportData(input, tempFileForWorkingDataSet);
-				Dataset tempDataset = (Dataset) Routines.supplyWithExceptionHandling(
-				() -> ioService.open(tempFileForWorkingDataSet.toString()));
-				tempDataset.copyInto(workingDataSet);
-				Routines.runWithExceptionHandling(() -> Files.delete(
-				tempFileForWorkingDataSet));
-				return workingDataSet;
-			}
-			throw new IllegalArgumentException("bad arguments");
+			parallelWorker.exportData(input, result);
+			parallelWorker.deleteData(input);
+			return result;
 		}
+		else if (workingDataSet != null && tempFileForWorkingDataSet != null) {
+			parallelWorker.exportData(input, tempFileForWorkingDataSet);
+			Dataset tempDataset = (Dataset) Routines.supplyWithExceptionHandling(
+				() -> ioService.open(tempFileForWorkingDataSet.toString()));
+			tempDataset.copyInto(workingDataSet);
+			Routines.runWithExceptionHandling(() -> Files.delete(
+				tempFileForWorkingDataSet));
+			return workingDataSet;
+		}
+		throw new IllegalArgumentException("bad arguments");
+	}
 
 }
