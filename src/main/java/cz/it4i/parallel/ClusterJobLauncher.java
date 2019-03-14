@@ -79,9 +79,8 @@ public class ClusterJobLauncher implements Closeable {
 				node + " " + command));
 		}
 
-		public void createTunnel(int nodeNumber, int localPort, int remotePort) {
-			client.setPortForwarding(localPort, getNodes().get(nodeNumber),
-				remotePort);
+		public void createTunnel(int localPort, String host, int remotePort) {
+			client.setPortForwarding(localPort, host, remotePort);
 		}
 
 		public void stop() {
