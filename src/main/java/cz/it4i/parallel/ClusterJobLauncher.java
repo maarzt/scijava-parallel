@@ -71,6 +71,19 @@ public class ClusterJobLauncher implements Closeable {
 			return result;
 		}
 
+		public CompletableFuture<List<String>> runCommandOnNode(int nodeNumber,
+			String command)
+		{
+			String node = getNodes().get(nodeNumber);
+			return CompletableFuture.supplyAsync(() -> client.executeCommand("ssh " +
+				node + " " + command));
+		}
+
+		public void createTunnel(int nodeNumber, int localPort, int remotePort) {
+			client.setPortForwarding(localPort, getNodes().get(nodeNumber),
+				remotePort);
+		}
+
 		public void stop() {
 			client.executeCommand("qdel " + jobId);
 		}
