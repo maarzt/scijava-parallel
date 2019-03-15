@@ -1,8 +1,5 @@
 package cz.it4i.parallel;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 
 import org.slf4j.Logger;
@@ -43,34 +40,13 @@ public class HPCBigDataServerRunTS {
 					log.debug(String.join("\n", lines));
 				}
 			});
-		waitForImageJServer(bdsPort);
+		WaitForHTTPServerRunTS.create("http://localhost:" + bdsPort + "/json/")
+			.run();
 		log.debug(
-			"BigDataServer is running on node {} and is available local port {}",
-			bdsPort, job.getNodes().get(0));
+			"BigDataServer is running on node {} and is available local port {}", job
+				.getNodes().get(0), bdsPort);
 		return "http://localhost:" + bdsPort + "/data";
 	}
 
-	private void waitForImageJServer(int port) {
-		while (true) {
-			try {
-				if (checkModulesURL(port)) {
-					break;
-				}
-				Routines.runWithExceptionHandling(() -> Thread.sleep(200));
-			}
-			catch (IOException e) {
-				// ignore waiting for start
-			}
-		}
-	}
 
-	private boolean checkModulesURL(int port) throws IOException {
-		HttpURLConnection hc;
-		hc = (HttpURLConnection) new URL("http://localhost:" + port + "/json/")
-			.openConnection();
-		hc.setRequestMethod("GET");
-		hc.connect();
-		hc.disconnect();
-		return hc.getResponseCode() == 200;
-	}
 }

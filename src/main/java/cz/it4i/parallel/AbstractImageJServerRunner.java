@@ -2,8 +2,6 @@
 package cz.it4i.parallel;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,29 +39,8 @@ public abstract class AbstractImageJServerRunner implements AutoCloseable {
 
 	private void waitForImageJServer( Integer port )
 	{
-		boolean running = false;
-		while (!running) {
-			try {
-				running = checkModulesURL(port);
-			}
-			catch (IOException e) {
-				// ignore waiting for start
-			}
-		}
-	}
-
-	private boolean checkModulesURL(Integer port) throws IOException
-	{
-		HttpURLConnection hc;
-		hc = (HttpURLConnection) new URL(getModulesURL(port)).openConnection();
-		hc.setRequestMethod("GET");
-		hc.connect();
-		hc.disconnect();
-		return hc.getResponseCode() == 200;
-	}
-
-	private String getModulesURL(Integer port) {
-		return "http://localhost:" + port + "/modules";
+		WaitForHTTPServerRunTS.create("http://localhost:" + port + "/modules")
+			.run();
 	}
 
 }
