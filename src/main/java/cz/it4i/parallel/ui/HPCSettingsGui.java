@@ -46,13 +46,22 @@ public class HPCSettingsGui implements Command {
 	@Parameter(style = TextWidget.FIELD_STYLE, label = "Number of cpus per node")
 	private int ncpus;
 
+	@Parameter(style = TextWidget.FIELD_STYLE, label = "Running job ID")
+	private String jobID;
+
+	@Parameter(style = TextWidget.FIELD_STYLE,
+		label = "Shutdown job when application finishes.")
+	private boolean shutdownJobAfterClose;
+
 	@Parameter(type = ItemIO.OUTPUT)
 	private HPCSettings settings;
 
 	@Override
 	public void run() {
-		settings = new HPCSettings(host, userName, keyFile, keyFilePassword,
-			remoteDirectory, command, nodes, ncpus);
+		settings = HPCSettings.builder().host(host).userName(userName).keyFile(
+			keyFile).keyFilePassword(keyFilePassword).remoteDirectory(remoteDirectory)
+			.command(command).nodes(nodes).ncpus(ncpus).jobID(jobID)
+			.shutdownJobAfterClose(shutdownJobAfterClose).build();
 	}
 
 	public static HPCSettings showDialog(Context context) {
