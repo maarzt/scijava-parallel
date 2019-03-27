@@ -36,7 +36,7 @@ public class ClusterJobLauncher implements Closeable {
 
 		private CompletableFuture<List<String>> nodesFuture;
 
-		public Job(String jobId) {
+		private Job(String jobId) {
 			super();
 			this.jobId = jobId;
 			nodesFuture = CompletableFuture.supplyAsync(() -> getNodesFromServer());
@@ -164,6 +164,11 @@ public class ClusterJobLauncher implements Closeable {
 					InputStream is = session.getStdout();
 					while (-1 != (readed = is.read(buffer))) {
 						outputStream.write(buffer, 0, readed);
+						try {
+							Thread.sleep(100);
+						}
+						catch (InterruptedException exc) {
+						}
 					}
 				}
 				catch (IOException exc) {

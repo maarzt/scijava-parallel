@@ -1,5 +1,7 @@
 package cz.it4i.parallel;
 
+import com.google.common.base.Strings;
+
 import java.io.File;
 
 import lombok.Builder;

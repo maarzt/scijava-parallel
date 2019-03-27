@@ -44,8 +44,13 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 				settings.getKeyFilePassword()));
 		final String arguments = AbstractImageJServerRunner.IMAGEJ_SERVER_PARAMETERS
 				.stream().collect( Collectors.joining( " " ) );
-		job = launcher.submit(settings.getRemoteDirectory(), settings.getCommand(), arguments,
-				settings.getNodes(), settings.getNcpus());
+		if (settings.getJobID() != null) {
+			job = launcher.getSubmittedJob(settings.getJobID());
+		}
+		else {
+			job = launcher.submit(settings.getRemoteDirectory(), settings
+				.getCommand(), arguments, settings.getNodes(), settings.getNcpus());
+		}
 		ports = job.createTunnels(8080, 8080);
 	}
 
