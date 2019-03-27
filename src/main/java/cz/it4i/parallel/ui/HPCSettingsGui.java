@@ -1,6 +1,8 @@
 
 package cz.it4i.parallel.ui;
 
+import com.google.common.base.Strings;
+
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 
@@ -60,7 +62,8 @@ public class HPCSettingsGui implements Command {
 	public void run() {
 		settings = HPCSettings.builder().host(host).userName(userName).keyFile(
 			keyFile).keyFilePassword(keyFilePassword).remoteDirectory(remoteDirectory)
-			.command(command).nodes(nodes).ncpus(ncpus).jobID(jobID)
+			.command(command).nodes(nodes).ncpus(ncpus).jobID(Strings.emptyToNull(
+				jobID))
 			.shutdownJobAfterClose(shutdownJobAfterClose).build();
 	}
 
