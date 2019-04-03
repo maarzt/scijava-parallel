@@ -26,6 +26,8 @@ public class ClusterJobLauncher implements Closeable {
 	private final static Logger log = LoggerFactory.getLogger(
 		ClusterJobLauncher.class);
 
+	private final static long REMOTE_CONSOLE_READ_TIMEOUT = 500;
+
 	public class Job {
 
 		/*
@@ -103,12 +105,7 @@ public class ClusterJobLauncher implements Closeable {
 				String[] tokens = result.split(" +");
 				state = tokens[4];
 				time = tokens[3];
-				try {
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException exc) {
-					log.error("waiting", exc);
-				}
+				sleepForWhile(1000);
 			}
 			while (!(!time.equals("0") && state.equals("R")));
 			new P_OutThread(System.out, "OU").start();
@@ -164,11 +161,7 @@ public class ClusterJobLauncher implements Closeable {
 					InputStream is = session.getStdout();
 					while (-1 != (readed = is.read(buffer))) {
 						outputStream.write(buffer, 0, readed);
-						try {
-							Thread.sleep(100);
-						}
-						catch (InterruptedException exc) {
-						}
+						sleepForWhile(REMOTE_CONSOLE_READ_TIMEOUT);
 					}
 				}
 				catch (IOException exc) {
@@ -221,6 +214,13 @@ public class ClusterJobLauncher implements Closeable {
 // @formatter:on
 		client.executeCommand("rm " + fileName);
 		return result;
+	}
+
+	static private void sleepForWhile(long timeout) {
+		try {
+			Thread.sleep(timeout);
+		}
+		catch (InterruptedException exc) {}
 	}
 
 }
