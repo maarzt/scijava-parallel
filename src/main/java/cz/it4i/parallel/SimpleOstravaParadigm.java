@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -52,23 +51,6 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 			threadService);
 	}
 
-	@Override
-	public List<Map<String, Object>> runAll(String commandName,
-		List<Map<String, Object>> parameters)
-	{
-		List<CompletableFuture<Map<String, Object>>> futures = runAllAsync(
-			commandName, parameters);
-
-		return futures.stream().map(f -> {
-			try {
-				return f.get();
-			}
-			catch (InterruptedException | ExecutionException exc) {
-				log.error("f.get", exc);
-				throw new RuntimeException(exc);
-			}
-		}).collect(Collectors.toList());
-	}
 
 	@Override
 	public List<CompletableFuture<Map<String, Object>>> runAllAsync(
