@@ -112,7 +112,7 @@ public class ClusterJobLauncher implements Closeable {
 			}
 			while (!(!time.equals("0") && state.equals("R")));
 			new P_OutThread(System.out, "OU").start();
-			new P_OutThread(System.out, "ER").start();
+			new P_OutThread(System.err, "ER").start();
 		}
 
 		private List<String> getNodesFromServer() {
