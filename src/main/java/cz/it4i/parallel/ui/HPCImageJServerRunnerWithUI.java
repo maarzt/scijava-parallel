@@ -55,7 +55,8 @@ public class HPCImageJServerRunnerWithUI extends HPCImageJServerRunner {
 
 	private void imageJServerRunning() {
 		dialog.setVisible(false);
-		log.info("job: " + getJob().getID() + " started.");
+		log.info("job: " + getJob().getID() + " started on hosts: " + getJob()
+			.getNodes());
 	}
 
 	@Override
