@@ -27,6 +27,10 @@ public class TestParadigm implements ParallelizationParadigm
 		return new TestParadigm( new ImageJServerRunner( fiji ), context );
 	}
 
+	public static ParallelizationParadigm localImageJServer(Context context) {
+		return new TestParadigm(new EmbeddedImageJServerRunner(), context);
+	}
+
 	private static ParallelizationParadigm initParadigm( AbstractImageJServerRunner runner, Context context )
 	{
 		runner.start();
