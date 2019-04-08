@@ -44,12 +44,12 @@ public class ThreadRunner implements Command {
 	public void run()
 	{
 		final Executor executor = new ThreadService2ExecutorAdapter(service);
-		final ModuleInfo info = moduleService.getModuleById(moduleId);
-		outputs = new LinkedList<>();
-		inputs.stream().map(input -> CompletableFuture.supplyAsync(() -> Routines
-			.supplyWithExceptionHandling(() -> moduleService.run(info, true, input)
-				.get()).getOutputs(), executor)).collect(Collectors.toList()).stream()
-			.map(CompletableFuture::join).collect(Collectors.toList());
+		final ModuleInfo info = moduleService.getModuleById("command:" + moduleId);
+		outputs = inputs.stream().map(input -> CompletableFuture.supplyAsync(
+			() -> Routines.supplyWithExceptionHandling(() -> moduleService.run(info,
+				true, input).get()).getOutputs(), executor)).collect(Collectors
+					.toList()).stream().map(CompletableFuture::join).collect(Collectors
+						.toList());
 	}
 
 	@AllArgsConstructor
