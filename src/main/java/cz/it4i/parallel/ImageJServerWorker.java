@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -194,48 +195,61 @@ public class ImageJServerWorker implements ParallelWorker {
 	/**
 	 * @throws RuntimeException if response from the ImageJ server is not successful, or json cannot be parsed properly.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> executeCommand(final String commandTypeName,
 		final Map<String, ?> inputs)
 	{
-
 		final Map<String, ?> wrappedInputs = wrapInputValues(inputs);
+		return unwrapOutputValues(doRequest(commandTypeName, wrappedInputs));
+	}
 
+	@Override
+	public List<Map<String, Object>> executeCommand(final String commandTypeName,
+		final List<Map<String, Object>> inputs)
+	{
+		Map<String, Object> inputForExecution = new HashMap<>();
+		inputForExecution.put("moduleId", commandTypeName);
+		inputForExecution.put("inputs", inputs.stream().map(this::wrapInputValues));
+		@SuppressWarnings("unchecked")
+		List<Map<String, Object>> output = (List<Map<String, Object>>) doRequest(
+			"cz.it4i.parallel.plugins.ThreadRunner", inputForExecution).get(
+				"outputs");
+		return output.stream().map(this::unwrapOutputValues).collect(Collectors
+			.toList());
+
+	}
+
+	// -- Helper methods --
+
+	private Map<String, Object> doRequest(final String commandTypeName,
+		final Map<String, ?> wrappedInputs)
+	{
 		try {
-
+	
+			final JSONObject inputJson = toJson(wrappedInputs);
 			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
 				"/modules/" + "command:" + commandTypeName;
 			final HttpPost httpPost = new HttpPost(postUrl);
-
-			final JSONObject inputJson = new JSONObject();
-
-			for (final Map.Entry<String, ?> pair : wrappedInputs.entrySet()) {
-				inputJson.put(pair.getKey(), pair.getValue());
-			}
-
 			httpPost.setEntity(new StringEntity(inputJson.toString()));
 			httpPost.setHeader("Content-type", "application/json");
-
+	
 			final HttpResponse response = HttpClientBuilder.create().build().execute(
 				httpPost);
-
+	
 			int statusCode = response.getStatusLine().getStatusCode();
 			boolean success = Response.Status.fromStatusCode(statusCode).getFamily() == Response.Status.Family.SUCCESSFUL;
 			if ( !success ) {
 				throw new RuntimeException( "Command cannot be executed" + response.getStatusLine() + " " + response.getEntity() );
 			}
-
+	
 			String json = EntityUtils.toString( response.getEntity() );
-
-			final Map<String, Object> rawOutputs = new HashMap<>();
-
 			final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
-
+	
+			final Map<String, Object> rawOutputs = new HashMap<>();
 			jsonObj.keys().forEachRemaining(key -> rawOutputs.put(key, jsonObj.get(
 				key)));
-
-			return unwrapOutputValues(rawOutputs);
+	
+			return rawOutputs;
 		}
 		catch ( IOException e )
 		{
@@ -243,7 +257,15 @@ public class ImageJServerWorker implements ParallelWorker {
 		}
 	}
 
-	// -- Helper methods --
+	@SuppressWarnings("unchecked")
+	private JSONObject toJson(Map<String, ?> inputs) {
+		JSONObject result = new JSONObject();
+	
+		for (final Map.Entry<String, ?> pair : inputs.entrySet()) {
+			result.put(pair.getKey(), pair.getValue());
+		}
+		return result;
+	}
 
 	private org.json.JSONObject importData(ContentBody contentBody) {
 		return Routines.supplyWithExceptionHandling(() -> {

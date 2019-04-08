@@ -1,12 +1,18 @@
 
 package cz.it4i.parallel;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+import com.google.common.collect.Lists;
+
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.scijava.command.CommandService;
@@ -14,13 +20,8 @@ import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.PluginService;
 import org.scijava.thread.ThreadService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
-
-	private static final Logger log = LoggerFactory.getLogger(
-		cz.it4i.parallel.SimpleOstravaParadigm.class);
 
 	protected WorkerPool workerPool;
 
@@ -56,26 +57,26 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 	public List<CompletableFuture<Map<String, Object>>> runAllAsync(
 		String command, List<Map<String, Object>> listOfparameters)
 	{
-		return listOfparameters.parallelStream().map(parameters -> CompletableFuture
-			.supplyAsync(() -> {
-				try {
-					ParallelWorker pw = workerPool.takeFreeWorker();
-					try (ParameterProcessor parameterProcessor =
-						constructParameterProcessor(pw, command))
-			{
 
-						return parameterProcessor.processOutput(pw.executeCommand(command,
-							parameterProcessor.processInputs(parameters)));
-					}
-					finally {
-						workerPool.addWorker(pw);
-					}
-				}
-				catch (InterruptedException exc) {
-					log.error(exc.getMessage(), exc);
-					throw new RuntimeException(exc);
-				}
-			}, executorService)).collect(Collectors.toList());
+		List<List<Map<String, Object>>> chunkedParameters = chunkParameters(
+			listOfparameters);
+
+		return chunkedParameters.parallelStream().map(
+			inputs -> new AsynchronousExecution(
+				command, inputs)).map(ae -> repackCompletable(ae.result, ae.size))
+			.flatMap(
+					List::stream).collect(Collectors.toList());
+
+
+	}
+
+
+
+
+
+	protected List<List<Map<String, Object>>> chunkParameters(
+		List<Map<String, Object>> listOfparameters) {
+		return Lists.partition(listOfparameters, 24);
 	}
 
 	@Override
@@ -125,4 +126,57 @@ public abstract class SimpleOstravaParadigm implements ParallelizationParadigm {
 		return false;
 	}
 
+	private static <T> List<T> process(UnaryOperator<T> func, List<T> input) {
+		return input.stream().map(func).collect(Collectors.toList());
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> List<CompletableFuture<T>> repackCompletable(
+		CompletableFuture<List<T>> input, int size)
+	{
+		CompletableFuture<Object[]> array = input.thenApply(list -> list.toArray());
+		List<CompletableFuture<T>> result = new LinkedList<>();
+		for(int i = 0; i < size; i++) {
+			final int index = i;
+			result.add(array.thenApply(list -> (T) list[index]));
+		}
+		return result;
+	}
+	
+	private class AsynchronousExecution {
+		
+		public final int size;
+
+		public final CompletableFuture<List<Map<String, Object>>> result;
+
+		public AsynchronousExecution(String command,
+			List<Map<String, Object>> inputs)
+		{
+			result = supplyAsync(() -> executeForInputs(command, inputs));
+			size = inputs.size();
+		}
+
+		private List<Map<String, Object>> executeForInputs(String command,
+			List<Map<String, Object>> inputs)
+		{
+			ParallelWorker pw;
+			try {
+				pw = workerPool.takeFreeWorker();
+			}
+			catch (InterruptedException exc) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException(exc);
+			}
+			try (ParameterProcessor parameterProcessor = constructParameterProcessor(
+				pw, command))
+			{
+
+				return process(parameterProcessor::processOutput, pw.executeCommand(
+					command, process(parameterProcessor::processInputs, inputs)));
+			}
+			finally {
+				workerPool.addWorker(pw);
+			}
+		}
+	}
 }
