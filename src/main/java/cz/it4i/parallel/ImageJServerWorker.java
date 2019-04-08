@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.ws.rs.core.Response;
 
@@ -38,6 +39,7 @@ import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.scijava.Context;
 import org.scijava.plugin.SciJavaPlugin;
@@ -209,11 +211,13 @@ public class ImageJServerWorker implements ParallelWorker {
 	{
 		Map<String, Object> inputForExecution = new HashMap<>();
 		inputForExecution.put("moduleId", commandTypeName);
-		inputForExecution.put("inputs", inputs.stream().map(this::wrapInputValues));
-		@SuppressWarnings("unchecked")
-		List<Map<String, Object>> output = (List<Map<String, Object>>) doRequest(
+		inputForExecution.put("inputs", inputs.stream().map(this::wrapInputValues)
+			.collect(Collectors.toList()));
+		List<Map<String, Object>> output = StreamSupport.stream(
+			((JSONArray) doRequest(
 			"cz.it4i.parallel.plugins.ThreadRunner", inputForExecution).get(
-				"outputs");
+					"outputs")).spliterator(), false).map(obj -> jsonToMap(
+						(org.json.JSONObject) obj)).collect(Collectors.toList());
 		return output.stream().map(this::unwrapOutputValues).collect(Collectors
 			.toList());
 
@@ -230,7 +234,8 @@ public class ImageJServerWorker implements ParallelWorker {
 			final String postUrl = "http://" + hostName + ":" + String.valueOf(port) +
 				"/modules/" + "command:" + commandTypeName;
 			final HttpPost httpPost = new HttpPost(postUrl);
-			httpPost.setEntity(new StringEntity(inputJson.toString()));
+			String inputJSONStr;
+			httpPost.setEntity(new StringEntity(inputJSONStr = inputJson.toString()));
 			httpPost.setHeader("Content-type", "application/json");
 	
 			final HttpResponse response = HttpClientBuilder.create().build().execute(
@@ -245,9 +250,7 @@ public class ImageJServerWorker implements ParallelWorker {
 			String json = EntityUtils.toString( response.getEntity() );
 			final org.json.JSONObject jsonObj = new org.json.JSONObject(json);
 	
-			final Map<String, Object> rawOutputs = new HashMap<>();
-			jsonObj.keys().forEachRemaining(key -> rawOutputs.put(key, jsonObj.get(
-				key)));
+			final Map<String, Object> rawOutputs = jsonToMap(jsonObj);
 	
 			return rawOutputs;
 		}
@@ -255,6 +258,13 @@ public class ImageJServerWorker implements ParallelWorker {
 		{
 			throw new RuntimeException( e );
 		}
+	}
+
+	private Map<String, Object> jsonToMap(final org.json.JSONObject jsonObj) {
+		final Map<String, Object> rawOutputs = new HashMap<>();
+		jsonObj.keys().forEachRemaining(key -> rawOutputs.put(key, jsonObj.get(
+			key)));
+		return rawOutputs;
 	}
 
 	@SuppressWarnings("unchecked")
