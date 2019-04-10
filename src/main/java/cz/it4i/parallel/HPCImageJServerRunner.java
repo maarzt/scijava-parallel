@@ -30,6 +30,11 @@ public class HPCImageJServerRunner extends AbstractImageJServerRunner {
 	}
 
 	@Override
+	public int getNCores() {
+		return settings.getNcpus();
+	}
+
+	@Override
 	public void close() {
 		if (job != null) {
 			job.stop();

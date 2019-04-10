@@ -25,7 +25,7 @@ public class RotateFile {
 
 	private static final String OUTPUT_DIRECTORY = "output";
 
-	private final static int step = 30;
+	private final static int step = 1;
 
 	public static void main(String[] args) {
 		final Context context = new Context();

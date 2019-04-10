@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.parallel.HeappeParadigm;
 import cz.it4i.parallel.ImageJServerParadigm;
+import cz.it4i.parallel.ImageJServerParadigm.Host;
 import cz.it4i.parallel.LocalMultithreadedParadigm;
 
 @Plugin(type = Command.class, headless = true,
@@ -31,7 +32,7 @@ public class AddDoubles implements Command {
 	private static int step;
 
 	// ImageJServerParadigm-specific stuff
-	private static List<String> hosts = new LinkedList<>();
+	private static List<Host> hosts = new LinkedList<>();
 
 	// LocalMultithreadedParadigm-specific stuff
 	private static int numberOfLocalWorkers;
@@ -54,7 +55,7 @@ public class AddDoubles implements Command {
 
 		if (args[0].equals("-s")) {
 			while (argIter.hasNext()) {
-				hosts.add(argIter.next());
+				hosts.add(new Host(argIter.next(), 1));
 			}
 		}
 		else if (args[0].equals("-l")) {

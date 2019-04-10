@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -18,11 +19,19 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Data;
+
 @Plugin(type = ParallelizationParadigm.class)
 public class ImageJServerParadigm extends SimpleOstravaParadigm {
 
 	public static final Logger log = LoggerFactory.getLogger(
 		cz.it4i.parallel.ImageJServerParadigm.class);
+	
+	@Data
+	public static class Host {
+		private final String name;
+		private final int nCores;
+	}
 
 	private int port;
 
@@ -36,9 +45,15 @@ public class ImageJServerParadigm extends SimpleOstravaParadigm {
 		this.port = port;
 	}
 
-	public void setHosts(final Collection<String> hosts) {
+	public void setHosts(final Collection<Host> hosts) {
 		this.hosts.clear();
-		this.hosts.addAll(hosts);
+		this.hosts.addAll(hosts.stream().map(host -> host.getName()).collect(
+			Collectors.toList()));
+		int ncores = hosts.iterator().next().getNCores();
+		if (!hosts.stream().allMatch(host -> host.getNCores() == ncores)) {
+			throw new UnsupportedOperationException(
+				"Only hosts with same number of cores are supported");
+		}
 	}
 
 	// -- SimpleOstravaParadigm methods --

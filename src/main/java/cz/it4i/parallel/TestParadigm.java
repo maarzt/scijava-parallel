@@ -6,6 +6,8 @@ import org.scijava.parallel.ParallelService;
 import org.scijava.parallel.ParallelizationParadigm;
 import org.scijava.parallel.ParallelizationParadigmProfile;
 
+import cz.it4i.parallel.ImageJServerParadigm.Host;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -34,13 +36,16 @@ public class TestParadigm implements ParallelizationParadigm
 	private static ParallelizationParadigm initParadigm( AbstractImageJServerRunner runner, Context context )
 	{
 		runner.start();
-		List< String > hosts = runner.getPorts().stream()
-				.map( port -> "localhost:" + port )
+		int nCores = runner.getNCores();
+		List<Host> hosts = runner.getPorts().stream()
+			.map(port -> new ImageJServerParadigm.Host("localhost:" + port, nCores))
 				.collect( Collectors.toList() );
 		return configureParadigm( context.service( ParallelService.class ), hosts );
 	}
 
-	private static ParallelizationParadigm configureParadigm( ParallelService parallelService, List<String> hosts ) {
+	private static ParallelizationParadigm configureParadigm(
+		ParallelService parallelService, List<Host> hosts)
+	{
 		parallelService.deleteProfiles();
 		parallelService.addProfile(new ParallelizationParadigmProfile(
 				ImageJServerParadigm.class, "lonelyBiologist01"));

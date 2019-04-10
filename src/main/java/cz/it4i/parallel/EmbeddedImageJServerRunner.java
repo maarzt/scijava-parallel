@@ -22,6 +22,11 @@ public class EmbeddedImageJServerRunner extends AbstractImageJServerRunner {
 	}
 
 	@Override
+	public int getNCores() {
+		return Runtime.getRuntime().availableProcessors();
+	}
+
+	@Override
 	public void close() {
 		try {
 			app.stop();

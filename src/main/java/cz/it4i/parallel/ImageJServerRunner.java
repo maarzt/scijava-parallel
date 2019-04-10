@@ -20,6 +20,11 @@ public class ImageJServerRunner extends AbstractImageJServerRunner {
 	}
 
 	@Override
+	public int getNCores() {
+		return Runtime.getRuntime().availableProcessors();
+	}
+
+	@Override
 	public List<Integer> getPorts() {
 		return Collections.singletonList(8080);
 	}
