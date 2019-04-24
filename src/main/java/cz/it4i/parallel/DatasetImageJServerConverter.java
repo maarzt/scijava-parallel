@@ -43,6 +43,8 @@ public class DatasetImageJServerConverter extends
 	public ParallelizationParadigmConverter<Dataset> cloneForWorker(
 		ParallelWorker worker)
 	{
+		// Remark: better use ThreadLocal in this class, than
+		// explicitly calling cloneForWorker.
 		DatasetImageJServerConverter result =
 			new DatasetImageJServerConverter();
 		result.ioService = ioService;
@@ -88,6 +90,9 @@ public class DatasetImageJServerConverter extends
 	}
 
 	private Object convert2Local(Object input) {
+		// Remark: The download shouldn't depend on how the upload happend before.
+		// This connection between upload and download is artificial, and
+		// makes the download rather unstable.
 		if (suffixOfImportedFile != null) {
 			Path result = Routines.supplyWithExceptionHandling(() -> Files
 				.createTempFile("", suffixOfImportedFile));
